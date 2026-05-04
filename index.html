@@ -458,8 +458,9 @@ input[type=number] {
   /* Header global */
   .header { padding: 0 14px; }
 
-  /* Home: ocultar + Nuevo */
+  /* Home: botones compactos */
   #btn-new-field { display: none !important; }
+  .home-btn-secondary { font-size: 11px !important; padding: 4px 8px !important; }
 
   /* Home: lista de campos móvil */
   .fields-mobile-cards { display: block; }
@@ -479,10 +480,15 @@ input[type=number] {
 
   /* Rating tab: layout apilado */
   #tab-rating > div { flex-direction: column; min-height: auto; }
-  .cal-sidebar { width: 100% !important; max-height: calc(100vh - 180px); border-right: none; border-bottom: 0.5px solid var(--border); }
+  .cal-sidebar { width: 100% !important; max-height: 50vh; border-right: none; border-bottom: 0.5px solid var(--border); }
   #cal-main-wrap { display: none; width: 100%; }
   #tab-rating.film-active .cal-sidebar { display: none !important; }
   #tab-rating.film-active #cal-main-wrap { display: block !important; padding: 16px; }
+
+  /* Slider: título arriba, barra abajo */
+  .slider-row { flex-direction: column; align-items: stretch; gap: 6px; margin-bottom: 18px; }
+  .slider-name { width: auto !important; font-size: 13px !important; }
+  .slider-track-wrap { display: flex; align-items: center; gap: 8px; }
 }
 </style>
 </head>
@@ -500,11 +506,11 @@ input[type=number] {
      PANTALLA 1 — LISTADO DE CAMPOS
      ═══════════════════════════════════ -->
 <div id="screen-home" class="screen active">
-  <div class="header2" style="top:46px;">
+  <div class="header2">
     <span class="h2-title">Campos</span>
     <div class="h2-right">
-      <button class="btn" onclick="importState()">Importar</button>
-      <button class="btn" onclick="exportState()">Exportar</button>
+      <button class="btn home-btn-secondary" onclick="importState()">Importar</button>
+      <button class="btn home-btn-secondary" onclick="exportState()">Exportar</button>
       <button class="btn-primary" id="btn-new-field" onclick="showScreen('screen-new-field')">+ Nuevo</button>
     </div>
   </div>
@@ -514,7 +520,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Cine y Géneros v3.1</span>
+    <span class="footer-txt">Cine y Géneros v3.2</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -653,7 +659,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Cine y Géneros v3.1</span>
+    <span class="footer-txt">Cine y Géneros v3.2</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -958,7 +964,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Cine y Géneros v3.1</span>
+    <span class="footer-txt">Cine y Géneros v3.2</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -2846,7 +2852,7 @@ function renderRatingTab(f) {
     return;
   }
   renderCalSidebar(f);
-  if (!appState.currentCalFilm) {
+  if (!appState.currentCalFilm && !isMobile()) {
     const diffs = f.differentials || [];
     const first = (f.sample || []).find(m => calClassify(m, diffs.length) !== 'done') || f.sample[0];
     if (first) selectCalFilm(first.id);
@@ -2891,22 +2897,31 @@ async function selectCalFilm(filmId) {
       ${revenue ? `<div><div style="font-size:10px;color:var(--text3);letter-spacing:.04em;">TAQUILLA</div><div style="font-size:13px;font-family:'DM Mono',monospace;">${fmtRevenue(revenue)}</div></div>` : ''}
     </div>` : '';
 
-  const overviewHtml = overview ? `
-    <div style="font-size:12px;color:var(--text3);margin-top:10px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;" title="${overview.replace(/"/g,'&quot;')}">${overview}</div>` : '';
+  const navBtns = `${prevId ? `<button class="btn" style="flex:1;" onclick="selectCalFilm(${prevId})">← Anterior</button>` : '<span style="flex:1;"></span>'}
+    ${nextId ? `<button class="btn" style="flex:1;" onclick="selectCalFilm(${nextId})">Siguiente →</button>` : '<span style="flex:1;"></span>'}`;
 
-  document.getElementById('cal-main').innerHTML = `
-    ${isMobile() ? `<button class="btn mobile-only" style="margin-bottom:14px;width:100%;" onclick="backToCalList()">← Volver al listado</button>` : ''}
+  document.getElementById('cal-main').innerHTML = isMobile() ? `
+    <button class="btn" style="width:100%;margin-bottom:10px;" onclick="backToCalList()">← Volver al listado</button>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">${navBtns}</div>
+    <div class="film-header" style="margin-bottom:14px;">
+      ${posterHtml}
+      <div style="min-width:0;">
+        <div class="film-title">${film.title}</div>
+        <div class="film-meta">${film.year} · ${film.votes.toLocaleString('es-AR')} votos · ★${film.rating}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">${(film.genreIds||[]).filter(id=>id!==f.genreId).map(id=>`<span class="badge">${GENRE_MAP[id]||id}</span>`).join('')}</div>
+        ${financeHtml}
+      </div>
+    </div>
+    <button class="btn-primary" style="width:100%;margin-bottom:14px;" onclick="saveCalFilm(${film.id})">Guardar</button>
+  ` : `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
       <div class="film-header" style="margin-bottom:0;">
         ${posterHtml}
         <div style="min-width:0;">
           <div class="film-title">${film.title}</div>
           <div class="film-meta">${film.year} · ${film.votes.toLocaleString('es-AR')} votos · ★${film.rating}</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            ${(film.genreIds||[]).filter(id=>id!==f.genreId).map(id=>`<span class="badge">${GENRE_MAP[id]||id}</span>`).join('')}
-          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">${(film.genreIds||[]).filter(id=>id!==f.genreId).map(id=>`<span class="badge">${GENRE_MAP[id]||id}</span>`).join('')}</div>
           ${financeHtml}
-          ${overviewHtml}
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0;margin-left:12px;">
@@ -2914,22 +2929,22 @@ async function selectCalFilm(filmId) {
         ${nextId ? `<button class="btn" onclick="selectCalFilm(${nextId})">Siguiente →</button>` : ''}
         <button class="btn-primary" onclick="saveCalFilm(${film.id})">Guardar</button>
       </div>
-    </div>
-    <div class="divider"></div>
-    <div style="font-size:12px;font-weight:500;margin-bottom:12px;">Diferenciales</div>
-    ${diffs.length ? diffs.map(d => {
-      const negMax = d.negMax || 3;
-      const posMax = d.posMax || 3;
-      const totalRange = negMax + posMax;
-      const rawVal = film.ratings[d.id] !== undefined ? +film.ratings[d.id] : 0;
-      const val = Math.max(-negMax, Math.min(posMax, rawVal));
-      const pct = (val + negMax) / totalRange * 100;
-      const fillPct = val >= 0 ? (val / posMax * 50) : (Math.abs(val) / negMax * 50);
-      const fillStyle = val >= 0 ? `left:50%;width:${fillPct}%` : `right:50%;width:${fillPct}%`;
-      const fillClass = val >= 0 ? 'slider-fill-pos' : 'slider-fill-neg';
-      return `<div class="slider-row">
-        <span class="slider-name" title="${d.desc||''}">${d.name}</span>
-        <div class="slider-track">
+    </div>`;
+
+  const diffsHtml = diffs.length ? diffs.map(d => {
+    const negMax = d.negMax || 3;
+    const posMax = d.posMax || 3;
+    const totalRange = negMax + posMax;
+    const rawVal = film.ratings[d.id] !== undefined ? +film.ratings[d.id] : 0;
+    const val = Math.max(-negMax, Math.min(posMax, rawVal));
+    const pct = (val + negMax) / totalRange * 100;
+    const fillPct = val >= 0 ? (val / posMax * 50) : (Math.abs(val) / negMax * 50);
+    const fillStyle = val >= 0 ? `left:50%;width:${fillPct}%` : `right:50%;width:${fillPct}%`;
+    const fillClass = val >= 0 ? 'slider-fill-pos' : 'slider-fill-neg';
+    return `<div class="slider-row">
+      <span class="slider-name" title="${d.desc||''}">${d.name}</span>
+      <div class="slider-track-wrap">
+        <div class="slider-track" style="flex:1;">
           <div class="slider-center"></div>
           <div class="slider-fill ${fillClass}" style="${fillStyle};"></div>
           <div class="slider-thumb" style="left:${pct}%;" id="thumb-${d.id}"></div>
@@ -2938,8 +2953,14 @@ async function selectCalFilm(filmId) {
             oninput="updateSlider(this, '${film.id}', '${d.id}', ${negMax}, ${posMax})" />
         </div>
         <span class="slider-val" id="val-${d.id}">${val > 0 ? '+'+val : val}</span>
-      </div>`;
-    }).join('') : '<div style="font-size:12px;color:var(--text3);">No hay diferenciales definidos. Creá algunos en la pestaña Diferenciales.</div>'}
+      </div>
+    </div>`;
+  }).join('') : '<div style="font-size:12px;color:var(--text3);">No hay diferenciales definidos. Creá algunos en la pestaña Diferenciales.</div>';
+
+  document.getElementById('cal-main').innerHTML += `
+    <div class="divider"></div>
+    <div style="font-size:12px;font-weight:500;margin-bottom:12px;">Diferenciales</div>
+    ${diffsHtml}
     <div class="divider"></div>
     <div style="display:flex;align-items:center;gap:12px;">
       <span style="font-size:12px;color:var(--text2);">Metaestabilidad</span>
