@@ -503,6 +503,8 @@ input[type=number] {
   <div class="header2" style="top:46px;">
     <span class="h2-title">Campos</span>
     <div class="h2-right">
+      <button class="btn" onclick="importState()">Importar</button>
+      <button class="btn" onclick="exportState()">Exportar</button>
       <button class="btn-primary" id="btn-new-field" onclick="showScreen('screen-new-field')">+ Nuevo</button>
     </div>
   </div>
@@ -512,7 +514,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Cine y Géneros v3.0</span>
+    <span class="footer-txt">Cine y Géneros v3.1</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -651,7 +653,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Cine y Géneros v3.0</span>
+    <span class="footer-txt">Cine y Géneros v3.1</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -956,7 +958,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Cine y Géneros v3.0</span>
+    <span class="footer-txt">Cine y Géneros v3.1</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1055,6 +1057,42 @@ function getState() {
 
 function saveState() {
   localStorage.setItem('cg_state', JSON.stringify({ fields: appState.fields }));
+}
+
+function exportState() {
+  const data = JSON.stringify({ fields: appState.fields }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'cine_generos_backup.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importState() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = evt => {
+      try {
+        const data = JSON.parse(evt.target.result);
+        if (!data.fields || !Array.isArray(data.fields)) { alert('Archivo inválido.'); return; }
+        if (appState.fields.length && !confirm(`Esto va a reemplazar los ${appState.fields.length} campo(s) actuales con los ${data.fields.length} del archivo. ¿Continuás?`)) return;
+        appState.fields = data.fields;
+        saveState();
+        renderFieldsList();
+      } catch(e) { alert('No se pudo leer el archivo.'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
 }
 
 function currentField() {
