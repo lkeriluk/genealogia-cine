@@ -1,0 +1,3027 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cine y Géneros</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg:       #0B0B0C;
+  --bg2:      #131315;
+  --bg3:      #1A1A1D;
+  --bg4:      #222226;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.12);
+  --border3:  rgba(255,255,255,0.18);
+  --text:     #F0EDE8;
+  --text2:    #9A9690;
+  --text3:    #5A5754;
+  --green:    #1D9E75;
+  --green-bg: rgba(29,158,117,0.1);
+  --blue:     #378ADD;
+  --blue-bg:  rgba(55,138,221,0.1);
+  --amber:    #EF9F27;
+  --amber-bg: rgba(239,159,39,0.1);
+  --red:      #D85A30;
+  --radius:   8px;
+  --radius-lg:12px;
+  --tmdb:     #01b4e4;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── HEADER ── */
+.header1 {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 20px; height: 46px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+  position: relative; z-index: 100;
+}
+.app-name { font-size: 14px; font-weight: 500; letter-spacing: -0.01em; }
+.tmdb-badge {
+  font-size: 10px; font-weight: 500; padding: 2px 7px;
+  border-radius: 4px; background: var(--tmdb); color: #fff;
+  font-family: 'DM Mono', monospace;
+}
+.header2 {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 20px; height: 40px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg2);
+  position: sticky; top: 0; z-index: 99;
+}
+.h2-title { font-size: 13px; font-weight: 500; }
+.h2-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+/* ── TABS ── */
+.field-tabs {
+  display: flex; padding: 0 20px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg);
+  position: sticky; top: 40px; z-index: 98;
+}
+.ftab {
+  font-size: 12px; padding: 10px 14px;
+  color: var(--text3); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: color .15s;
+}
+.ftab:hover { color: var(--text2); }
+.ftab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+
+/* ── BUTTONS ── */
+.btn {
+  font-size: 12px; padding: 5px 11px;
+  border: 0.5px solid var(--border2);
+  border-radius: var(--radius);
+  color: var(--text2); background: transparent; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all .15s;
+}
+.btn:hover { background: var(--bg3); color: var(--text); }
+.btn-primary {
+  font-size: 12px; padding: 5px 11px;
+  border: none; border-radius: var(--radius);
+  background: var(--text); color: var(--bg);
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  font-weight: 500; transition: opacity .15s;
+}
+.btn-primary:hover { opacity: .88; }
+.btn-danger {
+  font-size: 12px; padding: 5px 11px;
+  border: 0.5px solid rgba(216,90,48,0.3);
+  border-radius: var(--radius);
+  color: var(--red); background: rgba(216,90,48,0.08); cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── SCREENS ── */
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active {
+  display: block;
+  position: fixed;
+  top: 46px; left: 0; right: 0; bottom: 0;
+  overflow-y: auto;
+  background: var(--bg);
+  z-index: 50;
+}
+
+/* ── BODY ── */
+.body { padding: 20px 24px; }
+.body-grid { display: grid; grid-template-columns: 1fr 280px; min-height: calc(100vh - 160px); }
+.body-main { padding: 20px 24px; }
+.body-side { padding: 16px; background: var(--bg2); border-left: 0.5px solid var(--border); }
+
+/* ── STAT CARDS ── */
+.stats-grid { display: grid; gap: 8px; margin-bottom: 16px; }
+.stats-2 { grid-template-columns: repeat(2, 1fr); }
+.stats-3 { grid-template-columns: repeat(3, 1fr); }
+.stats-4 { grid-template-columns: repeat(4, 1fr); }
+.stats-5 { grid-template-columns: repeat(5, 1fr); }
+.stats-6 { grid-template-columns: repeat(6, 1fr); }
+.stat-card { background: var(--bg3); border-radius: var(--radius); padding: 10px 14px; }
+.stat-label { font-size: 10px; color: var(--text3); margin-bottom: 3px; letter-spacing: .04em; }
+.stat-value { font-size: 22px; font-weight: 300; color: var(--text); letter-spacing: -0.02em; }
+.stat-sub { font-size: 10px; color: var(--text3); margin-top: 1px; }
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; }
+table.tbl { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+table.tbl th {
+  font-size: 10px; font-weight: 500; color: var(--text3);
+  padding: 6px 10px; border-bottom: 0.5px solid var(--border2);
+  text-align: left; white-space: nowrap; letter-spacing: .04em;
+  cursor: pointer; user-select: none;
+}
+table.tbl th:hover { color: var(--text2); }
+table.tbl th.sort-asc::after { content: ' ↑'; color: var(--text2); }
+table.tbl th.sort-desc::after { content: ' ↓'; color: var(--text2); }
+table.tbl td { padding: 8px 10px; border-bottom: 0.5px solid var(--border); color: var(--text2); }
+table.tbl tr:hover td { background: var(--bg3); }
+.td-title { color: var(--text); font-weight: 500; }
+.td-mono { font-family: 'DM Mono', monospace; font-size: 11px; }
+.td-action { color: var(--text3); cursor: pointer; font-size: 11px; }
+.td-action:hover { color: var(--red); }
+
+/* ── BADGES ── */
+.badge {
+  font-size: 10px; padding: 2px 8px; border-radius: 999px;
+  border: 0.5px solid var(--border2); color: var(--text3);
+  font-family: 'DM Mono', monospace;
+}
+.badge-green { background: var(--green-bg); color: var(--green); border-color: rgba(29,158,117,.25); }
+.badge-amber { background: var(--amber-bg); color: var(--amber); border-color: rgba(239,159,39,.25); }
+.badge-blue  { background: var(--blue-bg);  color: var(--blue);  border-color: rgba(55,138,221,.25); }
+.badge-lock  { background: var(--amber-bg); color: var(--amber); border-color: rgba(239,159,39,.25); font-family: 'DM Sans', sans-serif; font-size: 11px; padding: 3px 10px; border-radius: var(--radius); }
+
+/* ── FORM ── */
+.form-group { margin-bottom: 12px; }
+.form-label { font-size: 10px; color: var(--text3); margin-bottom: 5px; display: block; letter-spacing: .04em; }
+.form-input {
+  width: 100%; height: 32px; background: var(--bg3);
+  border: 0.5px solid var(--border2); border-radius: var(--radius);
+  padding: 0 10px; font-size: 13px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .15s;
+}
+.form-input:focus { border-color: var(--border3); }
+.form-select {
+  width: 100%; height: 32px; background: var(--bg3);
+  border: 0.5px solid var(--border2); border-radius: var(--radius);
+  padding: 0 10px; font-size: 13px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; outline: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235A5754'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  cursor: pointer;
+}
+.form-row { display: grid; gap: 10px; margin-bottom: 12px; }
+.form-row-2 { grid-template-columns: 1fr 1fr; }
+.form-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-row-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+/* ── TAGS ── */
+.tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag {
+  font-size: 11px; padding: 3px 9px; border-radius: 999px;
+  border: 0.5px solid var(--border2); color: var(--text3); cursor: pointer;
+  transition: all .15s;
+}
+.tag:hover { border-color: var(--border3); color: var(--text2); }
+.tag.active { background: var(--bg4); color: var(--text); border-color: var(--border3); }
+
+/* ── DIVIDER ── */
+.divider { height: 0.5px; background: var(--border); margin: 14px 0; }
+
+/* ── TOGGLE ── */
+.toggle-wrap { display: flex; align-items: center; gap: 10px; }
+.toggle {
+  width: 32px; height: 18px; border-radius: 9px;
+  background: var(--bg4); border: 0.5px solid var(--border2);
+  position: relative; cursor: pointer; flex-shrink: 0; transition: background .2s;
+}
+.toggle.on { background: var(--green); border-color: var(--green); }
+.toggle-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--text3); position: absolute; top: 2px; left: 2px;
+  transition: transform .2s, background .2s;
+}
+.toggle.on .toggle-thumb { transform: translateX(14px); background: #fff; }
+.toggle-label { font-size: 12px; color: var(--text2); }
+
+/* ── SLIDER ── */
+.slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.slider-name { font-size: 12px; color: var(--text2); width: 140px; flex-shrink: 0; }
+.slider-track { flex: 1; height: 4px; background: var(--bg4); border-radius: 2px; position: relative; }
+.slider-fill { height: 100%; border-radius: 2px; position: absolute; top: 0; }
+.slider-fill-pos { background: var(--green); left: 50%; }
+.slider-fill-neg { background: var(--red); right: 50%; }
+.slider-center { position: absolute; left: 50%; top: -4px; width: 1px; height: 12px; background: var(--border2); }
+.slider-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--text); border: 2px solid var(--bg);
+  position: absolute; top: -5px; transform: translateX(-50%);
+  cursor: grab;
+}
+.slider-val { font-size: 11px; color: var(--text3); width: 24px; text-align: right; font-family: 'DM Mono', monospace; }
+
+/* ── PROGRESS ── */
+.prog-wrap { display: flex; align-items: center; gap: 8px; }
+.prog-track { flex: 1; height: 3px; background: var(--bg4); border-radius: 2px; }
+.prog-fill { height: 100%; border-radius: 2px; background: var(--green); }
+.prog-text { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; white-space: nowrap; }
+
+/* ── PAGER ── */
+.pager { display: flex; align-items: center; gap: 5px; margin-top: 12px; }
+.pager-btn {
+  font-size: 11px; padding: 3px 8px;
+  border: 0.5px solid var(--border2); border-radius: 6px;
+  color: var(--text3); cursor: pointer; font-family: 'DM Mono', monospace;
+}
+.pager-btn:hover { color: var(--text2); border-color: var(--border3); }
+.pager-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+.pager-info { font-size: 11px; color: var(--text3); margin-left: 6px; }
+
+/* ── SEARCH ── */
+.search-wrap { position: relative; }
+.search-input {
+  width: 100%; height: 32px; background: var(--bg3);
+  border: 0.5px solid var(--border2); border-radius: var(--radius);
+  padding: 0 10px 0 32px; font-size: 12px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; outline: none;
+}
+.search-input:focus { border-color: var(--border3); }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 13px; }
+
+/* ── CHART PLACEHOLDERS ── */
+.chart-ph { background: var(--bg3); border-radius: var(--radius); position: relative; overflow: hidden; }
+.chart-ph-label {
+  position: absolute; bottom: 8px; right: 10px;
+  font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace;
+}
+
+/* ── SIDEBAR CHARTS ── */
+.side-section { margin-bottom: 14px; }
+.side-label { font-size: 10px; color: var(--text3); margin-bottom: 6px; letter-spacing: .04em; }
+
+/* ── EXPAND BAR ── */
+.expand-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 24px; background: var(--bg2);
+  border-top: 0.5px solid var(--border); cursor: pointer;
+}
+.expand-bar:hover { background: var(--bg3); }
+.expand-bar-title { font-size: 12px; font-weight: 500; color: var(--text2); }
+.expand-bar-right { display: flex; align-items: center; gap: 12px; }
+.rep-index { font-size: 12px; color: var(--green); font-family: 'DM Mono', monospace; }
+.expand-section { padding: 20px 24px; border-top: 0.5px solid var(--border); }
+
+/* ── LEGEND ── */
+.legend { display: flex; gap: 14px; margin-bottom: 12px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text3); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── REP CARD ── */
+.rep-card { background: var(--bg3); border-radius: var(--radius); padding: 14px 16px; display: flex; align-items: center; gap: 16px; }
+.rep-val { font-size: 32px; font-weight: 300; color: var(--green); letter-spacing: -0.03em; }
+.rep-detail { font-size: 11px; color: var(--text3); line-height: 1.8; font-family: 'DM Mono', monospace; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.7); z-index: 500;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg2); border: 0.5px solid var(--border2);
+  border-radius: var(--radius-lg); padding: 24px; width: 400px;
+  max-width: 90vw;
+}
+.modal-title { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+.modal-sub { font-size: 12px; color: var(--text3); margin-bottom: 18px; line-height: 1.6; }
+.modal-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.modal-option {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px; border-radius: var(--radius);
+  border: 0.5px solid var(--border); cursor: pointer;
+  transition: border-color .15s;
+}
+.modal-option:hover { border-color: var(--border2); }
+.modal-option.selected { border-color: var(--green); background: var(--green-bg); }
+.modal-option-text { font-size: 12px; color: var(--text2); }
+.checkbox {
+  width: 16px; height: 16px; border-radius: 4px;
+  border: 0.5px solid var(--border2); flex-shrink: 0;
+  margin-top: 1px; display: flex; align-items: center; justify-content: center;
+}
+.checkbox.checked { background: var(--green); border-color: var(--green); }
+.checkbox.checked::after { content: '✓'; font-size: 10px; color: #fff; }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── FOOTER ── */
+.app-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 20px; border-top: 0.5px solid var(--border);
+  background: var(--bg2); margin-top: auto;
+}
+.footer-txt { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+/* ── CALIFICACIÓN SIDEBAR ── */
+.cal-sidebar {
+  width: 220px; flex-shrink: 0;
+  border-right: 0.5px solid var(--border);
+  overflow-y: auto; max-height: calc(100vh - 160px);
+}
+.cal-sidebar-section { padding: 4px 0; }
+.cal-section-label { font-size: 10px; color: var(--text3); padding: 4px 14px 6px; letter-spacing: .04em; }
+.cal-group-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 12px 5px; cursor: pointer; user-select: none;
+}
+.cal-group-header:hover { background: var(--bg3); }
+.cal-group-label { font-size: 10px; color: var(--text3); letter-spacing: .04em; }
+.cal-group-meta { display: flex; align-items: center; gap: 5px; }
+.cal-group-count { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; }
+.cal-group-caret { font-size: 9px; color: var(--text3); transition: transform .15s; display: inline-block; }
+.cal-group-caret.collapsed { transform: rotate(-90deg); }
+.cal-item {
+  font-size: 12px; color: var(--text3); padding: 5px 14px; cursor: pointer;
+  transition: background .1s; line-height: 1.4;
+}
+.cal-item:hover { background: var(--bg3); color: var(--text2); }
+.cal-item.active { background: var(--bg3); color: var(--text); font-weight: 500; border-left: 2px solid var(--text); padding-left: 12px; }
+.cal-item.done { color: var(--text3); }
+.cal-item.done::after { content: ' ✓'; color: var(--green); font-size: 10px; }
+.cal-item.inprogress::after { content: ' ●'; color: var(--amber); font-size: 9px; }
+
+/* ── PELÍCULA HEADER ── */
+.film-header { display: flex; gap: 16px; margin-bottom: 16px; align-items: flex-start; }
+.film-poster {
+  width: 72px; height: 104px; border-radius: var(--radius);
+  background: var(--bg3); border: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: var(--text3); flex-shrink: 0; overflow: hidden;
+}
+.film-poster img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius); }
+.film-title { font-size: 16px; font-weight: 500; margin-bottom: 3px; }
+.film-meta { font-size: 12px; color: var(--text3); margin-bottom: 8px; }
+
+/* ── ANÁLISIS ── */
+.analysis-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.analysis-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
+.analysis-card-title { font-size: 11px; color: var(--text3); margin-bottom: 10px; letter-spacing: .04em; }
+
+/* ── EMPTY STATE ── */
+.empty-state { padding: 40px 20px; text-align: center; color: var(--text3); font-size: 13px; line-height: 1.8; }
+.empty-state .big { font-size: 28px; margin-bottom: 8px; }
+
+/* ── LOADING ── */
+.loading { color: var(--text3); font-size: 12px; padding: 8px 0; font-family: 'DM Mono', monospace; }
+
+/* ── RANGE INPUT ── */
+input[type=range] {
+  -webkit-appearance: none; height: 4px;
+  background: var(--bg4); border-radius: 2px; outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--text);
+  border: 2px solid var(--bg); cursor: pointer;
+}
+input[type=number] {
+  background: var(--bg3); border: 0.5px solid var(--border2);
+  border-radius: var(--radius); padding: 0 8px; height: 32px;
+  color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px;
+  outline: none; text-align: center;
+}
+
+/* ── MULTISELECT ── */
+.ms-wrap { position: relative; }
+.ms-input {
+  width: 100%; min-height: 32px; background: var(--bg3);
+  border: 0.5px solid var(--border2); border-radius: var(--radius);
+  padding: 4px 10px; font-size: 12px; color: var(--text2);
+  cursor: pointer; display: flex; align-items: center;
+}
+.ms-input:hover { border-color: var(--border3); }
+.ms-search {
+  border: none; background: transparent; outline: none;
+  font-size: 12px; color: var(--text); font-family: 'DM Sans', sans-serif;
+}
+.ms-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 200;
+  background: var(--bg2); border: 0.5px solid var(--border2);
+  border-radius: var(--radius); margin-top: 2px; display: none;
+}
+.ms-dropdown.open { display: block; }
+#nf-countries-options { max-height: 200px; overflow-y: auto; }
+.ms-option {
+  padding: 7px 10px; font-size: 12px; color: var(--text2);
+  cursor: pointer; display: flex; align-items: center;
+}
+.ms-option:hover { background: var(--bg3); }
+.ms-option.selected { color: var(--text); font-weight: 500; }
+.ms-no-results { padding: 10px; font-size: 12px; color: var(--text3); text-align: center; }
+
+/* ── NOTICE ── */
+.notice {
+  background: var(--bg3); border: 0.5px solid var(--border2);
+  border-radius: var(--radius); padding: 10px 14px;
+  font-size: 11px; color: var(--text3); line-height: 1.6;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     HEADER 1 — siempre visible
+     ═══════════════════════════════════ -->
+<div class="header1">
+  <span class="app-name">Cine y Géneros</span>
+  <span class="tmdb-badge">TMDB</span>
+</div>
+
+<!-- ═══════════════════════════════════
+     PANTALLA 1 — LISTADO DE CAMPOS
+     ═══════════════════════════════════ -->
+<div id="screen-home" class="screen active">
+  <div class="header2" style="top:46px;">
+    <span class="h2-title">Campos</span>
+    <div class="h2-right">
+      <button class="btn-primary" onclick="showScreen('screen-new-field')">+ Nuevo</button>
+    </div>
+  </div>
+  <div class="body">
+    <div id="fields-list">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+  <div class="app-footer">
+    <span class="footer-txt">Cine y Géneros v2.9</span>
+    <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PANTALLA 2 — NUEVO CAMPO
+     ═══════════════════════════════════ -->
+<div id="screen-new-field" class="screen">
+  <div class="header2">
+    <span class="h2-title">Campo</span>
+    <div class="h2-right">
+      <button class="btn" onclick="showScreen('screen-home')">Cancelar</button>
+      <button class="btn-primary" onclick="createField()">Crear</button>
+    </div>
+  </div>
+  <div class="body">
+    <div class="form-row form-row-2" style="align-items:flex-start;">
+      <div class="form-group" style="margin:0">
+        <label class="form-label">NOMBRE</label>
+        <input class="form-input" id="nf-name" type="text" placeholder="Ej: Cine de acción latinoamericano" />
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">GÉNERO PRINCIPAL</label>
+        <select class="form-select" id="nf-genre" onchange="onFieldParamChange()">
+          <option value="">Cargando géneros...</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row form-row-4">
+      <div class="form-group" style="margin:0">
+        <label class="form-label">MÍNIMO DE VOTOS</label>
+        <input class="form-input" id="nf-votes" type="number" value="200" min="0" step="50" onchange="onFieldParamChange()" />
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">DÉCADA INICIO</label>
+        <select class="form-select" id="nf-dec-from" onchange="onFieldParamChange()">
+          <option value="1920">1920s</option><option value="1930">1930s</option>
+          <option value="1940">1940s</option><option value="1950">1950s</option>
+          <option value="1960">1960s</option><option value="1970">1970s</option>
+          <option value="1980">1980s</option><option value="1990">1990s</option>
+          <option value="2000">2000s</option><option value="2010">2010s</option>
+          <option value="2020">2020s</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">DÉCADA FIN</label>
+        <select class="form-select" id="nf-dec-to" onchange="onFieldParamChange()">
+          <option value="1920">1920s</option><option value="1930">1930s</option>
+          <option value="1940">1940s</option><option value="1950">1950s</option>
+          <option value="1960">1960s</option><option value="1970">1970s</option>
+          <option value="1980">1980s</option><option value="1990">1990s</option>
+          <option value="2000">2000s</option><option value="2010">2010s</option>
+          <option value="2020" selected>2020s</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">PAÍSES DE PRODUCCIÓN</label>
+        <div class="ms-wrap" id="nf-countries-wrap">
+          <div class="ms-input" id="nf-countries-input" onclick="toggleCountriesDropdown(event)">
+            <span id="nf-countries-placeholder">Todos los países</span>
+            <span style="margin-left:auto;color:var(--text3);font-size:10px;">▾</span>
+          </div>
+          <div class="ms-dropdown" id="nf-countries-dropdown">
+            <div style="padding:5px 8px;border-bottom:0.5px solid var(--border2);">
+              <input class="ms-search" id="nf-countries-search" placeholder="Buscar país..." oninput="filterCountries()" onclick="event.stopPropagation()" style="width:100%;" />
+            </div>
+            <div id="nf-countries-options"><div class="ms-no-results">Cargando países...</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">EXCLUIR GÉNEROS SECUNDARIOS</label>
+      <div class="tags" id="nf-exclude-tags" style="min-height:28px;">
+        <span style="font-size:11px;color:var(--text3);">Cargando géneros...</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="toggle-wrap">
+        <div class="toggle on" id="nf-outside-toggle" onclick="this.classList.toggle('on');markPreviewDirty()">
+          <div class="toggle-thumb"></div>
+        </div>
+        <span class="toggle-label">Permitir películas fuera de clasificación TMDB (con justificación manual)</span>
+      </div>
+    </div>
+    <div class="notice" style="margin-bottom:20px;">Una vez creado el campo, el género, las décadas y el mínimo de votos no pueden modificarse. Podés editar el nombre, la muestra y los diferenciales en cualquier momento.</div>
+    <div class="divider"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <span class="side-label" style="margin:0;">VISTA PREVIA</span>
+      <button class="btn" id="preview-load-btn" onclick="loadPreview()">Cargar datos</button>
+    </div>
+    <div class="stats-grid stats-2" style="margin-bottom:12px;">
+      <div class="stat-card">
+        <div class="stat-label">TOTAL PELÍCULAS EN EL CAMPO</div>
+        <div class="stat-value" id="preview-total">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">RATING PROMEDIO</div>
+        <div class="stat-value" id="preview-avg-rating">—</div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;">Distribución por décadas</div>
+    <div class="analysis-grid-2">
+      <div class="analysis-card">
+        <div class="analysis-card-title">CANTIDAD DE PELÍCULAS</div>
+        <div style="position:relative;height:110px;"><canvas id="preview-chart"></canvas></div>
+      </div>
+      <div class="analysis-card">
+        <div class="analysis-card-title">TAQUILLA PROMEDIO (USD)</div>
+        <div style="position:relative;height:110px;"><canvas id="preview-revenue-chart"></canvas></div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución por categoría</div>
+    <div class="analysis-grid-2">
+      <div class="analysis-card">
+        <div class="analysis-card-title">GÉNEROS SECUNDARIOS (TOP 10)</div>
+        <div style="position:relative;height:280px;"><canvas id="preview-genres-chart"></canvas></div>
+        <div id="preview-genres-note" style="font-size:11px;color:var(--text3);margin-top:6px;"></div>
+      </div>
+      <div class="analysis-card">
+        <div class="analysis-card-title">PAÍSES DE PRODUCCIÓN (TOP 10)</div>
+        <div style="position:relative;height:280px;"><canvas id="preview-countries-chart"></canvas></div>
+        <div id="preview-countries-note" style="font-size:11px;color:var(--text3);margin-top:6px;"></div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución de scores</div>
+    <div class="analysis-grid-2">
+      <div class="analysis-card">
+        <div class="analysis-card-title">RATING DE USUARIOS</div>
+        <div style="position:relative;height:280px;"><canvas id="preview-rating-chart"></canvas></div>
+      </div>
+      <div class="analysis-card">
+        <div class="analysis-card-title">CANTIDAD DE VOTOS</div>
+        <div style="position:relative;height:280px;"><canvas id="preview-votes-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+  <div class="app-footer">
+    <span class="footer-txt">Cine y Géneros v2.9</span>
+    <span class="footer-txt">© 2025</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PANTALLA 3-7 — CAMPO (con tabs)
+     ═══════════════════════════════════ -->
+<div id="screen-field" class="screen">
+  <div class="header2">
+    <span class="h2-title" id="field-title">—</span>
+    <div class="h2-right">
+      <button class="btn" onclick="renameField()">Renombrar</button>
+      <button class="btn" style="color:#e06060;" onclick="showDeleteFieldModal()">Eliminar</button>
+      <button class="btn" onclick="showScreen('screen-home')">✕ Cerrar</button>
+    </div>
+  </div>
+  <div class="field-tabs">
+    <span class="ftab active" onclick="showTab('desc')">Descripción</span>
+    <span class="ftab" onclick="showTab('sample')">Muestra</span>
+    <span class="ftab" onclick="showTab('diffs')">Diferenciales</span>
+    <span class="ftab" onclick="showTab('rating')">Calificación</span>
+    <span class="ftab" onclick="showTab('analysis')">Análisis</span>
+  </div>
+
+  <!-- TAB: DESCRIPCIÓN -->
+  <div id="tab-desc" class="tab-content">
+    <div class="body">
+      <div class="stats-grid stats-6" id="desc-stats"></div>
+      <div class="form-group">
+        <div class="form-label">GÉNEROS SECUNDARIOS EXCLUIDOS</div>
+        <div class="tags" id="desc-excluded"></div>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;">Distribución por décadas</div>
+      <div class="analysis-grid-2">
+        <div class="analysis-card">
+          <div class="analysis-card-title">CANTIDAD DE PELÍCULAS</div>
+          <div style="position:relative;height:110px;"><canvas id="desc-chart-decades"></canvas></div>
+        </div>
+        <div class="analysis-card">
+          <div class="analysis-card-title">TAQUILLA PROMEDIO (USD)</div>
+          <div style="position:relative;height:110px;"><canvas id="desc-chart-revenue"></canvas></div>
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución por categoría</div>
+      <div class="analysis-grid-2">
+        <div class="analysis-card">
+          <div class="analysis-card-title">GÉNEROS SECUNDARIOS (TOP 10)</div>
+          <div style="position:relative;height:280px;"><canvas id="desc-chart-genres"></canvas></div>
+          <div id="desc-genres-note" style="font-size:11px;color:var(--text3);margin-top:6px;"></div>
+        </div>
+        <div class="analysis-card">
+          <div class="analysis-card-title">PAÍSES DE PRODUCCIÓN (TOP 10)</div>
+          <div style="position:relative;height:280px;"><canvas id="desc-chart-countries"></canvas></div>
+          <div id="desc-countries-note" style="font-size:11px;color:var(--text3);margin-top:6px;"></div>
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución de scores</div>
+      <div class="analysis-grid-2">
+        <div class="analysis-card">
+          <div class="analysis-card-title">RATING DE USUARIOS</div>
+          <div style="position:relative;height:280px;"><canvas id="desc-chart-rating"></canvas></div>
+        </div>
+        <div class="analysis-card" style="display:flex;flex-direction:column;">
+          <div class="analysis-card-title">CANTIDAD DE VOTOS</div>
+          <div style="flex:1;position:relative;min-height:0;"><canvas id="desc-chart-votes"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: MUESTRA -->
+  <div id="tab-sample" class="tab-content" style="display:none;">
+    <div class="body">
+      <div class="stats-grid stats-3" id="sample-stats"></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <span style="font-size:12px;color:var(--text2);">Tamaño</span>
+        <input type="range" id="sample-size-slider" min="10" max="300" value="100" step="1" style="flex:1;" oninput="updateSampleSize(this.value)" />
+        <input type="number" id="sample-size-input" value="100" min="10" max="300" style="width:60px;" onchange="updateSampleSize(this.value)" />
+        <span style="font-size:11px;color:var(--text3);" id="sample-min-label">mín. —</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <div class="search-wrap" style="flex:1;">
+          <span class="search-icon">⌕</span>
+          <input class="search-input" id="sample-search" type="text" placeholder="Buscar película..." oninput="filterSampleTable()" />
+        </div>
+        <select id="sample-genre-filter" onchange="filterSampleGenre()" style="height:32px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text2);font-size:12px;padding:0 8px;cursor:pointer;min-width:160px;">
+          <option value="">Todos los géneros</option>
+        </select>
+        <button class="btn" id="generate-btn" onclick="showRegenModal()">Generar</button>
+        <button class="btn" onclick="exportSampleToExcel()">↓ Excel</button>
+        <button class="btn-primary" onclick="showAddFilmModal()">+ Agregar película</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <colgroup>
+            <col>
+            <col style="width:52px;">
+            <col style="width:140px;">
+            <col style="width:200px;">
+            <col style="width:90px;">
+            <col style="width:60px;">
+            <col style="width:104px;">
+            <col style="width:28px;">
+          </colgroup>
+          <thead>
+            <tr>
+              <th onclick="sortSampleTable('title')">Película</th>
+              <th onclick="sortSampleTable('year')">Año</th>
+              <th onclick="sortSampleTable('country')">País</th>
+              <th>Géneros Secundarios</th>
+              <th onclick="sortSampleTable('votes')">Votos</th>
+              <th onclick="sortSampleTable('rating')">Rating</th>
+              <th onclick="sortSampleTable('revenue')">Taquilla</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="sample-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="sample-pager"></div>
+    </div>
+
+    <div class="expand-bar">
+      <span class="expand-bar-title" onclick="toggleDistribution()" style="cursor:pointer;flex:1;">Distribución de la muestra</span>
+      <div class="expand-bar-right">
+        <span class="rep-index" id="rep-index-bar" title="Promedio de décadas, rating, votos, géneros y países">Índice: calculando...</span>
+        <span class="rep-index" id="rep-index-bar-rev" style="color:var(--text3);" title="Incluye taquilla (techo estructural: el universo usa promedio top 40, la muestra promedio total)">—</span>
+        <button class="btn" style="padding:2px 10px;font-size:11px;height:24px;" onclick="recalcDistribution()">Recalcular</button>
+        <span style="font-size:11px;color:var(--text3);cursor:pointer;" id="expand-arrow" onclick="toggleDistribution()">▲ ocultar</span>
+      </div>
+    </div>
+    <div class="expand-section" id="distribution-section">
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;">Distribución por décadas</div>
+      <div class="analysis-grid-2">
+        <div class="analysis-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="analysis-card-title" style="margin-bottom:0;">CANTIDAD DE PELÍCULAS</div>
+            <div style="display:flex;gap:10px;">
+              <div class="legend-item"><div class="legend-dot" style="background:#378ADD;"></div><span style="font-size:11px;color:var(--text3);">Universo</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#1D9E75;"></div><span style="font-size:11px;color:var(--text3);">Muestra</span></div>
+            </div>
+          </div>
+          <div style="position:relative;height:120px;"><canvas id="sample-chart-decades"></canvas></div>
+          <div id="sample-decades-rep" style="font-size:11px;color:var(--text3);margin-top:6px;text-align:right;"></div>
+        </div>
+        <div class="analysis-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="analysis-card-title" style="margin-bottom:0;">TAQUILLA PROMEDIO (USD)</div>
+            <div style="display:flex;gap:10px;">
+              <div class="legend-item"><div class="legend-dot" style="background:#378ADD;"></div><span style="font-size:11px;color:var(--text3);">Universo</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#1D9E75;"></div><span style="font-size:11px;color:var(--text3);">Muestra</span></div>
+            </div>
+          </div>
+          <div style="position:relative;height:120px;"><canvas id="sample-chart-revenue"></canvas></div>
+          <div id="sample-revenue-rep" style="font-size:11px;color:var(--text3);margin-top:6px;text-align:right;"></div>
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:14px;">Distribución por categoría</div>
+      <div class="analysis-grid-2">
+        <div class="analysis-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="analysis-card-title" style="margin-bottom:0;">GÉNEROS SECUNDARIOS</div>
+            <div style="display:flex;gap:10px;">
+              <div class="legend-item"><div class="legend-dot" style="background:#378ADD;"></div><span style="font-size:11px;color:var(--text3);">Universo</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#1D9E75;"></div><span style="font-size:11px;color:var(--text3);">Muestra</span></div>
+            </div>
+          </div>
+          <div style="position:relative;height:280px;"><canvas id="sample-chart-genres"></canvas></div>
+          <div id="sample-genres-rep" style="font-size:11px;color:var(--text3);margin-top:6px;text-align:right;"></div>
+          <div id="sample-genres-note" style="font-size:11px;color:var(--text3);margin-top:2px;"></div>
+        </div>
+        <div class="analysis-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="analysis-card-title" style="margin-bottom:0;">PAÍSES DE PRODUCCIÓN</div>
+            <div style="display:flex;gap:10px;">
+              <div class="legend-item"><div class="legend-dot" style="background:#378ADD;"></div><span style="font-size:11px;color:var(--text3);">Universo</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#1D9E75;"></div><span style="font-size:11px;color:var(--text3);">Muestra</span></div>
+            </div>
+          </div>
+          <div style="position:relative;height:280px;"><canvas id="sample-chart-countries"></canvas></div>
+          <div id="sample-countries-rep" style="font-size:11px;color:var(--text3);margin-top:6px;text-align:right;"></div>
+          <div id="sample-countries-note" style="font-size:11px;color:var(--text3);margin-top:2px;"></div>
+        </div>
+      </div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:14px;">Distribución de scores</div>
+      <div class="analysis-grid-2">
+        <div class="analysis-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="analysis-card-title" style="margin-bottom:0;">RATING DE USUARIOS</div>
+            <div style="display:flex;gap:10px;">
+              <div class="legend-item"><div class="legend-dot" style="background:#378ADD;"></div><span style="font-size:11px;color:var(--text3);">Universo</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#1D9E75;"></div><span style="font-size:11px;color:var(--text3);">Muestra</span></div>
+            </div>
+          </div>
+          <div style="position:relative;height:280px;"><canvas id="sample-chart-rating"></canvas></div>
+          <div id="sample-rating-rep" style="font-size:11px;color:var(--text3);margin-top:6px;text-align:right;"></div>
+        </div>
+        <div class="analysis-card" style="display:flex;flex-direction:column;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="analysis-card-title" style="margin-bottom:0;">CANTIDAD DE VOTOS</div>
+            <div style="display:flex;gap:10px;">
+              <div class="legend-item"><div class="legend-dot" style="background:#378ADD;"></div><span style="font-size:11px;color:var(--text3);">Universo</span></div>
+              <div class="legend-item"><div class="legend-dot" style="background:#1D9E75;"></div><span style="font-size:11px;color:var(--text3);">Muestra</span></div>
+            </div>
+          </div>
+          <div style="flex:1;position:relative;min-height:0;"><canvas id="sample-chart-votes"></canvas></div>
+          <div id="sample-votes-rep" style="font-size:11px;color:var(--text3);margin-top:6px;text-align:right;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: DIFERENCIALES -->
+  <div id="tab-diffs" class="tab-content" style="display:none;">
+    <div class="body-grid">
+      <div class="body-main">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <span style="font-size:13px;font-weight:500;" id="diffs-count">Diferenciales (0)</span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn" onclick="importDiffs()">Importar de otro campo</button>
+            <button class="btn-primary" onclick="showNewDiffForm()">+ Nuevo diferencial</button>
+          </div>
+        </div>
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th style="width:16px;"></th>
+              <th>Nombre</th>
+              <th>Polo −</th>
+              <th>Polo +</th>
+              <th style="width:60px;">Rango</th>
+              <th>Calificadas</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="diffs-tbody"></tbody>
+        </table>
+        <div style="margin-top:12px;" class="notice">Los diferenciales pueden editarse en cualquier momento. Si agregás uno nuevo, las películas ya calificadas quedarán con ese diferencial pendiente.</div>
+      </div>
+      <div class="body-side">
+        <div id="diff-editor">
+          <div style="font-size:11px;color:var(--text3);text-align:center;padding:20px 0;">Seleccioná un diferencial para editar</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: CALIFICACIÓN -->
+  <div id="tab-rating" class="tab-content" style="display:none;">
+    <div style="display:flex;min-height:calc(100vh - 200px);">
+      <div class="cal-sidebar">
+        <div style="padding:8px 10px 4px;">
+          <input type="text" class="form-input" id="cal-search" placeholder="Buscar..." style="font-size:11px;padding:5px 8px;" oninput="filterCalSidebar()" />
+        </div>
+        <div id="cal-groups"></div>
+      </div>
+      <div style="flex:1;padding:20px 24px;" id="cal-main">
+        <div class="empty-state">
+          <div>Seleccioná una película del panel izquierdo para calificarla</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: ANÁLISIS -->
+  <div id="tab-analysis" class="tab-content" style="display:none;">
+    <div class="body">
+      <div class="stats-grid stats-4" id="analysis-stats"></div>
+      <div class="analysis-grid-2">
+        <div class="analysis-card">
+          <div class="analysis-card-title">RANKING POR METAESTABILIDAD</div>
+          <div style="position:relative;height:200px;"><canvas id="analysis-ranking"></canvas></div>
+        </div>
+        <div class="analysis-card">
+          <div class="analysis-card-title">EVOLUCIÓN POR DÉCADA</div>
+          <div style="position:relative;height:200px;"><canvas id="analysis-evolution"></canvas></div>
+        </div>
+      </div>
+      <div class="analysis-grid-2" style="margin-top:14px;">
+        <div class="analysis-card">
+          <div class="analysis-card-title">MAPA DE CALOR — DIFERENCIALES × DÉCADAS</div>
+          <div id="analysis-heatmap" style="min-height:160px;"></div>
+        </div>
+        <div class="analysis-card">
+          <div class="analysis-card-title">COMPARAR PELÍCULAS</div>
+          <div style="margin-bottom:8px;">
+            <select class="form-select" id="compare-sel-1" style="margin-bottom:6px;" onchange="updateRadar()"></select>
+            <select class="form-select" id="compare-sel-2" onchange="updateRadar()"></select>
+          </div>
+          <div style="position:relative;height:180px;"><canvas id="analysis-radar"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-footer">
+    <span class="footer-txt">Cine y Géneros v2.9</span>
+    <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
+  </div>
+</div>
+
+<!-- MODAL: ELIMINAR CAMPO -->
+<div class="modal-overlay" id="modal-delete-field">
+  <div class="modal">
+    <div class="modal-title">Eliminar campo</div>
+    <div class="modal-sub">Esta acción es irreversible. Se eliminará el campo, su muestra y todas las calificaciones.</div>
+    <div style="margin:16px 0;padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border:0.5px solid var(--border2);font-size:13px;color:var(--text);" id="delete-field-name">—</div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-delete-field')">Cancelar</button>
+      <button class="btn" style="background:rgba(220,50,50,.15);border-color:rgba(220,50,50,.3);color:#e06060;" onclick="confirmDeleteField()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: REGENERAR -->
+<div class="modal-overlay" id="modal-regen">
+  <div class="modal">
+    <div class="modal-title">Generar muestra</div>
+    <div class="modal-sub">El algoritmo recalculará la selección de películas. Podés proteger películas específicas.</div>
+    <div class="modal-options">
+      <div class="modal-option" id="regen-opt-manual" onclick="toggleRegenOpt('manual')">
+        <div class="checkbox" id="regen-check-manual"></div>
+        <div class="modal-option-text">Mantener películas agregadas manualmente</div>
+      </div>
+      <div class="modal-option" id="regen-opt-rated" onclick="toggleRegenOpt('rated')">
+        <div class="checkbox" id="regen-check-rated"></div>
+        <div class="modal-option-text">Mantener películas ya calificadas</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-regen')">Cancelar</button>
+      <button class="btn-primary" onclick="doRegen()">Generar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: AGREGAR PELÍCULA -->
+<div class="modal-overlay" id="modal-add-film">
+  <div class="modal">
+    <div class="modal-title">Agregar película</div>
+    <div class="modal-sub">Buscá en TMDB la película que querés agregar a la muestra.</div>
+    <div class="form-group">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="add-film-search" type="text" placeholder="Buscar en TMDB..." oninput="searchFilmToAdd()" />
+      </div>
+    </div>
+    <div id="add-film-results" style="max-height:200px;overflow-y:auto;margin-bottom:16px;"></div>
+    <div class="form-group">
+      <label class="form-label">JUSTIFICACIÓN (requerida si no está en el campo)</label>
+      <input class="form-input" id="add-film-reason" type="text" placeholder="Ej: Película formadora del género no clasificada como acción" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-add-film')">Cancelar</button>
+      <button class="btn-primary" onclick="confirmAddFilm()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const APIKEY = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3MmRhYWUyNWE0MGIzNzA2NjgyNGFkODVmZmJjNzA5OSIsIm5iZiI6MTc3NjcyMDg5Ny4zNjIsInN1YiI6IjY5ZTY5YzAxOWY5YzU1ZTFjNjY5MzVmOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.GfwS7LwX_ZB4RO1Pln5N1O8KQ2q8fqIz1-hl7xDJ5s0';
+const HEADERS = { Authorization: 'Bearer ' + APIKEY };
+const BASE = 'https://api.themoviedb.org/3';
+
+const GENRE_MAP = {28:'Acción',12:'Aventura',16:'Animación',35:'Comedia',80:'Crimen',99:'Documental',18:'Drama',10751:'Familia',14:'Fantasía',36:'Historia',27:'Terror',10402:'Música',9648:'Misterio',10749:'Romance',878:'Ciencia ficción',10770:'TV Movie',53:'Thriller',10752:'Guerra',37:'Western'};
+
+// ── STATE ──
+let appState = {
+  fields: [],
+  currentFieldId: null,
+  samplePage: 1,
+  sampleSort: { col: 'year', dir: 'asc' },
+  sampleFilter: '',
+  sampleGenreFilter: '',
+  previewChart: null,
+  previewVotesChart: null,
+  descCharts: {},
+  distCharts: {},
+  analysisCharts: {},
+  regenOpts: { manual: true, rated: true },
+  selectedFilmToAdd: null,
+  currentCalFilm: null,
+  calFilter: '',
+  calCollapsed: { pending: false, inProgress: false, done: false },
+  addFilmTimeout: null,
+  previewCache: null,
+};
+
+function getState() {
+  const saved = localStorage.getItem('cg_state');
+  if (saved) appState.fields = JSON.parse(saved).fields || [];
+}
+
+function saveState() {
+  localStorage.setItem('cg_state', JSON.stringify({ fields: appState.fields }));
+}
+
+function currentField() {
+  return appState.fields.find(f => f.id === appState.currentFieldId);
+}
+
+// ── NAVIGATION ──
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'screen-home') renderFieldsList();
+  if (id === 'screen-new-field') { selectedCountry = ''; loadGenres(); loadCountries(); markPreviewDirty(); }
+}
+
+function showTab(name) {
+  document.querySelectorAll('.ftab').forEach((t,i) => {
+    t.classList.toggle('active', ['desc','sample','diffs','rating','analysis'][i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+  document.getElementById('tab-' + name).style.display = '';
+  const f = currentField();
+  if (!f) return;
+  if (name === 'desc')     renderDesc(f);
+  if (name === 'sample')   renderSample(f);
+  if (name === 'diffs')    renderDiffs(f);
+  if (name === 'rating')   renderRatingTab(f);
+  if (name === 'analysis') renderAnalysis(f);
+}
+
+function openField(id) {
+  appState.currentFieldId = id;
+  appState.samplePage = 1;
+  appState.sampleFilter = '';
+  appState.sampleGenreFilter = '';
+  const f = currentField();
+  document.getElementById('field-title').textContent = f.name;
+  showScreen('screen-field');
+  document.querySelectorAll('.ftab').forEach((t,i) => t.classList.toggle('active', i===0));
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+  document.getElementById('tab-desc').style.display = '';
+  renderDesc(f);
+}
+
+// ── SCREEN 1: FIELDS LIST ──
+function renderFieldsList() {
+  const el = document.getElementById('fields-list');
+  if (!appState.fields.length) {
+    el.innerHTML = `<div class="empty-state"><div class="big">◎</div><div>No hay campos todavía.<br>Creá uno para empezar.</div></div>`;
+    return;
+  }
+  el.innerHTML = `
+  <table class="tbl">
+    <thead><tr>
+      <th>Nombre</th><th>Género</th><th>Campo</th><th>Diferenciales</th><th>Calificación</th><th>Estado</th><th></th>
+    </tr></thead>
+    <tbody>
+    ${appState.fields.map(f => {
+      const totalSample = f.sample ? f.sample.length : 0;
+      const rated = f.sample ? f.sample.filter(m => m.ratings && Object.keys(m.ratings).length === (f.differentials||[]).length).length : 0;
+      const pct = totalSample ? Math.round(rated/totalSample*100) : 0;
+      const status = pct === 100 ? 'badge-green' : pct > 0 ? 'badge-amber' : 'badge';
+      const statusLabel = pct === 100 ? 'Completo' : pct > 0 ? 'En análisis' : 'Borrador';
+      return `<tr>
+        <td class="td-title">${f.name}</td>
+        <td>${GENRE_MAP[f.genreId] || f.genreId}</td>
+        <td class="td-mono">${f.universeTotal ? f.universeTotal.toLocaleString('es-AR') : '—'}</td>
+        <td class="td-mono">${(f.differentials||[]).length}</td>
+        <td>
+          <div class="prog-wrap">
+            <div class="prog-track"><div class="prog-fill" style="width:${pct}%;"></div></div>
+            <span class="prog-text">${rated} / ${totalSample}</span>
+          </div>
+        </td>
+        <td><span class="badge ${status}">${statusLabel}</span></td>
+        <td style="white-space:nowrap;">
+          <span class="td-action" onclick="openField('${f.id}')">Abrir →</span>
+          <span class="td-action" style="color:#e06060;margin-left:12px;" onclick="showDeleteFieldModal('${f.id}')">Eliminar</span>
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table>`;
+}
+
+// ── SCREEN 2: NEW FIELD ──
+let allCountries = [];
+let selectedCountry = '';
+
+function getCountryName(code) {
+  const c = allCountries.find(x => x.code === code);
+  return c ? c.name : code;
+}
+
+async function loadCountries() {
+  try {
+    // Get countries from TMDB configuration
+    const r = await fetch(BASE + '/configuration/countries', {headers:HEADERS});
+    const d = await r.json();
+    allCountries = (Array.isArray(d) ? d : []).map(c => ({ code: c.iso_3166_1, name: c.english_name || c.native_name || c.iso_3166_1 })).sort((a,b) => a.name.localeCompare(b.name));
+    renderCountriesDropdown('');
+  } catch(e) {
+    // Fallback common countries
+    allCountries = [
+      {code:'US',name:'United States'},{code:'GB',name:'United Kingdom'},
+      {code:'FR',name:'France'},{code:'DE',name:'Germany'},
+      {code:'JP',name:'Japan'},{code:'KR',name:'South Korea'},
+      {code:'CN',name:'China'},{code:'HK',name:'Hong Kong'},
+      {code:'IN',name:'India'},{code:'AU',name:'Australia'},
+      {code:'IT',name:'Italy'},{code:'ES',name:'Spain'},
+      {code:'CA',name:'Canada'},{code:'MX',name:'Mexico'},
+      {code:'BR',name:'Brazil'},{code:'AR',name:'Argentina'},
+      {code:'TH',name:'Thailand'},{code:'ID',name:'Indonesia'},
+      {code:'TW',name:'Taiwan'},{code:'RU',name:'Russia'}
+    ];
+    renderCountriesDropdown('');
+  }
+}
+
+function renderCountriesDropdown(filter) {
+  const opts = document.getElementById('nf-countries-options');
+  if (!opts) return;
+  const q = filter.toLowerCase();
+  const filtered = allCountries.filter(c => !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q));
+  const todosHtml = `<div class="ms-option ${!selectedCountry?'selected':''}" onclick="toggleCountry('')">Todos los países</div>`;
+  if (!filtered.length) { opts.innerHTML = todosHtml + '<div class="ms-no-results">Sin resultados</div>'; return; }
+  opts.innerHTML = todosHtml + filtered.map(c => {
+    const sel = selectedCountry === c.code;
+    return `<div class="ms-option ${sel?'selected':''}" onclick="toggleCountry('${c.code}')">
+      <span>${c.name}</span>
+      <span style="color:var(--text3);font-size:10px;margin-left:auto;">${c.code}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleCountriesDropdown(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('nf-countries-dropdown');
+  const isOpen = dd.classList.contains('open');
+  if (isOpen) {
+    dd.classList.remove('open');
+  } else {
+    renderCountriesDropdown('');
+    dd.classList.add('open');
+    const search = document.getElementById('nf-countries-search');
+    if (search) { search.value = ''; search.focus(); }
+  }
+}
+
+function filterCountries() {
+  renderCountriesDropdown(document.getElementById('nf-countries-search').value);
+}
+
+function toggleCountry(code) {
+  selectedCountry = code;
+  updateCountriesInput();
+  document.getElementById('nf-countries-dropdown').classList.remove('open');
+  markPreviewDirty();
+}
+
+function clearCountry() {
+  selectedCountry = '';
+  updateCountriesInput();
+  markPreviewDirty();
+}
+
+function updateCountriesInput() {
+  const ph = document.getElementById('nf-countries-placeholder');
+  if (!ph) return;
+  ph.textContent = selectedCountry ? getCountryName(selectedCountry) : 'Todos los países';
+  ph.style.color = selectedCountry ? 'var(--text2)' : 'var(--text3)';
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#nf-countries-wrap')) {
+    const dd = document.getElementById('nf-countries-dropdown');
+    if (dd) dd.classList.remove('open');
+  }
+});
+
+async function loadGenres() {
+  try {
+    const r = await fetch(`${BASE}/genre/movie/list?language=es`, {headers:HEADERS});
+    const d = await r.json();
+    appState.allGenres = d.genres || [];
+    const sel = document.getElementById('nf-genre');
+    if (!sel) return;
+    sel.innerHTML = appState.allGenres.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+    populateExcludeTags(appState.allGenres);
+  } catch(e) {}
+}
+
+function populateExcludeTags(genres) {
+  const el = document.getElementById('nf-exclude-tags');
+  if (!el) return;
+  const selectedGenreId = document.getElementById('nf-genre') ? +document.getElementById('nf-genre').value : 28;
+  const defaultExclude = [];
+  el.innerHTML = genres
+    .filter(g => g.id !== selectedGenreId)
+    .map(g => `<span class="tag" data-genre-id="${g.id}">${g.name}</span>`)
+    .join('');
+  el.querySelectorAll('.tag').forEach(t => {
+    t.onclick = () => {
+      t.classList.toggle('active');
+      t.textContent = t.classList.contains('active') ? t.textContent.replace(' ✕','') + ' ✕' : t.textContent.replace(' ✕','');
+      markPreviewDirty();
+    };
+  });
+}
+
+function onFieldParamChange() {
+  const sel = document.getElementById('nf-genre');
+  if (sel && appState.allGenres) populateExcludeTags(appState.allGenres);
+  markPreviewDirty();
+}
+
+function pctTooltip(total, axis) {
+  return { callbacks: { label: function(ctx) {
+    var val = axis === 'y' ? ctx.parsed.y : ctx.parsed.x;
+    if (val === null || val === undefined) return '';
+    var pct = total > 0 ? (val / total * 100).toFixed(1) : '0';
+    return val.toLocaleString('es-AR') + ' (' + pct + '%)';
+  }}};
+}
+
+function markPreviewDirty() {
+  const btn = document.getElementById('preview-load-btn');
+  if (btn) { btn.textContent = 'Cargar datos'; btn.style.opacity = '1'; }
+}
+
+async function loadPreview() {
+  const btn = document.getElementById('preview-load-btn');
+  btn.textContent = 'Cargando...';
+  btn.style.opacity = '0.5';
+  const genreId = document.getElementById('nf-genre').value;
+  const votes = document.getElementById('nf-votes').value || 10;
+  const decFrom = document.getElementById('nf-dec-from').value;
+  const decTo = document.getElementById('nf-dec-to').value;
+  document.getElementById('preview-total').textContent = '...';
+  try {
+    const excluded = [...document.querySelectorAll('#nf-exclude-tags .tag.active')].map(t=>t.dataset.genreId).filter(Boolean).join(',');
+    const excP = excluded ? '&without_genres=' + excluded : '';
+    const countryParam = selectedCountry ? '&with_origin_country=' + selectedCountry : '';
+    const url = BASE + '/discover/movie?with_genres=' + genreId + '&vote_count.gte=' + votes + '&primary_release_date.gte=' + decFrom + '-01-01&primary_release_date.lte=' + (+decTo+9) + '-12-31' + excP + countryParam + '&page=1';
+    const r = await fetch(url, {headers:HEADERS});
+    const d = await r.json();
+    document.getElementById('preview-total').textContent = d.total_results.toLocaleString('es-AR');
+    await buildPreviewDecadesChart(genreId, votes, decFrom, decTo, excluded, selectedCountry);
+    btn.textContent = 'Actualizar';
+    btn.style.opacity = '1';
+  } catch(e) {
+    document.getElementById('preview-total').textContent = 'error';
+    btn.textContent = 'Cargar datos';
+    btn.style.opacity = '1';
+  }
+}
+
+async function buildPreviewDecadesChart(genreId, votes, decFrom, decTo, excluded, country) {
+  appState.previewCache = { decades: [], decadesCounts: null, decadesRevenue: null, ratingBuckets: null, voteBuckets: null, avgRating: '—', genreTop10: null, genreTotalScaled: 0, genreNoteText: '', countryFiltered: !!country, countryTop10: null, countryNoteText: '', countryTotalScaled: 0 };
+  const decades = [];
+  for (let d = +decFrom; d <= +decTo; d += 10) decades.push(d);
+  appState.previewCache.decades = decades;
+  const counts = await Promise.all(decades.map(async dec => {
+    try {
+      const excP = excluded ? '&without_genres=' + excluded : '';
+      const cntP = country ? '&with_origin_country=' + country : '';
+      const r = await fetch(BASE + '/discover/movie?with_genres=' + genreId + '&vote_count.gte=' + votes + '&primary_release_date.gte=' + dec + '-01-01&primary_release_date.lte=' + (dec+9) + '-12-31' + excP + cntP + '&page=1', {headers:HEADERS});
+      const d = await r.json();
+      return d.total_results;
+    } catch { return 0; }
+  }));
+  const ctx = document.getElementById('preview-chart');
+  if (appState.previewChart) appState.previewChart.destroy();
+  appState.previewCache.decadesCounts = counts;
+  var decTotal = counts.reduce(function(s,v){return s+v;},0) || 1;
+  appState.previewChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: decades.map(d => d+'s'),
+      datasets: [{ data: counts, backgroundColor: 'rgba(55,138,221,0.5)', borderColor: '#378ADD', borderWidth: 1 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: pctTooltip(decTotal, 'y') },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#5A5754', font: { size: 10 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } }
+      }
+    }
+  });
+  // Rating distribution
+  try {
+    const buckets = Array(9).fill(0);
+    const vBuckets = [0,0,0,0,0];
+    const genreCount = {};
+    var ratingSum = 0; var ratingCount = 0;
+    // Compute equidistant pages across the full universe — same logic as fetchDecade — so the
+    // cached distribution reflects the real spread of votes/rating/genre, not just A-E titles.
+    var previewUniverseTotal = +(document.getElementById('preview-total').textContent.replace(/[^0-9]/g,'')) || 100;
+    var totalPagesForCache = Math.max(1, Math.min(500, Math.ceil(previewUniverseTotal / 20)));
+    var numCachePages = Math.min(10, totalPagesForCache);
+    var pagesToFetch = [];
+    for (var pci = 0; pci < numCachePages; pci++) {
+      var pcpg = numCachePages === 1 ? 1 : 1 + Math.round(pci * (totalPagesForCache - 1) / (numCachePages - 1));
+      if (!pagesToFetch.includes(pcpg)) pagesToFetch.push(pcpg);
+    }
+    const excP2 = excluded ? '&without_genres=' + excluded : '';
+    const cntP2 = country ? '&with_origin_country=' + country : '';
+    const dateP2 = '&primary_release_date.gte=' + decFrom + '-01-01&primary_release_date.lte=' + (+decTo+9) + '-12-31';
+    await Promise.all(pagesToFetch.map(async function(pg) {
+      try {
+        const rg = await fetch(BASE + '/discover/movie?with_genres=' + genreId + '&vote_count.gte=' + votes + '&sort_by=original_title.asc' + dateP2 + excP2 + cntP2 + '&page=' + pg, {headers:HEADERS});
+        const dg = await rg.json();
+        (dg.results||[]).forEach(function(m) {
+          var b = Math.min(Math.floor(m.vote_average),9); if(b>=1) buckets[b-1]++;
+          if(m.vote_average > 0) { ratingSum += m.vote_average; ratingCount++; }
+          if(m.vote_count<500) vBuckets[0]++;
+          else if(m.vote_count<2000) vBuckets[1]++;
+          else if(m.vote_count<5000) vBuckets[2]++;
+          else if(m.vote_count<15000) vBuckets[3]++;
+          else vBuckets[4]++;
+          m.genre_ids.filter(function(id){return id!=+genreId;}).forEach(function(id){
+            var n=GENRE_MAP[id]||String(id); genreCount[n]=(genreCount[n]||0)+1;
+          });
+        });
+      } catch(e2) {}
+    }));
+
+    // Avg rating card
+    var avgRatingEl = document.getElementById('preview-avg-rating');
+    if(avgRatingEl) avgRatingEl.textContent = ratingCount > 0 ? (ratingSum/ratingCount).toFixed(1) : '—';
+
+    // Rating chart — horizontal bars, scaled to universe
+    var totalProcessed = vBuckets.reduce(function(s,v){return s+v;}, 0);
+    var ratingScalePrev = totalProcessed > 0 ? previewUniverseTotal / totalProcessed : 1;
+    var scaledBucketsPrev = buckets.map(function(v){return Math.round(v*ratingScalePrev);});
+    var ctx2 = document.getElementById('preview-rating-chart');
+    if(ctx2){if(appState.previewRatingChart)appState.previewRatingChart.destroy();
+      appState.previewRatingChart=new Chart(ctx2,{type:'bar',data:{labels:['9-10','8-9','7-8','6-7','5-6','4-5','3-4','2-3','1-2'],datasets:[{data:scaledBucketsPrev.slice().reverse(),backgroundColor:'rgba(29,158,117,0.5)',borderColor:'#1D9E75',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(previewUniverseTotal,'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#9A9690',font:{size:9}}}}}});}
+
+    // Votes chart
+    var scaledVBuckets = vBuckets.map(function(v){return Math.round(v*ratingScalePrev);});
+    var ctx2v = document.getElementById('preview-votes-chart');
+    if(ctx2v){if(appState.previewVotesChart)appState.previewVotesChart.destroy();
+      appState.previewVotesChart=new Chart(ctx2v,{type:'bar',data:{labels:['>15k','5k-15k','2k-5k','500-2k','<500'],datasets:[{data:scaledVBuckets.slice().reverse(),backgroundColor:'rgba(239,159,39,0.5)',borderColor:'#EF9F27',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(previewUniverseTotal,'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#9A9690',font:{size:9},autoSkip:false}}}}});}
+
+    // Genres chart scaled to universe
+    var previewTotal = previewUniverseTotal;
+    var scaleFactor = totalProcessed > 0 ? previewTotal / totalProcessed : 1;
+    var allGenreEntries = Object.entries(genreCount).sort(function(a,b){return b[1]-a[1];});
+    var totalGenreSum = allGenreEntries.reduce(function(s,x){return s+x[1];},0);
+    var top10g = allGenreEntries.slice(0,10).map(function(x){return [x[0],Math.round(x[1]*scaleFactor)];});
+    var top10gSum = allGenreEntries.slice(0,10).reduce(function(s,x){return s+x[1];},0);
+    var ctx3 = document.getElementById('preview-genres-chart');
+    if(ctx3&&top10g.length){if(appState.previewGenresChart)appState.previewGenresChart.destroy();
+      appState.previewGenresChart=new Chart(ctx3,{type:'bar',data:{labels:top10g.map(function(x){return x[0];}),datasets:[{data:top10g.map(function(x){return x[1];}),backgroundColor:'rgba(159,119,221,0.5)',borderColor:'#9F77DD',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(Math.round(totalGenreSum*scaleFactor),'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#9A9690',font:{size:9}}}}}});}
+    var gnote = document.getElementById('preview-genres-note');
+    if(gnote && allGenreEntries.length) {
+      var shown = top10g.length; var totalG = allGenreEntries.length;
+      var pctG = totalGenreSum > 0 ? Math.round(top10gSum / totalGenreSum * 100) : 0;
+      gnote.textContent = 'Se muestran los ' + shown + ' géneros con más participación de los ' + totalG + ' totales, representando un ' + pctG + '% de las apariciones de géneros secundarios.';
+    }
+    appState.previewCache.universeTotal = previewUniverseTotal;
+    appState.previewCache.avgRating = ratingCount > 0 ? (ratingSum/ratingCount).toFixed(1) : '—';
+    appState.previewCache.ratingBuckets = scaledBucketsPrev.slice();
+    appState.previewCache.voteBuckets = scaledVBuckets.slice();
+    appState.previewCache.genreTop10 = top10g.slice();
+    appState.previewCache.genreTotalScaled = Math.round(totalGenreSum * scaleFactor);
+    appState.previewCache.genreNoteText = gnote ? gnote.textContent : '';
+  } catch(e) {}
+
+  // Revenue per decade
+  try {
+    var revData = await Promise.all(decades.map(async function(dec) {
+      try {
+        var excRev = excluded ? '&without_genres=' + excluded : '';
+        var cntRev = country ? '&with_origin_country=' + country : '';
+        var rp1 = fetch(BASE + '/discover/movie?with_genres=' + genreId + '&sort_by=revenue.desc&vote_count.gte=' + votes + '&primary_release_date.gte=' + dec + '-01-01&primary_release_date.lte=' + (dec+9) + '-12-31' + excRev + cntRev + '&page=1', {headers:HEADERS});
+        var rp2 = fetch(BASE + '/discover/movie?with_genres=' + genreId + '&sort_by=revenue.desc&vote_count.gte=' + votes + '&primary_release_date.gte=' + dec + '-01-01&primary_release_date.lte=' + (dec+9) + '-12-31' + excRev + cntRev + '&page=2', {headers:HEADERS});
+        var res = await Promise.all([rp1, rp2]);
+        var jsons = await Promise.all(res.map(function(r){return r.json();}));
+        var ids = [].concat((jsons[0].results||[]).map(function(m){return m.id;}),(jsons[1].results||[]).map(function(m){return m.id;})).slice(0,40);
+        if(!ids.length) return null;
+        var revenues = [];
+        await Promise.all(ids.map(async function(id) {
+          try { var dr=await fetch(BASE+'/movie/'+id,{headers:HEADERS}); var dm=await dr.json(); if(dm.revenue>0)revenues.push(dm.revenue); } catch(e2){}
+        }));
+        revenues.sort(function(a,b){return b-a;});
+        return revenues.length ? {
+          avg: Math.round(revenues.reduce(function(s,v){return s+v;},0)/revenues.length/1e6),
+          minRev: revenues[revenues.length-1] || 0
+        } : { avg: null, minRev: 0 };
+      } catch { return { avg: null, minRev: 0 }; }
+    }));
+    var revAvgs = revData.map(function(x){return x ? x.avg : null;});
+    var revMins = revData.map(function(x){return x ? x.minRev : 0;});
+    var ctx4 = document.getElementById('preview-revenue-chart');
+    if(ctx4){if(appState.previewRevenueChart)appState.previewRevenueChart.destroy();
+      var revTotal=revAvgs.reduce(function(s,v){return v!==null?s+v:s;},0);
+      appState.previewRevenueChart=new Chart(ctx4,{type:'bar',data:{labels:decades.map(function(d){return d+'s';}),datasets:[{data:revAvgs,backgroundColor:'rgba(239,159,39,0.5)',borderColor:'#EF9F27',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){if(c.parsed.y===null)return 'sin datos';var pct=revTotal>0?(c.parsed.y/revTotal*100).toFixed(1):'0';return '$'+c.parsed.y+'M ('+pct+'%)';}}}},scales:{x:{grid:{display:false},ticks:{color:'#5A5754',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:9},callback:function(v){return '$'+v+'M';}}}}}});}
+    if(appState.previewCache) { appState.previewCache.decadesRevenue = revAvgs; appState.previewCache.decadesRevMin = revMins; }
+  } catch(e) {}
+
+  // Countries
+  try {
+    var universeTotal2 = +(document.getElementById('preview-total').textContent.replace(/[^0-9]/g,'')) || 200;
+    var ctx5 = document.getElementById('preview-countries-chart');
+    var cnote = document.getElementById('preview-countries-note');
+    if (selectedCountry) {
+      if(ctx5){if(appState.previewCountriesChart)appState.previewCountriesChart.destroy();
+        appState.previewCountriesChart=new Chart(ctx5,{type:'bar',data:{labels:[getCountryName(selectedCountry)],datasets:[{data:[universeTotal2],backgroundColor:'rgba(216,90,48,0.5)',borderColor:'#D85A30',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(universeTotal2,'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#9A9690',font:{size:9}}}}}});}
+      if(cnote) cnote.textContent = 'El universo está filtrado por un único país de producción.';
+      if(appState.previewCache) { appState.previewCache.countryTop10 = [[getCountryName(selectedCountry), universeTotal2]]; appState.previewCache.countryNoteText = 'El universo está filtrado por un único país de producción.'; appState.previewCache.countryTotalScaled = universeTotal2; }
+    } else {
+      var excPrev = excluded ? '&without_genres=' + excluded : '';
+      var datePrev = '&primary_release_date.gte=' + decFrom + '-01-01&primary_release_date.lte=' + (+decTo+9) + '-12-31';
+      var previewPages = await Promise.all([1,2,3,4,5].map(function(pg){
+        return fetch(BASE + '/discover/movie?with_genres=' + genreId + '&vote_count.gte=' + votes + '&sort_by=original_title.asc' + datePrev + excPrev + '&page=' + pg, {headers:HEADERS}).then(function(r){return r.json();});
+      }));
+      var previewIds = [].concat.apply([], previewPages.map(function(d){return (d.results||[]).map(function(m){return m.id;});}));
+      var previewSampleSize = previewIds.length;
+      var countryCounts = {};
+      await Promise.all(previewIds.map(async function(id) {
+        try {
+          var rd = await fetch(BASE + '/movie/' + id, {headers:HEADERS});
+          var md = await rd.json();
+          var oc = (md.origin_country||[])[0]; if(oc) { var cn=getCountryName(oc); countryCounts[cn]=(countryCounts[cn]||0)+1; }
+        } catch(e2){}
+      }));
+      var sfC = previewSampleSize > 0 ? universeTotal2 / previewSampleSize : 1;
+      var allCEntries = Object.entries(countryCounts).sort(function(a,b){return b[1]-a[1];});
+      var totalCSum = allCEntries.reduce(function(s,x){return s+x[1];},0);
+      var top10c = allCEntries.slice(0,10).map(function(x){return [x[0],Math.round(x[1]*sfC)];});
+      var top10cSum = allCEntries.slice(0,10).reduce(function(s,x){return s+x[1];},0);
+      if(ctx5&&top10c.length){if(appState.previewCountriesChart)appState.previewCountriesChart.destroy();
+        appState.previewCountriesChart=new Chart(ctx5,{type:'bar',data:{labels:top10c.map(function(x){return x[0];}),datasets:[{data:top10c.map(function(x){return x[1];}),backgroundColor:'rgba(216,90,48,0.5)',borderColor:'#D85A30',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(universeTotal2,'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#9A9690',font:{size:9}}}}}});}
+      if(cnote && allCEntries.length) {
+        var shownC = top10c.length; var totalC = allCEntries.length;
+        var top10cScaled = top10c.reduce(function(s,x){return s+x[1];},0);
+        var pctC = universeTotal2 > 0 ? Math.round(top10cScaled / universeTotal2 * 100) : 0;
+        cnote.textContent = 'Se muestran los ' + shownC + ' países con más participación de los ' + totalC + ' totales (estimado), representando un ' + pctC + '% del total de películas.';
+        if(appState.previewCache) { appState.previewCache.countryTop10 = top10c; appState.previewCache.countryNoteText = cnote.textContent; appState.previewCache.countryTotalScaled = universeTotal2; }
+      }
+    }
+  } catch(e) {}
+}
+
+async function createField() {
+  const name = document.getElementById('nf-name').value.trim();
+  if (!name) { alert('Ingresá un nombre para el campo'); return; }
+  const genreId = document.getElementById('nf-genre').value;
+  const votes = +document.getElementById('nf-votes').value || 200;
+  const decFrom = +document.getElementById('nf-dec-from').value;
+  const decTo = +document.getElementById('nf-dec-to').value;
+  const excluded = [...document.querySelectorAll('#nf-exclude-tags .tag.active')].map(t => +t.dataset.genreId);
+  const countries = selectedCountry ? [selectedCountry] : [];
+  const allowOutside = document.getElementById('nf-outside-toggle').classList.contains('on');
+
+  const btn = document.querySelector('#screen-new-field .btn-primary');
+  btn.textContent = 'Creando...';
+
+  let universeTotal = 0;
+  try {
+    const countryParamCreate = countries.length ? '&with_origin_country=' + countries[0] : '';
+    const r = await fetch(`${BASE}/discover/movie?with_genres=${genreId}&vote_count.gte=${votes}&primary_release_date.gte=${decFrom}-01-01&primary_release_date.lte=${decTo+9}-12-31${countryParamCreate}&page=1`, {headers:HEADERS});
+    const d = await r.json();
+    universeTotal = d.total_results;
+  } catch(e) {}
+
+  const field = {
+    id: 'f_' + Date.now(),
+    name, genreId: +genreId, votes, decFrom, decTo,
+    excludedGenres: excluded, countries, allowOutside,
+    universeTotal,
+    cache: appState.previewCache || null,
+    sample: [],
+    differentials: [],
+    createdAt: new Date().toISOString(),
+  };
+
+  appState.fields.push(field);
+  saveState();
+  btn.textContent = 'Crear';
+  openField(field.id);
+}
+
+// ── TAB: DESCRIPCIÓN ──
+function renderDesc(f) {
+  document.getElementById('desc-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">GÉNERO</div><div class="stat-value" style="font-size:16px;margin-top:4px;">${GENRE_MAP[f.genreId]||f.genreId}</div></div>
+    <div class="stat-card"><div class="stat-label">TOTAL PELÍCULAS</div><div class="stat-value">${f.universeTotal ? f.universeTotal.toLocaleString('es-AR') : '—'}</div></div>
+    <div class="stat-card"><div class="stat-label">RATING PROMEDIO</div><div class="stat-value" id="desc-avg-rating">—</div></div>
+    <div class="stat-card"><div class="stat-label">VOTOS MÍNIMOS</div><div class="stat-value">${f.votes}</div></div>
+    <div class="stat-card"><div class="stat-label">DÉCADAS</div><div class="stat-value" style="font-size:16px;margin-top:4px;">${f.decFrom}s–${f.decTo}s</div></div>
+    <div class="stat-card"><div class="stat-label">PAÍSES</div><div class="stat-value" style="font-size:16px;margin-top:4px;">${f.countries && f.countries.length ? getCountryName(f.countries[0]) : 'Todos'}</div></div>`;
+
+  const excNames = f.excludedGenres.map(id => GENRE_MAP[id]||id).join(', ');
+  document.getElementById('desc-excluded').innerHTML = f.excludedGenres.map(id =>
+    `<span class="tag active">${GENRE_MAP[id]||id}</span>`).join('') || '<span style="font-size:12px;color:var(--text3);">Ninguno</span>';
+
+  buildDescCharts(f);
+}
+
+function buildDescCharts(f) {
+  const cache = f.cache;
+
+  const makeChart = (canvasId, labels, data, color, isHoriz, total) => {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    if (appState.descCharts[canvasId]) appState.descCharts[canvasId].destroy();
+    const indexAxis = isHoriz ? 'y' : 'x';
+    const tooltipAxis = isHoriz ? 'x' : 'y';
+    appState.descCharts[canvasId] = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [{ data, backgroundColor: color+'80', borderColor: color, borderWidth: 1 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, indexAxis,
+        plugins: { legend: { display: false }, tooltip: total > 0 ? pctTooltip(total, tooltipAxis) : {} },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } },
+          y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false, maxTicksLimit: 20 } }
+        }
+      }
+    });
+  };
+
+  if (!cache) return;
+
+  const avgEl = document.getElementById('desc-avg-rating');
+  if (avgEl) avgEl.textContent = cache.avgRating || '—';
+
+  const decades = cache.decades || [];
+  const counts = cache.decadesCounts || decades.map(() => 0);
+  const descDecTotal = counts.reduce((s, v) => s + v, 0) || 1;
+  makeChart('desc-chart-decades', decades.map(d => d + 's'), counts, '#378ADD', false, descDecTotal);
+
+  if (cache.decadesRevenue) {
+    const revData = cache.decadesRevenue;
+    const ctx2 = document.getElementById('desc-chart-revenue');
+    if (ctx2) {
+      const revTotalDesc = revData.reduce((s, v) => v !== null ? s + v : s, 0);
+      if (appState.descCharts['desc-chart-revenue']) appState.descCharts['desc-chart-revenue'].destroy();
+      appState.descCharts['desc-chart-revenue'] = new Chart(ctx2, {
+        type: 'bar',
+        data: { labels: decades.map(d => d + 's'), datasets: [{ data: revData, backgroundColor: '#EF9F2780', borderColor: '#EF9F27', borderWidth: 1 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { if (c.parsed.y === null) return 'sin datos'; var pct = revTotalDesc > 0 ? (c.parsed.y / revTotalDesc * 100).toFixed(1) : '0'; return '$' + c.parsed.y + 'M (' + pct + '%)'; } } } }, scales: { x: { grid: { display: false }, ticks: { color: '#5A5754', font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: function(v) { return '$' + v + 'M'; } } } } }
+      });
+    }
+  }
+
+  if (cache.ratingBuckets) {
+    const ratingCtx = document.getElementById('desc-chart-rating');
+    if (ratingCtx) {
+      if (appState.descCharts['desc-chart-rating']) appState.descCharts['desc-chart-rating'].destroy();
+      appState.descCharts['desc-chart-rating'] = new Chart(ratingCtx, {
+        type: 'bar',
+        data: { labels: ['9-10', '8-9', '7-8', '6-7', '5-6', '4-5', '3-4', '2-3', '1-2'], datasets: [{ data: [...cache.ratingBuckets].reverse(), backgroundColor: '#1D9E7580', borderColor: '#1D9E75', borderWidth: 1 }] },
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(cache.universeTotal || 1, 'x') }, scales: { y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }, x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } } } }
+      });
+    }
+  }
+
+  if (cache.genreTop10 && cache.genreTop10.length) {
+    makeChart('desc-chart-genres', cache.genreTop10.map(x => x[0]), cache.genreTop10.map(x => x[1]), '#9F77DD', true, cache.genreTotalScaled);
+    const dgNote = document.getElementById('desc-genres-note');
+    if (dgNote) dgNote.textContent = cache.genreNoteText || '';
+  }
+
+  if (cache.countryTop10 && cache.countryTop10.length) {
+    makeChart('desc-chart-countries', cache.countryTop10.map(x => x[0]), cache.countryTop10.map(x => x[1]), '#D85A30', true, cache.countryTotalScaled);
+    const dcNote = document.getElementById('desc-countries-note');
+    if (dcNote) dcNote.textContent = cache.countryNoteText || '';
+  }
+
+  if (cache.voteBuckets) {
+    const votesCtx = document.getElementById('desc-chart-votes');
+    if (votesCtx) {
+      if (appState.descCharts['desc-chart-votes']) appState.descCharts['desc-chart-votes'].destroy();
+      appState.descCharts['desc-chart-votes'] = new Chart(votesCtx, {
+        type: 'bar',
+        data: { labels: ['>15k', '5k-15k', '2k-5k', '500-2k', '<500'], datasets: [{ data: [...cache.voteBuckets].reverse(), backgroundColor: '#EF9F2780', borderColor: '#EF9F27', borderWidth: 1 }] },
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(cache.universeTotal || 1, 'x') }, scales: { x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } }, y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } } } }
+      });
+    }
+  }
+}
+
+// ── TAB: MUESTRA ──
+async function renderSample(f) {
+  f.minSuggested = calculateMinSample(f);
+  if (!f.sampleSize) f.sampleSize = f.minSuggested;
+  if (!f.sample || !f.sample.length) {
+    await generateSample(f);
+  }
+  renderSampleStats(f);
+  updateSampleGenreCombo(f);
+  renderSampleTable(f);
+  renderDistribution(f);
+}
+
+async function generateSample(f) {
+  const countryParam  = f.countries && f.countries.length ? '&with_origin_country=' + f.countries[0] : '';
+  const excludedParam = f.excludedGenres && f.excludedGenres.length ? '&without_genres=' + f.excludedGenres.join(',') : '';
+
+  // Decade list from cache (only decades with at least 1 film)
+  const cacheDecades = (f.cache && f.cache.decades) || [];
+  const cacheCounts  = (f.cache && f.cache.decadesCounts) || [];
+  let activeDecades = cacheDecades
+    .map((dec, i) => ({ dec, count: cacheCounts[i] || 0 }))
+    .filter(x => x.count > 0);
+  if (!activeDecades.length) activeDecades = [{ dec: f.decFrom, count: 1 }];
+
+  const totalCount = activeDecades.reduce((s, x) => s + x.count, 0) || 1;
+
+  // Protected movies already in f.sample (manually added or rated, pre-set by confirmRegen)
+  const protected_ = f.sample || [];
+  const seen = new Set(protected_.map(m => m.id));
+  const toFetch = Math.max(0, f.sampleSize - protected_.length);
+
+  // Proportional allocation across decades for new movies to fetch
+  const allocs = activeDecades.map(x => Math.round(x.count / totalCount * toFetch));
+  const allocSum = allocs.reduce((s, v) => s + v, 0);
+  if (allocSum !== toFetch && allocs.length > 0) {
+    const maxIdx = allocs.indexOf(Math.max(...allocs));
+    allocs[maxIdx] += toFetch - allocSum;
+  }
+
+  // Fetch n movies from a decade by spreading pages evenly across the full vote range.
+  // sort_by=original_title.asc: alphabetical order is uncorrelated with votes/rating/country,
+  // so equidistant page sampling is effectively random — avoids vote/rating high-end bias.
+  async function fetchDecade(dec, n, decCacheCount) {
+    const results = [];
+    const totalPages = Math.max(1, Math.ceil((decCacheCount || n * 5) / 20));
+    const url = `${BASE}/discover/movie?with_genres=${f.genreId}&vote_count.gte=${f.votes}`
+      + `&primary_release_date.gte=${dec}-01-01&primary_release_date.lte=${dec+9}-12-31`
+      + `${excludedParam}${countryParam}&sort_by=original_title.asc`;
+    const numPages = Math.min(Math.ceil(n / 2), totalPages, 20);
+    const moviesPerPage = Math.ceil(n / numPages);
+    for (let i = 0; i < numPages; i++) {
+      const page = numPages === 1 ? 1 : 1 + Math.round(i * (totalPages - 1) / (numPages - 1));
+      try {
+        const r = await fetch(url + `&page=${page}`, { headers: HEADERS });
+        const d = await r.json();
+        if (!d.results || !d.results.length) continue;
+        let fromPage = 0;
+        for (const m of d.results) {
+          if (!seen.has(m.id) && results.length < n && fromPage < moviesPerPage) {
+            seen.add(m.id);
+            results.push({ id: m.id, title: m.title, year: +(m.release_date||'0000').slice(0,4), votes: m.vote_count, rating: +m.vote_average.toFixed(1), country: '', genreIds: m.genre_ids, ratings: {}, manual: false });
+            fromPage++;
+          }
+        }
+      } catch(e) {}
+    }
+    return results;
+  }
+
+  const newMovies = [];
+  for (let i = 0; i < activeDecades.length; i++) {
+    const { dec, count } = activeDecades[i];
+    const alloc = allocs[i];
+    if (alloc <= 0) continue;
+    newMovies.push(...await fetchDecade(dec, alloc, count));
+  }
+
+  // Enrich new movies with country and revenue (single batch, runs in parallel)
+  const required = f.countries && f.countries.length ? f.countries[0] : null;
+  await Promise.all(newMovies.map(async m => {
+    try {
+      const r = await fetch(`${BASE}/movie/${m.id}`, { headers: HEADERS });
+      const d = await r.json();
+      const originCountries = d.origin_country || [];
+      // When a country filter is active and the movie is a co-production (e.g. ["AT","US"]),
+      // display the filter country rather than the first element, so the table is consistent.
+      m.country = (required && originCountries.includes(required)) ? required : (originCountries[0] || '');
+      m.revenue = d.revenue || 0;
+      m._originCountries = originCountries;
+    } catch(e) { m.revenue = 0; m._originCountries = []; }
+  }));
+
+  // Remove co-productions that don't include the required country.
+  // Movies with empty origin_country (TMDB data gap) are kept with benefit of the doubt.
+  let filtered = newMovies;
+  if (required) {
+    filtered = newMovies.filter(m => m._originCountries.length === 0 || m._originCountries.includes(required));
+  }
+  filtered.forEach(m => delete m._originCountries);
+
+  f.sample = [...protected_, ...filtered];
+  saveState();
+  markSampleDirty(false);
+}
+
+function minSampleForTarget(univCounts, target) {
+  const total = univCounts.reduce((s, v) => s + v, 0);
+  if (!total) return 1;
+  const props = univCounts.map(v => v / total);
+  for (let N = 5; N <= 2000; N++) {
+    const sampleCounts = props.map(p => Math.round(p * N));
+    const sampleTotal = sampleCounts.reduce((s, v) => s + v, 0) || 1;
+    const overlap = props.reduce((s, p, i) => s + Math.min(p, sampleCounts[i] / sampleTotal), 0);
+    if (overlap >= target) return N;
+  }
+  return 2000;
+}
+
+function calculateMinSample(f) {
+  if (!f.cache) return 30;
+  const target = 0.95;
+  const candidates = [];
+  if (f.cache.decadesCounts && f.cache.decadesCounts.length)
+    candidates.push(minSampleForTarget(f.cache.decadesCounts, target));
+  if (f.cache.ratingBuckets && f.cache.ratingBuckets.length)
+    candidates.push(minSampleForTarget(f.cache.ratingBuckets, target));
+  if (f.cache.voteBuckets && f.cache.voteBuckets.length)
+    candidates.push(minSampleForTarget(f.cache.voteBuckets, target));
+  if (f.cache.genreTop10 && f.cache.genreTop10.length)
+    candidates.push(minSampleForTarget(f.cache.genreTop10.map(x => x[1]), target));
+  if ((!f.countries || !f.countries.length) && f.cache.countryTop10 && f.cache.countryTop10.length)
+    candidates.push(minSampleForTarget(f.cache.countryTop10.map(x => x[1]), target));
+  // Each active decade needs at least 10 movies so fetchDecade uses ≥5 spread pages.
+  const activeDecades = (f.cache.decadesCounts || []).filter(c => c > 0).length || 1;
+  const decadeFloor = activeDecades * 10;
+  const raw = candidates.length ? Math.max(...candidates) : 30;
+  return Math.min(Math.max(raw, decadeFloor), Math.round((f.universeTotal || raw) * 0.8));
+}
+
+function renderSampleStats(f) {
+  const total = f.sample ? f.sample.length : 0;
+  const unrated = f.sample ? f.sample.filter(m => !m.ratings || Object.keys(m.ratings).length < (f.differentials||[]).length).length : total;
+  document.getElementById('sample-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">MÍNIMO SUGERIDO</div><div class="stat-value">${f.minSuggested||'—'}</div><div style="font-size:10px;color:var(--text3);margin-top:3px;">Para 95% de representatividad</div></div>
+    <div class="stat-card"><div class="stat-label">TAMAÑO ELEGIDO</div><div class="stat-value">${total}</div></div>
+    <div class="stat-card"><div class="stat-label">SIN CALIFICAR</div><div class="stat-value">${unrated}</div></div>`;
+  document.getElementById('sample-size-slider').value = f.sampleSize || total;
+  document.getElementById('sample-size-input').value = f.sampleSize || total;
+  document.getElementById('sample-min-label').textContent = `mín. ${f.minSuggested||'—'}`;
+}
+
+function updateSampleSize(val) {
+  val = +val;
+  document.getElementById('sample-size-slider').value = val;
+  document.getElementById('sample-size-input').value = val;
+  const f = currentField();
+  if (f) { f.sampleSize = val; saveState(); markSampleDirty(true); }
+}
+
+function filterSampleTable() {
+  appState.sampleFilter = document.getElementById('sample-search').value.toLowerCase();
+  appState.samplePage = 1;
+  renderSampleTable(currentField());
+}
+
+function filterSampleGenre() {
+  appState.sampleGenreFilter = document.getElementById('sample-genre-filter').value;
+  appState.samplePage = 1;
+  renderSampleTable(currentField());
+}
+
+function updateSampleGenreCombo(f) {
+  const sel = document.getElementById('sample-genre-filter');
+  if (!sel || !f) return;
+  const genreIds = new Set();
+  (f.sample || []).forEach(m => (m.genreIds || []).filter(id => id !== f.genreId).forEach(id => genreIds.add(id)));
+  const current = appState.sampleGenreFilter;
+  sel.innerHTML = '<option value="">Todos los géneros</option>' +
+    [...genreIds]
+      .map(id => GENRE_MAP[id] || String(id))
+      .sort()
+      .map(name => `<option value="${name}" ${name === current ? 'selected' : ''}>${name}</option>`)
+      .join('');
+}
+
+function sortSampleTable(col) {
+  if (appState.sampleSort.col === col) {
+    appState.sampleSort.dir = appState.sampleSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    appState.sampleSort = { col, dir: 'asc' };
+  }
+  renderSampleTable(currentField());
+}
+
+function buildTop40Ids(f) {
+  const cacheDecades = (f.cache && f.cache.decades) || [];
+  const decadesRevMin = (f.cache && f.cache.decadesRevMin) || [];
+  if (decadesRevMin.some(v => v > 0)) {
+    // Use universe threshold: film is top 40 if its revenue >= 40th film's revenue in its decade
+    return new Set(
+      (f.sample || []).filter(m => {
+        if (!m.revenue) return false;
+        const idx = cacheDecades.indexOf(Math.floor(m.year / 10) * 10);
+        const minRev = idx !== -1 ? decadesRevMin[idx] : 0;
+        return minRev > 0 && m.revenue >= minRev;
+      }).map(m => m.id)
+    );
+  }
+  // Fallback when cache has no threshold (old fields): top 40 within sample per decade
+  const byDecade = {};
+  (f.sample || []).forEach(m => {
+    const dec = Math.floor(m.year / 10) * 10;
+    (byDecade[dec] = byDecade[dec] || []).push(m);
+  });
+  const ids = new Set();
+  Object.values(byDecade).forEach(group =>
+    group.filter(m => m.revenue > 0)
+      .sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
+      .slice(0, 40)
+      .forEach(m => ids.add(m.id))
+  );
+  return ids;
+}
+
+function fmtRevenue(r) {
+  if (!r) return '—';
+  if (r >= 1e9) return '$' + (r / 1e9).toFixed(1) + 'B';
+  return '$' + Math.round(r / 1e6) + 'M';
+}
+
+function exportSampleToExcel() {
+  const f = currentField();
+  if (!f || !f.sample || !f.sample.length) return;
+
+  const top40Ids = buildTop40Ids(f);
+
+  const rows = f.sample.map(m => ({
+    'Película':                  m.title,
+    'Año':                       m.year,
+    'País':                      m.country ? getCountryName(m.country) : '',
+    'Géneros secundarios':       (m.genreIds || []).filter(id => id !== f.genreId).map(id => GENRE_MAP[id] || String(id)).join(', '),
+    'Votos':                     m.votes,
+    'Rating':                    m.rating,
+    'Taquilla (USD)':            m.revenue || 0,
+    'Top 40 taquilla (década)':  top40Ids.has(m.id) ? 'Sí' : 'No',
+    'Agregada manualmente':      m.manual ? 'Sí' : 'No',
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+
+  // Anchos de columna aproximados
+  ws['!cols'] = [
+    { wch: 40 }, { wch: 6 }, { wch: 20 }, { wch: 40 },
+    { wch: 10 }, { wch: 8 }, { wch: 16 }, { wch: 24 }, { wch: 20 },
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Muestra');
+  XLSX.writeFile(wb, `muestra_${f.name.replace(/[^a-zA-Z0-9_\-]/g, '_')}.xlsx`);
+}
+
+function renderSampleTable(f) {
+  if (!f || !f.sample) return;
+  const PAGE_SIZE = 20;
+  let rows = f.sample.filter(m => {
+    if (appState.sampleFilter && !m.title.toLowerCase().includes(appState.sampleFilter)) return false;
+    if (appState.sampleGenreFilter) {
+      const names = (m.genreIds || []).filter(id => id !== f.genreId).map(id => GENRE_MAP[id] || String(id));
+      if (!names.includes(appState.sampleGenreFilter)) return false;
+    }
+    return true;
+  });
+  const { col, dir } = appState.sampleSort;
+  rows.sort((a, b) => {
+    let va = a[col] ?? '', vb = b[col] ?? '';
+    if (col === 'title') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+    if (col === 'revenue') { va = va || 0; vb = vb || 0; }
+    return dir === 'asc' ? (va > vb ? 1 : va < vb ? -1 : 0) : (va < vb ? 1 : va > vb ? -1 : 0);
+  });
+
+  const top40Ids = buildTop40Ids(f);
+
+  const total = rows.length;
+  const pages = Math.ceil(total / PAGE_SIZE);
+  const page = Math.min(appState.samplePage, pages);
+  const slice = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  document.getElementById('sample-tbody').innerHTML = slice.map(m => {
+    const countryDisplay = m.country ? getCountryName(m.country) : '—';
+    const revDisplay = top40Ids.has(m.id)
+      ? `${fmtRevenue(m.revenue)} <span style="color:var(--amber);" title="Top 40 taquilla por década">★</span>`
+      : fmtRevenue(m.revenue);
+    const secGenreNames = (m.genreIds || [])
+      .filter(id => id !== f.genreId)
+      .map(id => GENRE_MAP[id] || String(id));
+    const secGenreShort = secGenreNames.slice(0, 3).join(', ') + (secGenreNames.length > 3 ? ` +${secGenreNames.length - 3}` : '');
+    const secGenreAll = secGenreNames.join(', ') || '—';
+    const genreCell = secGenreNames.length > 0
+      ? `<span title="${secGenreAll}" style="cursor:default;">${secGenreShort || '—'}</span>`
+      : '—';
+    return `<tr>
+      <td class="td-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.title}</td>
+      <td class="td-mono">${m.year}</td>
+      <td class="td-mono" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${countryDisplay}</td>
+      <td class="td-mono" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${genreCell}</td>
+      <td class="td-mono">${m.votes.toLocaleString('es-AR')}</td>
+      <td class="td-mono">${m.rating}</td>
+      <td class="td-mono">${revDisplay}</td>
+      <td class="td-action" onclick="removeFromSample(${m.id})">✕</td>
+    </tr>`;
+  }).join('');
+
+  const pagerEl = document.getElementById('sample-pager');
+  if (pages <= 1) { pagerEl.innerHTML=''; return; }
+  let btns = `<span class="pager-btn" onclick="goSamplePage(${page-1})">←</span>`;
+  for (let p = Math.max(1,page-2); p <= Math.min(pages,page+2); p++) {
+    btns += `<span class="pager-btn ${p===page?'active':''}" onclick="goSamplePage(${p})">${p}</span>`;
+  }
+  btns += `<span class="pager-btn" onclick="goSamplePage(${page+1})">→</span>`;
+  btns += `<span class="pager-info">${total} películas · página ${page} de ${pages}</span>`;
+  pagerEl.innerHTML = btns;
+}
+
+function goSamplePage(p) {
+  const f = currentField();
+  if (!f) return;
+  const PAGE_SIZE = 20;
+  const total = f.sample.filter(m => {
+    if (appState.sampleFilter && !m.title.toLowerCase().includes(appState.sampleFilter)) return false;
+    if (appState.sampleGenreFilter) {
+      const names = (m.genreIds || []).filter(id => id !== f.genreId).map(id => GENRE_MAP[id] || String(id));
+      if (!names.includes(appState.sampleGenreFilter)) return false;
+    }
+    return true;
+  }).length;
+  const pages = Math.ceil(total / PAGE_SIZE);
+  appState.samplePage = Math.max(1, Math.min(p, pages));
+  renderSampleTable(f);
+}
+
+function removeFromSample(filmId) {
+  const f = currentField();
+  if (!f) return;
+  f.sample = f.sample.filter(m => m.id !== filmId);
+  saveState();
+  renderSampleTable(f);
+  renderSampleStats(f);
+}
+
+async function renderDistribution(f) {
+  if (!f || !f.sample || !f.sample.length) return;
+
+  const sample = f.sample;
+  const sampleTotal = sample.length;
+
+  const makeChart = (canvasId, labels, data, color, isHoriz, total) => {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    if (appState.distCharts[canvasId]) appState.distCharts[canvasId].destroy();
+    const indexAxis = isHoriz ? 'y' : 'x';
+    const tooltipAxis = isHoriz ? 'x' : 'y';
+    appState.distCharts[canvasId] = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [{ data, backgroundColor: color + '80', borderColor: color, borderWidth: 1 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, indexAxis,
+        plugins: { legend: { display: false }, tooltip: total > 0 ? pctTooltip(total, tooltipAxis) : {} },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } },
+          y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false, maxTicksLimit: 20 } }
+        }
+      }
+    });
+  };
+
+  const decades = [];
+  for (let d = f.decFrom; d <= f.decTo; d += 10) decades.push(d);
+
+  // 1. Decades: grouped chart universe vs sample
+  const decCounts = decades.map(d => sample.filter(m => Math.floor(m.year / 10) * 10 === d).length);
+  const univCounts = (f.cache && f.cache.decadesCounts) || [];
+  const univTotal = (f.cache && f.cache.universeTotal) || 0;
+  const decPctSample = decCounts.map(v => sampleTotal > 0 ? +(v / sampleTotal * 100).toFixed(1) : 0);
+  const decPctUniv   = univCounts.map(v => univTotal  > 0 ? +(v / univTotal  * 100).toFixed(1) : 0);
+  const decCtx = document.getElementById('sample-chart-decades');
+  if (decCtx) {
+    if (appState.distCharts['sample-chart-decades']) appState.distCharts['sample-chart-decades'].destroy();
+    appState.distCharts['sample-chart-decades'] = new Chart(decCtx, {
+      type: 'bar',
+      data: {
+        labels: decades.map(d => d + 's'),
+        datasets: [
+          { label: 'Universo', data: decPctUniv, backgroundColor: '#378ADD80', borderColor: '#378ADD', borderWidth: 1 },
+          { label: 'Muestra',  data: decPctSample, backgroundColor: '#1D9E7580', borderColor: '#1D9E75', borderWidth: 1 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function(ctx) {
+            const isUniv = ctx.datasetIndex === 0;
+            const count = isUniv ? (univCounts[ctx.dataIndex] || 0) : decCounts[ctx.dataIndex];
+            const total = isUniv ? univTotal : sampleTotal;
+            const pct = total > 0 ? (count / total * 100).toFixed(1) : '0';
+            return (isUniv ? 'Universo' : 'Muestra') + ': ' + count.toLocaleString('es-AR') + ' (' + pct + '%)';
+          }}}
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#5A5754', font: { size: 9 } } },
+          y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 9 }, callback: v => v + '%' } }
+        }
+      }
+    });
+  }
+  const repDecades = l1Overlap(univCounts.length ? univCounts : decades.map(() => 0), decCounts);
+  const repDecEl = document.getElementById('sample-decades-rep');
+  if (repDecEl) repDecEl.textContent = 'Representatividad por décadas: ' + Math.round(repDecades * 100) + '%';
+
+  // 2. Rating distribution (synchronous)
+  const ratingBuckets = Array(9).fill(0);
+  sample.forEach(m => { const b = Math.min(Math.floor(m.rating), 9); if (b >= 1) ratingBuckets[b - 1]++; });
+  const univRatingBuckets = (f.cache && f.cache.ratingBuckets) || Array(9).fill(0);
+  const univRatingTotal = (f.cache && f.cache.universeTotal) || 0;
+  const ratingLabels = ['9-10', '8-9', '7-8', '6-7', '5-6', '4-5', '3-4', '2-3', '1-2'];
+  const univRatingPct   = [...univRatingBuckets].reverse().map(v => univRatingTotal > 0 ? +(v / univRatingTotal * 100).toFixed(1) : 0);
+  const sampleRatingPct = [...ratingBuckets].reverse().map(v => sampleTotal > 0 ? +(v / sampleTotal * 100).toFixed(1) : 0);
+  const univRatingRev   = [...univRatingBuckets].reverse();
+  const sampleRatingRev = [...ratingBuckets].reverse();
+  const ratingCtx = document.getElementById('sample-chart-rating');
+  if (ratingCtx) {
+    if (appState.distCharts['sample-chart-rating']) appState.distCharts['sample-chart-rating'].destroy();
+    appState.distCharts['sample-chart-rating'] = new Chart(ratingCtx, {
+      type: 'bar',
+      data: {
+        labels: ratingLabels,
+        datasets: [
+          { label: 'Universo', data: univRatingPct,   backgroundColor: '#378ADD80', borderColor: '#378ADD', borderWidth: 1 },
+          { label: 'Muestra',  data: sampleRatingPct, backgroundColor: '#1D9E7580', borderColor: '#1D9E75', borderWidth: 1 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function(c) {
+            const count = c.datasetIndex === 0 ? univRatingRev[c.dataIndex] : sampleRatingRev[c.dataIndex];
+            return c.dataset.label + ': ' + count.toLocaleString('es-AR') + ' (' + c.parsed.x.toFixed(1) + '%)';
+          }}}
+        },
+        scales: {
+          y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } },
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: v => v + '%' } }
+        }
+      }
+    });
+  }
+  const repRating = l1Overlap(univRatingBuckets, ratingBuckets);
+  const repRatingEl = document.getElementById('sample-rating-rep');
+  if (repRatingEl) repRatingEl.textContent = 'Representatividad rating: ' + Math.round(repRating * 100) + '%';
+
+  // 3. Secondary genres (synchronous)
+  const genreCount = {};
+  sample.forEach(m => (m.genreIds || []).filter(id => id !== f.genreId).forEach(id => {
+    const name = GENRE_MAP[id] || String(id);
+    genreCount[name] = (genreCount[name] || 0) + 1;
+  }));
+  const totalGenreSum = Object.values(genreCount).reduce((s, v) => s + v, 0);
+
+  const univGenreTop10 = (f.cache && f.cache.genreTop10) || [];
+  const univGenreTotal = (f.cache && f.cache.genreTotalScaled) || 0;
+  const univGenreMap = Object.fromEntries(univGenreTop10);
+
+  // Union of universe top10 + sample top10, sorted by universe count
+  const allUnionGenres = [...new Set([
+    ...univGenreTop10.map(x => x[0]),
+    ...Object.entries(genreCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(x => x[0])
+  ])].sort((a, b) => (univGenreMap[b] || 0) - (univGenreMap[a] || 0));
+  const chartGenres = allUnionGenres.slice(0, 10);
+
+  const univGenreRaw   = chartGenres.map(n => univGenreMap[n] || 0);
+  const sampleGenreRaw = chartGenres.map(n => genreCount[n] || 0);
+  const univGenrePct   = univGenreRaw.map(v => univGenreTotal > 0 ? +(v / univGenreTotal * 100).toFixed(1) : 0);
+  const sampleGenrePct = sampleGenreRaw.map(v => totalGenreSum > 0 ? +(v / totalGenreSum * 100).toFixed(1) : 0);
+
+  const genreCtx = document.getElementById('sample-chart-genres');
+  if (genreCtx && chartGenres.length) {
+    if (appState.distCharts['sample-chart-genres']) appState.distCharts['sample-chart-genres'].destroy();
+    appState.distCharts['sample-chart-genres'] = new Chart(genreCtx, {
+      type: 'bar',
+      data: {
+        labels: chartGenres,
+        datasets: [
+          { label: 'Universo', data: univGenrePct,   backgroundColor: '#378ADD80', borderColor: '#378ADD', borderWidth: 1 },
+          { label: 'Muestra',  data: sampleGenrePct, backgroundColor: '#1D9E7580', borderColor: '#1D9E75', borderWidth: 1 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function(c) {
+            const isUniv = c.datasetIndex === 0;
+            const count = isUniv ? univGenreRaw[c.dataIndex] : sampleGenreRaw[c.dataIndex];
+            return c.dataset.label + ': ' + count.toLocaleString('es-AR') + ' (' + c.parsed.x.toFixed(1) + '%)';
+          }}}
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: v => v + '%' } },
+          y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }
+        }
+      }
+    });
+  }
+
+  // L1 overlap over full union
+  const allUnionNames = [...new Set([...Object.keys(univGenreMap), ...Object.keys(genreCount)])];
+  const repGenres = l1Overlap(allUnionNames.map(n => univGenreMap[n] || 0), allUnionNames.map(n => genreCount[n] || 0));
+  const repGenresEl = document.getElementById('sample-genres-rep');
+  if (repGenresEl) repGenresEl.textContent = 'Representatividad géneros: ' + Math.round(repGenres * 100) + '%';
+
+  const gNote = document.getElementById('sample-genres-note');
+  if (gNote && allUnionGenres.length > chartGenres.length) {
+    gNote.textContent = 'Se muestran ' + chartGenres.length + ' de los ' + allUnionGenres.length + ' géneros presentes en el campo o la muestra.';
+  } else if (gNote) {
+    gNote.textContent = '';
+  }
+
+  // 4. Vote buckets (synchronous)
+  const voteBuckets = [0, 0, 0, 0, 0];
+  sample.forEach(m => {
+    if (m.votes < 500) voteBuckets[0]++;
+    else if (m.votes < 2000) voteBuckets[1]++;
+    else if (m.votes < 5000) voteBuckets[2]++;
+    else if (m.votes < 15000) voteBuckets[3]++;
+    else voteBuckets[4]++;
+  });
+  const univVoteBuckets = (f.cache && f.cache.voteBuckets) || Array(5).fill(0);
+  const voteLabels = ['>15k', '5k-15k', '2k-5k', '500-2k', '<500'];
+  const univVotePct   = [...univVoteBuckets].reverse().map(v => univRatingTotal > 0 ? +(v / univRatingTotal * 100).toFixed(1) : 0);
+  const sampleVotePct = [...voteBuckets].reverse().map(v => sampleTotal > 0 ? +(v / sampleTotal * 100).toFixed(1) : 0);
+  const univVoteRev   = [...univVoteBuckets].reverse();
+  const sampleVoteRev = [...voteBuckets].reverse();
+  const votesCtx = document.getElementById('sample-chart-votes');
+  if (votesCtx) {
+    if (appState.distCharts['sample-chart-votes']) appState.distCharts['sample-chart-votes'].destroy();
+    appState.distCharts['sample-chart-votes'] = new Chart(votesCtx, {
+      type: 'bar',
+      data: {
+        labels: voteLabels,
+        datasets: [
+          { label: 'Universo', data: univVotePct,   backgroundColor: '#378ADD80', borderColor: '#378ADD', borderWidth: 1 },
+          { label: 'Muestra',  data: sampleVotePct, backgroundColor: '#1D9E7580', borderColor: '#1D9E75', borderWidth: 1 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: function(c) {
+            const count = c.datasetIndex === 0 ? univVoteRev[c.dataIndex] : sampleVoteRev[c.dataIndex];
+            return c.dataset.label + ': ' + count.toLocaleString('es-AR') + ' (' + c.parsed.x.toFixed(1) + '%)';
+          }}}
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: v => v + '%' } },
+          y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }
+        }
+      }
+    });
+  }
+  const repVotes = l1Overlap(univVoteBuckets, voteBuckets);
+  const repVotesEl = document.getElementById('sample-votes-rep');
+  if (repVotesEl) repVotesEl.textContent = 'Representatividad votos: ' + Math.round(repVotes * 100) + '%';
+
+  let repRev = 0, repCountries = 0;
+
+  // 5 & 6. Revenue + Countries: single batch fetch per movie
+  try {
+    const movieDetails = await Promise.all(sample.map(async m => {
+      try {
+        const r = await fetch(BASE + '/movie/' + m.id, { headers: HEADERS });
+        const d = await r.json();
+        return { id: m.id, year: m.year, revenue: d.revenue || 0, country: (d.origin_country || [])[0] || '' };
+      } catch(e) { return { id: m.id, year: m.year, revenue: 0, country: '' }; }
+    }));
+
+    // Revenue per decade — sample
+    const revSample = decades.map(dec => {
+      const decMovies = movieDetails.filter(m => Math.floor(m.year / 10) * 10 === dec && m.revenue > 0);
+      if (!decMovies.length) return null;
+      return Math.round(decMovies.reduce((s, m) => s + m.revenue, 0) / decMovies.length / 1e6);
+    });
+    const revUniv = (f.cache && f.cache.decadesRevenue) || decades.map(() => null);
+    const ctx2 = document.getElementById('sample-chart-revenue');
+    if (ctx2) {
+      if (appState.distCharts['sample-chart-revenue']) appState.distCharts['sample-chart-revenue'].destroy();
+      appState.distCharts['sample-chart-revenue'] = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: decades.map(d => d + 's'),
+          datasets: [
+            { label: 'Universo', data: revUniv,   backgroundColor: '#378ADD80', borderColor: '#378ADD', borderWidth: 1 },
+            { label: 'Muestra',  data: revSample, backgroundColor: '#1D9E7580', borderColor: '#1D9E75', borderWidth: 1 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: function(c) {
+              if (c.parsed.y === null) return (c.dataset.label) + ': sin datos';
+              return c.dataset.label + ': $' + c.parsed.y + 'M';
+            }}}
+          },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#5A5754', font: { size: 9 } } },
+            y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 9 }, callback: v => '$' + v + 'M' } }
+          }
+        }
+      });
+    }
+    const revRepEl = document.getElementById('sample-revenue-rep');
+    if (revRepEl) {
+      const revUnivNum = revUniv.map(v => v === null ? 0 : v);
+      const revSampleNum = revSample.map(v => v === null ? 0 : v);
+      repRev = l1Overlap(revUnivNum, revSampleNum);
+      revRepEl.textContent = 'Representatividad taquilla: ' + Math.round(repRev * 100) + '%';
+    }
+
+    // Countries
+    if (f.countries && f.countries.length) {
+      // Universe was filtered to a single country — both universe and sample are 100% that country by construction
+      const selectedCountryName = getCountryName(f.countries[0]);
+      const countryCtx = document.getElementById('sample-chart-countries');
+      if (countryCtx) {
+        if (appState.distCharts['sample-chart-countries']) appState.distCharts['sample-chart-countries'].destroy();
+        appState.distCharts['sample-chart-countries'] = new Chart(countryCtx, {
+          type: 'bar',
+          data: {
+            labels: [selectedCountryName],
+            datasets: [
+              { label: 'Universo', data: [100], backgroundColor: '#378ADD80', borderColor: '#378ADD', borderWidth: 1 },
+              { label: 'Muestra',  data: [100], backgroundColor: '#1D9E7580', borderColor: '#1D9E75', borderWidth: 1 }
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: c => c.dataset.label + ': 100%' } }
+            },
+            scales: {
+              x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: v => v + '%' } },
+              y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }
+            }
+          }
+        });
+      }
+      repCountries = 1;
+      const repCountriesEl = document.getElementById('sample-countries-rep');
+      if (repCountriesEl) repCountriesEl.textContent = 'Representatividad países: 100%';
+      const cNote = document.getElementById('sample-countries-note');
+      if (cNote) cNote.textContent = '';
+    } else {
+      const countryCounts = {};
+      movieDetails.forEach(m => { if (m.country) { const cn = getCountryName(m.country); countryCounts[cn] = (countryCounts[cn] || 0) + 1; } });
+      const sampleCountryTotal = Object.values(countryCounts).reduce((s, v) => s + v, 0);
+
+      const univCountryTop10 = (f.cache && f.cache.countryTop10) || [];
+      const univCountryTotal = (f.cache && f.cache.countryTotalScaled) || 0;
+      const univCountryMap = Object.fromEntries(univCountryTop10);
+
+      const allUnionCountries = [...new Set([
+        ...univCountryTop10.map(x => x[0]),
+        ...Object.entries(countryCounts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(x => x[0])
+      ])].sort((a, b) => (univCountryMap[b] || 0) - (univCountryMap[a] || 0));
+      const chartCountries = allUnionCountries.slice(0, 10);
+
+      const univCountryRaw   = chartCountries.map(n => univCountryMap[n] || 0);
+      const sampleCountryRaw = chartCountries.map(n => countryCounts[n] || 0);
+      const univCountryPct   = univCountryRaw.map(v => univCountryTotal > 0 ? +(v / univCountryTotal * 100).toFixed(1) : 0);
+      const sampleCountryPct = sampleCountryRaw.map(v => sampleCountryTotal > 0 ? +(v / sampleCountryTotal * 100).toFixed(1) : 0);
+
+      const countryCtx = document.getElementById('sample-chart-countries');
+      if (countryCtx && chartCountries.length) {
+        if (appState.distCharts['sample-chart-countries']) appState.distCharts['sample-chart-countries'].destroy();
+        appState.distCharts['sample-chart-countries'] = new Chart(countryCtx, {
+          type: 'bar',
+          data: {
+            labels: chartCountries,
+            datasets: [
+              { label: 'Universo', data: univCountryPct,   backgroundColor: '#378ADD80', borderColor: '#378ADD', borderWidth: 1 },
+              { label: 'Muestra',  data: sampleCountryPct, backgroundColor: '#1D9E7580', borderColor: '#1D9E75', borderWidth: 1 }
+            ]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: function(c) {
+                const isUniv = c.datasetIndex === 0;
+                const count = isUniv ? univCountryRaw[c.dataIndex] : sampleCountryRaw[c.dataIndex];
+                return c.dataset.label + ': ' + count.toLocaleString('es-AR') + ' (' + c.parsed.x.toFixed(1) + '%)';
+              }}}
+            },
+            scales: {
+              x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: v => v + '%' } },
+              y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }
+            }
+          }
+        });
+      }
+
+      const allUnionCountryNames = [...new Set([...Object.keys(univCountryMap), ...Object.keys(countryCounts)])];
+      repCountries = l1Overlap(allUnionCountryNames.map(n => univCountryMap[n] || 0), allUnionCountryNames.map(n => countryCounts[n] || 0));
+      const repCountriesEl = document.getElementById('sample-countries-rep');
+      if (repCountriesEl) repCountriesEl.textContent = 'Representatividad países: ' + Math.round(repCountries * 100) + '%';
+
+      const cNote = document.getElementById('sample-countries-note');
+      if (cNote && allUnionCountries.length > chartCountries.length) {
+        cNote.textContent = 'Se muestran ' + chartCountries.length + ' de los ' + allUnionCountries.length + ' países presentes en el campo o la muestra.';
+      } else if (cNote) {
+        cNote.textContent = '';
+      }
+    }
+  } catch(e) {}
+
+  // Global rep index: average of all individual L1 overlaps
+  const indices    = [repDecades, repRating, repVotes, repGenres, repCountries].filter(v => !isNaN(v));
+  const indicesRev = [repDecades, repRating, repVotes, repGenres, repCountries, repRev].filter(v => !isNaN(v));
+  const globalRep    = indices.length    ? indices.reduce((s, v)    => s + v, 0) / indices.length    : 0;
+  const globalRepRev = indicesRev.length ? indicesRev.reduce((s, v) => s + v, 0) / indicesRev.length : 0;
+  document.getElementById('rep-index-bar').textContent     = 'Índice: ' + (globalRep * 100).toFixed(0) + '%';
+  document.getElementById('rep-index-bar-rev').textContent = '/ ' + (globalRepRev * 100).toFixed(0) + '% con taquilla';
+}
+
+function l1Overlap(a, b) {
+  const sumA = a.reduce((s, v) => s + v, 0);
+  const sumB = b.reduce((s, v) => s + v, 0);
+  if (sumA === 0 || sumB === 0) return 0;
+  return a.reduce((s, v, i) => s + Math.min(v / sumA, b[i] / sumB), 0);
+}
+
+function cosineSimilarity(a, b) {
+  if (!a.length || a.length !== b.length) return 0;
+  const dot  = a.reduce((s, v, i) => s + v * b[i], 0);
+  const magA = Math.sqrt(a.reduce((s, v) => s + v * v, 0));
+  const magB = Math.sqrt(b.reduce((s, v) => s + v * v, 0));
+  if (magA === 0 || magB === 0) return 0;
+  return Math.max(0, Math.min(1, dot / (magA * magB)));
+}
+
+function calculateRepIndex(f) {
+  if (!f.sample || !f.sample.length) return 0;
+  const decades = [];
+  for (let d = f.decFrom; d <= f.decTo; d += 10) decades.push(d);
+  const decCounts = decades.map(d => f.sample.filter(m => Math.floor(m.year/10)*10 === d).length);
+  const total = f.sample.length;
+  const expected = total / decades.length;
+  const variance = decCounts.reduce((s, c) => s + Math.abs(c - expected), 0) / (total || 1);
+  return Math.max(0, Math.min(1, 1 - variance / 2)).toFixed ? +Math.max(0, Math.min(1, 1 - variance / 2)).toFixed(2) : 0.85;
+}
+
+function recalcDistribution() {
+  const f = currentField();
+  if (f) renderDistribution(f);
+}
+
+function toggleDistribution() {
+  const sec = document.getElementById('distribution-section');
+  const arrow = document.getElementById('expand-arrow');
+  const visible = sec.style.display !== 'none';
+  sec.style.display = visible ? 'none' : '';
+  arrow.textContent = visible ? '▼ mostrar' : '▲ ocultar';
+}
+
+// ── MODAL: REGEN ──
+function showRegenModal() {
+  // Sync checkbox visual state with current appState before opening
+  ['manual', 'rated'].forEach(key => {
+    const val = appState.regenOpts[key];
+    document.getElementById(`regen-opt-${key}`).classList.toggle('selected', val);
+    document.getElementById(`regen-check-${key}`).classList.toggle('checked', val);
+  });
+  document.getElementById('modal-regen').classList.add('open');
+}
+
+function toggleRegenOpt(key) {
+  appState.regenOpts[key] = !appState.regenOpts[key];
+  const opt = document.getElementById(`regen-opt-${key}`);
+  const chk = document.getElementById(`regen-check-${key}`);
+  opt.classList.toggle('selected', appState.regenOpts[key]);
+  chk.classList.toggle('checked', appState.regenOpts[key]);
+}
+
+function markSampleDirty(dirty) {
+  const btn = document.getElementById('generate-btn');
+  if (!btn) return;
+  btn.style.opacity = dirty ? '1' : '0.4';
+  btn.style.pointerEvents = dirty ? '' : 'none';
+}
+
+async function doRegen() {
+  closeModal('modal-regen');
+  const f = currentField();
+  if (!f) return;
+  if (!f.sampleSize || f.sampleSize <= 0) f.sampleSize = f.minSuggested || calculateMinSample(f) || 30;
+  const keepManual = appState.regenOpts.manual;
+  const keepRated = appState.regenOpts.rated;
+  const protected_ = f.sample.filter(m =>
+    (keepManual && m.manual) ||
+    (keepRated && m.ratings && Object.keys(m.ratings).length > 0)
+  );
+  f.sample = protected_;
+  await generateSample(f);
+  await renderSample(f);
+  markSampleDirty(false);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// ── MODAL: ADD FILM ──
+function showAddFilmModal() {
+  appState.selectedFilmToAdd = null;
+  document.getElementById('add-film-search').value = '';
+  document.getElementById('add-film-results').innerHTML = '';
+  document.getElementById('add-film-reason').value = '';
+  document.getElementById('modal-add-film').classList.add('open');
+}
+
+function searchFilmToAdd() {
+  clearTimeout(appState.addFilmTimeout);
+  const q = document.getElementById('add-film-search').value.trim();
+  if (q.length < 2) return;
+  appState.addFilmTimeout = setTimeout(async () => {
+    try {
+      const r = await fetch(`${BASE}/search/movie?query=${encodeURIComponent(q)}`, {headers:HEADERS});
+      const d = await r.json();
+      document.getElementById('add-film-results').innerHTML = (d.results||[]).slice(0,6).map(m => `
+        <div onclick="selectFilmToAdd(${m.id},'${m.title.replace(/'/g,"\\'")}',${+(m.release_date||'0000').slice(0,4)},${m.vote_count},${m.vote_average})"
+             style="padding:8px 10px;cursor:pointer;border-radius:var(--radius);border:0.5px solid var(--border);margin-bottom:5px;font-size:12px;color:var(--text2);transition:background .1s;"
+             onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+          <span style="color:var(--text);font-weight:500;">${m.title}</span>
+          <span style="color:var(--text3);margin-left:8px;">${(m.release_date||'').slice(0,4)}</span>
+        </div>`).join('');
+    } catch(e) {}
+  }, 300);
+}
+
+function selectFilmToAdd(id, title, year, votes, rating) {
+  appState.selectedFilmToAdd = { id, title, year, votes, rating };
+  document.getElementById('add-film-results').querySelectorAll('div').forEach(el => el.style.background = '');
+  document.getElementById('add-film-search').value = title;
+  document.getElementById('add-film-results').innerHTML = `<div style="padding:6px 10px;background:var(--green-bg);border:0.5px solid rgba(29,158,117,.3);border-radius:var(--radius);font-size:12px;color:var(--green);">✓ ${title} (${year})</div>`;
+}
+
+async function confirmAddFilm() {
+  if (!appState.selectedFilmToAdd) return;
+  const f = currentField();
+  if (!f) return;
+  const m = appState.selectedFilmToAdd;
+  const reason = document.getElementById('add-film-reason').value.trim();
+  if (!f.sample.find(x => x.id === m.id)) {
+    const movie = { ...m, country: '', revenue: 0, genreIds: [], ratings: {}, manual: true, manualReason: reason };
+    try {
+      const r = await fetch(`${BASE}/movie/${m.id}`, { headers: HEADERS });
+      const d = await r.json();
+      const oc = d.origin_country || [];
+      const req = f.countries && f.countries.length ? f.countries[0] : null;
+      movie.country = (req && oc.includes(req)) ? req : (oc[0] || '');
+      movie.revenue = d.revenue || 0;
+      movie.genreIds = d.genres ? d.genres.map(g => g.id) : [];
+    } catch(e) {}
+    f.sample.push(movie);
+    saveState();
+  }
+  closeModal('modal-add-film');
+  renderSampleTable(f);
+  renderSampleStats(f);
+}
+
+// ── TAB: DIFERENCIALES ──
+var _diffDragSrcIdx = null;
+
+function diffDragStart(e, idx) {
+  _diffDragSrcIdx = idx;
+  e.dataTransfer.effectAllowed = 'move';
+  e.currentTarget.style.opacity = '0.4';
+}
+function diffDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.style.outline = '1px solid var(--blue)';
+  return false;
+}
+function diffDragLeave(e) {
+  e.currentTarget.style.outline = '';
+}
+function diffDrop(e, targetIdx) {
+  e.preventDefault();
+  e.stopPropagation();
+  e.currentTarget.style.outline = '';
+  if (_diffDragSrcIdx === null || _diffDragSrcIdx === targetIdx) return false;
+  const f = currentField();
+  const moved = f.differentials.splice(_diffDragSrcIdx, 1)[0];
+  f.differentials.splice(targetIdx, 0, moved);
+  saveState();
+  renderDiffs(f);
+  return false;
+}
+function diffDragEnd(e) {
+  e.currentTarget.style.opacity = '';
+  e.currentTarget.style.outline = '';
+  _diffDragSrcIdx = null;
+}
+
+function renderDiffs(f) {
+  document.getElementById('diffs-count').textContent = `Diferenciales (${(f.differentials||[]).length})`;
+  const tbody = document.getElementById('diffs-tbody');
+  if (!f.differentials || !f.differentials.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--text3);font-size:12px;padding:16px 10px;">No hay diferenciales. Creá uno para empezar.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = f.differentials.map((d, i) => {
+    const rated = f.sample ? f.sample.filter(m => m.ratings && m.ratings[d.id] !== undefined).length : 0;
+    const total = f.sample ? f.sample.length : 0;
+    const negMax = d.negMax || 3;
+    const posMax = d.posMax || 3;
+    const rangeLabel = (negMax === posMax) ? `±${negMax}` : `−${negMax} / +${posMax}`;
+    return `<tr draggable="true"
+      ondragstart="diffDragStart(event, ${i})"
+      ondragover="diffDragOver(event)"
+      ondragleave="diffDragLeave(event)"
+      ondrop="diffDrop(event, ${i})"
+      ondragend="diffDragEnd(event)">
+      <td style="color:var(--text3);cursor:grab;font-size:13px;user-select:none;">⠿</td>
+      <td class="td-title">${d.name}</td>
+      <td style="color:var(--text3);font-size:12px;">${d.negPole}</td>
+      <td style="color:var(--text3);font-size:12px;">${d.posPole}</td>
+      <td style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;">${rangeLabel}</td>
+      <td>
+        <div class="prog-wrap">
+          <div class="prog-track"><div class="prog-fill" style="width:${total?Math.round(rated/total*100):0}%;"></div></div>
+          <span class="prog-text">${rated}/${total}</span>
+        </div>
+      </td>
+      <td><span class="td-action" onclick="editDiff('${d.id}')">editar</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function showNewDiffForm() {
+  document.getElementById('diff-editor').innerHTML = `
+    <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;">Nuevo diferencial</div>
+    <div class="form-group"><label class="form-label">NOMBRE</label><input class="form-input" id="diff-name" type="text" placeholder="Ej: Naturaleza / Técnica" /></div>
+    <div class="form-row form-row-2">
+      <div class="form-group" style="margin:0"><label class="form-label">POLO −</label><input class="form-input" id="diff-neg" type="text" placeholder="Naturaleza" /></div>
+      <div class="form-group" style="margin:0"><label class="form-label">POLO +</label><input class="form-input" id="diff-pos" type="text" placeholder="Técnica" /></div>
+    </div>
+    <div class="form-row form-row-2">
+      <div class="form-group" style="margin:0"><label class="form-label">MÁX. POLO −</label><input class="form-input" id="diff-neg-max" type="number" min="1" max="10" value="3" style="font-family:'DM Mono',monospace;" /></div>
+      <div class="form-group" style="margin:0"><label class="form-label">MÁX. POLO +</label><input class="form-input" id="diff-pos-max" type="number" min="1" max="10" value="3" style="font-family:'DM Mono',monospace;" /></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">DESCRIPCIÓN</label>
+      <textarea class="form-input" id="diff-desc" style="height:70px;padding:8px;resize:none;" placeholder="Describe qué mide este diferencial..."></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="btn" style="flex:1;" onclick="cancelDiffEdit()">Cancelar</button>
+      <button class="btn-primary" style="flex:1;" onclick="saveDiff(null)">Guardar</button>
+    </div>`;
+}
+
+function editDiff(id) {
+  const f = currentField();
+  const d = f.differentials.find(x => x.id === id);
+  if (!d) return;
+  const negMax = d.negMax || 3;
+  const posMax = d.posMax || 3;
+  const ratedCount = f.sample ? f.sample.filter(m => m.ratings && m.ratings[id] !== undefined).length : 0;
+  document.getElementById('diff-editor').innerHTML = `
+    <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;">Editar diferencial</div>
+    <div class="form-group"><label class="form-label">NOMBRE</label><input class="form-input" id="diff-name" type="text" value="${d.name}" /></div>
+    <div class="form-row form-row-2">
+      <div class="form-group" style="margin:0"><label class="form-label">POLO −</label><input class="form-input" id="diff-neg" type="text" value="${d.negPole}" /></div>
+      <div class="form-group" style="margin:0"><label class="form-label">POLO +</label><input class="form-input" id="diff-pos" type="text" value="${d.posPole}" /></div>
+    </div>
+    <div class="form-row form-row-2">
+      <div class="form-group" style="margin:0"><label class="form-label">MÁX. POLO −</label><input class="form-input" id="diff-neg-max" type="number" min="1" max="10" value="${negMax}" style="font-family:'DM Mono',monospace;" /></div>
+      <div class="form-group" style="margin:0"><label class="form-label">MÁX. POLO +</label><input class="form-input" id="diff-pos-max" type="number" min="1" max="10" value="${posMax}" style="font-family:'DM Mono',monospace;" /></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">DESCRIPCIÓN</label>
+      <textarea class="form-input" id="diff-desc" style="height:70px;padding:8px;resize:none;">${d.desc||''}</textarea>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace;">
+      ${ratedCount} / ${f.sample?f.sample.length:0} películas calificadas
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" style="flex:1;" onclick="cancelDiffEdit()">Cancelar</button>
+      <button class="btn" style="color:var(--red);border-color:var(--red);" onclick="deleteDiff('${id}')">Eliminar</button>
+      <button class="btn-primary" style="flex:1;" onclick="saveDiff('${id}')">Guardar</button>
+    </div>`;
+}
+
+function cancelDiffEdit() {
+  document.getElementById('diff-editor').innerHTML = `<div style="font-size:11px;color:var(--text3);text-align:center;padding:20px 0;">Seleccioná un diferencial para editar</div>`;
+}
+
+function saveDiff(existingId) {
+  const name = document.getElementById('diff-name').value.trim();
+  const negPole = document.getElementById('diff-neg').value.trim();
+  const posPole = document.getElementById('diff-pos').value.trim();
+  const desc = document.getElementById('diff-desc').value.trim();
+  const negMax = Math.max(1, Math.min(10, parseInt(document.getElementById('diff-neg-max').value) || 3));
+  const posMax = Math.max(1, Math.min(10, parseInt(document.getElementById('diff-pos-max').value) || 3));
+  if (!name || !negPole || !posPole) { alert('Completá nombre y polos'); return; }
+  const f = currentField();
+  if (existingId) {
+    const d = f.differentials.find(x => x.id === existingId);
+    if (d) { d.name = name; d.negPole = negPole; d.posPole = posPole; d.desc = desc; d.negMax = negMax; d.posMax = posMax; }
+  } else {
+    f.differentials.push({ id: 'd_' + Date.now(), name, negPole, posPole, desc, negMax, posMax });
+  }
+  saveState();
+  renderDiffs(f);
+  cancelDiffEdit();
+}
+
+function deleteDiff(id) {
+  if (!confirm('¿Eliminar este diferencial? Se borrarán todas las calificaciones asociadas.')) return;
+  const f = currentField();
+  f.differentials = f.differentials.filter(d => d.id !== id);
+  (f.sample || []).forEach(m => { if (m.ratings) delete m.ratings[id]; });
+  saveState();
+  renderDiffs(f);
+  cancelDiffEdit();
+}
+
+function importDiffs() {
+  const other = appState.fields.filter(f => f.id !== appState.currentFieldId && f.differentials && f.differentials.length);
+  if (!other.length) { alert('No hay otros campos con diferenciales'); return; }
+  const name = prompt('Nombre del campo a importar:\n' + other.map(f => f.name).join('\n'));
+  const source = other.find(f => f.name === name);
+  if (!source) return;
+  const f = currentField();
+  source.differentials.forEach(d => {
+    if (!f.differentials.find(x => x.name === d.name)) {
+      f.differentials.push({ ...d, id: 'd_' + Date.now() + Math.random() });
+    }
+  });
+  saveState();
+  renderDiffs(f);
+}
+
+// ── TAB: CALIFICACIÓN ──
+function calClassify(m, totalDiffs) {
+  const rated = Object.keys(m.ratings || {}).length;
+  if (totalDiffs === 0 || rated === 0) return 'pending';
+  if (rated >= totalDiffs) return 'done';
+  return 'inProgress';
+}
+
+function renderCalSidebar(f) {
+  const diffs = f.differentials || [];
+  const totalDiffs = diffs.length;
+  const filter = (appState.calFilter || '').toLowerCase().trim();
+  const films = (f.sample || []).filter(m => !filter || m.title.toLowerCase().includes(filter));
+
+  const groups = { pending: [], inProgress: [], done: [] };
+  films.forEach(m => groups[calClassify(m, totalDiffs)].push(m));
+
+  const renderGroup = (key, label, items, extraClass) => {
+    const collapsed = appState.calCollapsed[key];
+    const itemHtml = collapsed ? '' : (items.length
+      ? items.map(m => `<div class="cal-item ${extraClass} ${appState.currentCalFilm===m.id?'active':''}" onclick="selectCalFilm(${m.id})">${m.title}</div>`).join('')
+      : `<div style="font-size:11px;color:var(--text3);padding:3px 14px 6px;">${filter ? 'Sin resultados' : 'Ninguna'}</div>`);
+    return `<div class="cal-sidebar-section">
+      <div class="cal-group-header" onclick="toggleCalGroup('${key}')">
+        <span class="cal-group-label">${label}</span>
+        <span class="cal-group-meta">
+          <span class="cal-group-count">${items.length}</span>
+          <span class="cal-group-caret${collapsed?' collapsed':''}">▼</span>
+        </span>
+      </div>
+      ${itemHtml}
+    </div>`;
+  };
+
+  document.getElementById('cal-groups').innerHTML =
+    renderGroup('pending',    'PENDIENTES', groups.pending,    '') +
+    renderGroup('inProgress', 'EN PROCESO',  groups.inProgress, 'inprogress') +
+    renderGroup('done',       'CALIFICADAS', groups.done,       'done');
+}
+
+function filterCalSidebar() {
+  appState.calFilter = (document.getElementById('cal-search') || {}).value || '';
+  renderCalSidebar(currentField());
+}
+
+function toggleCalGroup(key) {
+  appState.calCollapsed[key] = !appState.calCollapsed[key];
+  renderCalSidebar(currentField());
+}
+
+function renderRatingTab(f) {
+  if (!f.sample || !f.sample.length) {
+    document.getElementById('cal-groups').innerHTML = '<div style="font-size:11px;color:var(--text3);padding:8px 14px;">Sin películas en la muestra</div>';
+    return;
+  }
+  renderCalSidebar(f);
+  if (!appState.currentCalFilm) {
+    const diffs = f.differentials || [];
+    const first = (f.sample || []).find(m => calClassify(m, diffs.length) !== 'done') || f.sample[0];
+    if (first) selectCalFilm(first.id);
+  }
+}
+
+async function selectCalFilm(filmId) {
+  appState.currentCalFilm = filmId;
+  const f = currentField();
+  const film = f.sample.find(m => m.id === filmId);
+  if (!film) return;
+
+  renderCalSidebar(f);
+
+  const diffs = f.differentials || [];
+  if (!film.ratings) film.ratings = {};
+
+  let posterHtml = `<div class="film-poster">sin póster</div>`;
+  let overview = '';
+  let budget = 0;
+  let revenue = film.revenue || 0;
+  try {
+    const r = await fetch(`${BASE}/movie/${film.id}?language=es`, {headers:HEADERS});
+    const d = await r.json();
+    if (d.poster_path) {
+      posterHtml = `<div class="film-poster"><img src="https://image.tmdb.org/t/p/w154${d.poster_path}" alt="${film.title}" /></div>`;
+    }
+    overview = d.overview || '';
+    budget = d.budget || 0;
+    revenue = film.revenue || d.revenue || 0;
+  } catch(e) {}
+
+  const met = calcMet(film, diffs);
+  const filmIdx = f.sample.indexOf(film);
+  const prevId = filmIdx > 0 ? f.sample[filmIdx-1].id : null;
+  const nextId = filmIdx < f.sample.length-1 ? f.sample[filmIdx+1].id : null;
+
+  const financeHtml = (budget || revenue) ? `
+    <div style="display:flex;gap:16px;margin-top:6px;">
+      ${budget ? `<div><div style="font-size:10px;color:var(--text3);letter-spacing:.04em;">PRESUPUESTO</div><div style="font-size:13px;font-family:'DM Mono',monospace;">${fmtRevenue(budget)}</div></div>` : ''}
+      ${revenue ? `<div><div style="font-size:10px;color:var(--text3);letter-spacing:.04em;">TAQUILLA</div><div style="font-size:13px;font-family:'DM Mono',monospace;">${fmtRevenue(revenue)}</div></div>` : ''}
+    </div>` : '';
+
+  const overviewHtml = overview ? `
+    <div style="font-size:12px;color:var(--text3);margin-top:10px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;" title="${overview.replace(/"/g,'&quot;')}">${overview}</div>` : '';
+
+  document.getElementById('cal-main').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+      <div class="film-header" style="margin-bottom:0;">
+        ${posterHtml}
+        <div style="min-width:0;">
+          <div class="film-title">${film.title}</div>
+          <div class="film-meta">${film.year} · ${film.votes.toLocaleString('es-AR')} votos · ★${film.rating}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${(film.genreIds||[]).filter(id=>id!==f.genreId).map(id=>`<span class="badge">${GENRE_MAP[id]||id}</span>`).join('')}
+          </div>
+          ${financeHtml}
+          ${overviewHtml}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0;margin-left:12px;">
+        ${prevId ? `<button class="btn" onclick="selectCalFilm(${prevId})">← Anterior</button>` : ''}
+        ${nextId ? `<button class="btn" onclick="selectCalFilm(${nextId})">Siguiente →</button>` : ''}
+        <button class="btn-primary" onclick="saveCalFilm(${film.id})">Guardar</button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:12px;font-weight:500;margin-bottom:12px;">Diferenciales</div>
+    ${diffs.length ? diffs.map(d => {
+      const negMax = d.negMax || 3;
+      const posMax = d.posMax || 3;
+      const totalRange = negMax + posMax;
+      const rawVal = film.ratings[d.id] !== undefined ? +film.ratings[d.id] : 0;
+      const val = Math.max(-negMax, Math.min(posMax, rawVal));
+      const pct = (val + negMax) / totalRange * 100;
+      const fillPct = val >= 0 ? (val / posMax * 50) : (Math.abs(val) / negMax * 50);
+      const fillStyle = val >= 0 ? `left:50%;width:${fillPct}%` : `right:50%;width:${fillPct}%`;
+      const fillClass = val >= 0 ? 'slider-fill-pos' : 'slider-fill-neg';
+      return `<div class="slider-row">
+        <span class="slider-name" title="${d.desc||''}">${d.name}</span>
+        <div class="slider-track">
+          <div class="slider-center"></div>
+          <div class="slider-fill ${fillClass}" style="${fillStyle};"></div>
+          <div class="slider-thumb" style="left:${pct}%;" id="thumb-${d.id}"></div>
+          <input type="range" min="-${negMax}" max="${posMax}" step="1" value="${val}"
+            style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer;height:20px;top:-8px;"
+            oninput="updateSlider(this, '${film.id}', '${d.id}', ${negMax}, ${posMax})" />
+        </div>
+        <span class="slider-val" id="val-${d.id}">${val > 0 ? '+'+val : val}</span>
+      </div>`;
+    }).join('') : '<div style="font-size:12px;color:var(--text3);">No hay diferenciales definidos. Creá algunos en la pestaña Diferenciales.</div>'}
+    <div class="divider"></div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:12px;color:var(--text2);">Metaestabilidad</span>
+      <span style="font-size:22px;font-weight:300;color:var(--green);letter-spacing:-0.02em;" id="met-display">${met !== null ? met.toFixed(2) : '—'}</span>
+      <span style="font-size:11px;color:var(--text3);">actualizada en tiempo real</span>
+    </div>`;
+}
+
+function updateSlider(input, filmId, diffId, negMax, posMax) {
+  negMax = negMax || 3;
+  posMax = posMax || 3;
+  const val = +input.value;
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  if (!film.ratings) film.ratings = {};
+  film.ratings[diffId] = val;
+  const totalRange = negMax + posMax;
+  const pct = (val + negMax) / totalRange * 100;
+  const fillPct = val >= 0 ? (val / posMax * 50) : (Math.abs(val) / negMax * 50);
+  const thumb = document.getElementById('thumb-' + diffId);
+  const valEl = document.getElementById('val-' + diffId);
+  if (thumb) thumb.style.left = pct + '%';
+  if (valEl) valEl.textContent = val > 0 ? '+'+val : val;
+  const fillEl = input.previousElementSibling.previousElementSibling.previousElementSibling;
+  if (fillEl && fillEl.classList.contains('slider-fill')) {
+    fillEl.className = 'slider-fill ' + (val>=0?'slider-fill-pos':'slider-fill-neg');
+    fillEl.style.cssText = val>=0 ? `left:50%;width:${fillPct}%` : `right:50%;width:${fillPct}%`;
+  }
+  const met = calcMet(film, f.differentials||[]);
+  const metEl = document.getElementById('met-display');
+  if (metEl) { metEl.textContent = met !== null ? met.toFixed(2) : '—'; }
+}
+
+function calcMet(film, diffs) {
+  if (!diffs.length || !film.ratings) return null;
+  const normalized = diffs.map(d => {
+    const val = film.ratings[d.id];
+    if (val === undefined) return undefined;
+    const maxForDir = val >= 0 ? (d.posMax || 3) : (d.negMax || 3);
+    return Math.abs(val) / maxForDir;
+  }).filter(v => v !== undefined);
+  if (!normalized.length) return null;
+  return +(normalized.reduce((s, v) => s + v, 0) / normalized.length * 3).toFixed(2);
+}
+
+function saveCalFilm(filmId) {
+  const f = currentField();
+  saveState();
+  renderCalSidebar(f);
+}
+
+// ── TAB: ANÁLISIS ──
+function renderAnalysis(f) {
+  const sample = f.sample || [];
+  const diffs = f.differentials || [];
+  const rated = sample.filter(m => m.ratings && Object.keys(m.ratings).length >= diffs.length);
+  const avgMet = rated.length ? rated.reduce((s,m) => s + (calcMet(m,diffs)||0), 0) / rated.length : 0;
+  const transf = rated.filter(m => (calcMet(m,diffs)||0) > 1.8).length;
+
+  document.getElementById('analysis-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">CALIFICADAS</div><div class="stat-value">${rated.length}</div><div class="stat-sub">de ${sample.length}</div></div>
+    <div class="stat-card"><div class="stat-label">MET. PROMEDIO</div><div class="stat-value">${avgMet.toFixed(2)}</div></div>
+    <div class="stat-card"><div class="stat-label">TRANSFORMADORAS</div><div class="stat-value" style="color:var(--green);">${transf}</div><div class="stat-sub">met. > 1.8</div></div>
+    <div class="stat-card"><div class="stat-label">DIFERENCIALES</div><div class="stat-value">${diffs.length}</div></div>`;
+
+  if (!rated.length) return;
+
+  const ranked = [...rated].map(m => ({ title: m.title, met: calcMet(m,diffs)||0 }))
+    .sort((a,b) => b.met - a.met).slice(0,15);
+
+  const r1 = document.getElementById('analysis-ranking');
+  if (appState.analysisCharts['ranking']) appState.analysisCharts['ranking'].destroy();
+  appState.analysisCharts['ranking'] = new Chart(r1, {
+    type: 'bar',
+    data: {
+      labels: ranked.map(m => m.title.length>22?m.title.slice(0,20)+'…':m.title),
+      datasets: [{ data: ranked.map(m => +m.met.toFixed(2)),
+        backgroundColor: ranked.map(m => m.met>2?'rgba(29,158,117,0.6)':m.met>1.5?'rgba(55,138,221,0.6)':'rgba(136,135,128,0.4)'),
+        borderWidth: 0 }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{min:0,max:3,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:10}}},
+        y:{grid:{display:false},ticks:{color:'#9A9690',font:{size:10}}}
+      }
+    }
+  });
+
+  const decades=[];
+  for(let d=f.decFrom;d<=f.decTo;d+=10) decades.push(d);
+  const decAvg = decades.map(dec => {
+    const films = rated.filter(m => Math.floor(m.year/10)*10===dec);
+    return films.length ? +(films.reduce((s,m)=>s+(calcMet(m,diffs)||0),0)/films.length).toFixed(2) : null;
+  });
+
+  const r2 = document.getElementById('analysis-evolution');
+  if (appState.analysisCharts['evolution']) appState.analysisCharts['evolution'].destroy();
+  appState.analysisCharts['evolution'] = new Chart(r2, {
+    type: 'line',
+    data: {
+      labels: decades.map(d=>d+'s'),
+      datasets:[{ data:decAvg, borderColor:'#378ADD', backgroundColor:'rgba(55,138,221,0.1)', borderWidth:2, pointRadius:3, spanGaps:true, tension:0.3 }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#5A5754',font:{size:10}}},
+        y:{min:0,max:3,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:10}}}
+      }
+    }
+  });
+
+  const compSel1 = document.getElementById('compare-sel-1');
+  const compSel2 = document.getElementById('compare-sel-2');
+  const opts = rated.map(m => `<option value="${m.id}">${m.title}</option>`).join('');
+  compSel1.innerHTML = opts;
+  compSel2.innerHTML = opts;
+  if (rated.length > 1) compSel2.selectedIndex = 1;
+  updateRadar();
+
+  renderHeatmap(f, diffs, decades, rated);
+}
+
+function updateRadar() {
+  const f = currentField();
+  const diffs = f.differentials || [];
+  if (!diffs.length) return;
+  const id1 = +document.getElementById('compare-sel-1').value;
+  const id2 = +document.getElementById('compare-sel-2').value;
+  const m1 = f.sample.find(m=>m.id===id1);
+  const m2 = f.sample.find(m=>m.id===id2);
+  if (!m1 && !m2) return;
+
+  const r = document.getElementById('analysis-radar');
+  if (appState.analysisCharts['radar']) appState.analysisCharts['radar'].destroy();
+  const datasets = [];
+  if (m1) datasets.push({ label: m1.title.slice(0,18), data: diffs.map(d=>(m1.ratings&&m1.ratings[d.id])||0), borderColor:'#378ADD', backgroundColor:'rgba(55,138,221,0.15)', borderWidth:2, pointRadius:3 });
+  if (m2 && m2!==m1) datasets.push({ label: m2.title.slice(0,18), data: diffs.map(d=>(m2.ratings&&m2.ratings[d.id])||0), borderColor:'#1D9E75', backgroundColor:'rgba(29,158,117,0.15)', borderWidth:2, pointRadius:3 });
+
+  appState.analysisCharts['radar'] = new Chart(r, {
+    type:'radar',
+    data:{ labels: diffs.map(d=>d.name.split('/')[0].trim().slice(0,8)), datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:true, labels:{color:'#9A9690',font:{size:10},boxWidth:10} } },
+      scales:{ r:{ min:-3,max:3, ticks:{stepSize:1,color:'#5A5754',font:{size:9},backdropColor:'transparent'}, grid:{color:'rgba(255,255,255,0.08)'}, pointLabels:{color:'#9A9690',font:{size:9}} } }
+    }
+  });
+}
+
+function renderHeatmap(f, diffs, decades, rated) {
+  if (!diffs.length || !decades.length) return;
+  const data = diffs.map(d => decades.map(dec => {
+    const films = rated.filter(m => Math.floor(m.year/10)*10===dec);
+    if (!films.length) return null;
+    return +(films.reduce((s,m)=>s+((m.ratings&&m.ratings[d.id])||0),0)/films.length).toFixed(1);
+  }));
+
+  const container = document.getElementById('analysis-heatmap');
+  const cellW = Math.max(30, Math.floor((container.offsetWidth - 100) / decades.length));
+  const cellH = 18;
+  let html = `<div style="display:grid;grid-template-columns:90px repeat(${decades.length},${cellW}px);gap:1px;font-size:9px;font-family:'DM Mono',monospace;">`;
+  html += `<div></div>` + decades.map(d=>`<div style="color:var(--text3);text-align:center;padding:2px 0;">${d}s</div>`).join('');
+  diffs.forEach((d,di) => {
+    html += `<div style="color:var(--text3);padding:2px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${d.name.split('/')[0].trim()}</div>`;
+    decades.forEach((dec,deci) => {
+      const val = data[di][deci];
+      if (val === null) { html += `<div style="background:var(--bg3);border-radius:2px;"></div>`; return; }
+      const intensity = Math.abs(val) / 3;
+      const color = val > 0 ? `rgba(29,158,117,${intensity*0.8+0.1})` : val < 0 ? `rgba(216,90,48,${intensity*0.8+0.1})` : 'var(--bg4)';
+      html += `<div style="background:${color};border-radius:2px;text-align:center;padding:2px 0;color:${Math.abs(val)>1.5?'#fff':'var(--text3)'};">${val>0?'+'+val:val}</div>`;
+    });
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ── UTILITIES ──
+function showDeleteFieldModal(id) {
+  const fieldId = id || appState.currentFieldId;
+  const f = appState.fields.find(x => x.id === fieldId);
+  if (!f) return;
+  document.getElementById('delete-field-name').textContent = f.name;
+  document.getElementById('modal-delete-field').dataset.fieldId = fieldId;
+  document.getElementById('modal-delete-field').classList.add('open');
+}
+
+function confirmDeleteField() {
+  const modal = document.getElementById('modal-delete-field');
+  const fieldId = modal.dataset.fieldId;
+  appState.fields = appState.fields.filter(f => f.id !== fieldId);
+  if (appState.currentFieldId === fieldId) appState.currentFieldId = null;
+  saveState();
+  closeModal('modal-delete-field');
+  showScreen('screen-home');
+}
+
+function renameField() {
+  const f = currentField();
+  if (!f) return;
+  const name = prompt('Nuevo nombre:', f.name);
+  if (name && name.trim()) {
+    f.name = name.trim();
+    document.getElementById('field-title').textContent = f.name;
+    saveState();
+  }
+}
+
+// ── INIT ──
+getState();
+renderFieldsList();
+loadCountries();
+</script>
+</body>
+</html>
