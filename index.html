@@ -236,6 +236,7 @@ table.tbl tr:hover td { background: var(--bg3); }
   position: absolute; top: -5px; transform: translateX(-50%);
   cursor: grab;
 }
+.slider-track-wrap { display: flex; align-items: center; gap: 8px; flex: 1; }
 .slider-val { font-size: 11px; color: var(--text3); width: 24px; text-align: right; font-family: 'DM Mono', monospace; }
 
 /* ── PROGRESS ── */
@@ -489,6 +490,9 @@ input[type=number] {
   .slider-row { flex-direction: column; align-items: stretch; gap: 6px; margin-bottom: 18px; }
   .slider-name { width: auto !important; font-size: 13px !important; }
   .slider-track-wrap { display: flex; align-items: center; gap: 8px; }
+
+  /* Lista de películas: altura completa */
+  .cal-sidebar { max-height: calc(100vh - 160px) !important; min-height: 300px; }
 }
 </style>
 </head>
@@ -520,7 +524,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v3.3</span>
+    <span class="footer-txt">Genealogía del Cine v3.4</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -659,7 +663,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v3.3</span>
+    <span class="footer-txt">Genealogía del Cine v3.4</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -964,7 +968,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v3.3</span>
+    <span class="footer-txt">Genealogía del Cine v3.4</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1057,18 +1061,30 @@ let appState = {
 };
 
 async function getState() {
+  const local = localStorage.getItem('cg_state');
+  const localFields = local ? (JSON.parse(local).fields || []) : [];
   try {
     const r = await fetch('/api/state');
     if (r.ok) {
       const data = await r.json();
-      appState.fields = data.fields || [];
-      localStorage.setItem('cg_state', JSON.stringify(data));
+      const serverFields = data.fields || [];
+      if (serverFields.length >= localFields.length) {
+        // el servidor tiene al menos tanta data como local → usamos server
+        appState.fields = serverFields;
+        localStorage.setItem('cg_state', JSON.stringify(data));
+      } else {
+        // local tiene más data → la usamos y la subimos al servidor
+        appState.fields = localFields;
+        fetch('/api/state', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fields: localFields })
+        }).catch(() => {});
+      }
       return;
     }
   } catch (e) {}
-  // fallback a localStorage si el servidor no responde
-  const saved = localStorage.getItem('cg_state');
-  if (saved) appState.fields = JSON.parse(saved).fields || [];
+  appState.fields = localFields;
 }
 
 function saveState() {
@@ -2897,6 +2913,9 @@ async function selectCalFilm(filmId) {
       ${revenue ? `<div><div style="font-size:10px;color:var(--text3);letter-spacing:.04em;">TAQUILLA</div><div style="font-size:13px;font-family:'DM Mono',monospace;">${fmtRevenue(revenue)}</div></div>` : ''}
     </div>` : '';
 
+  const overviewHtml = overview ? `
+    <div style="font-size:12px;color:var(--text3);margin-top:10px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;" title="${overview.replace(/"/g,'&quot;')}">${overview}</div>` : '';
+
   const navBtns = `${prevId ? `<button class="btn" style="flex:1;" onclick="selectCalFilm(${prevId})">← Anterior</button>` : '<span style="flex:1;"></span>'}
     ${nextId ? `<button class="btn" style="flex:1;" onclick="selectCalFilm(${nextId})">Siguiente →</button>` : '<span style="flex:1;"></span>'}`;
 
@@ -2922,6 +2941,7 @@ async function selectCalFilm(filmId) {
           <div class="film-meta">${film.year} · ${film.votes.toLocaleString('es-AR')} votos · ★${film.rating}</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">${(film.genreIds||[]).filter(id=>id!==f.genreId).map(id=>`<span class="badge">${GENRE_MAP[id]||id}</span>`).join('')}</div>
           ${financeHtml}
+          ${overviewHtml}
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0;margin-left:12px;">
