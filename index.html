@@ -448,6 +448,42 @@ input[type=number] {
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ── MOBILE ── */
+.mobile-only { display: none !important; }
+@media (max-width: 768px) {
+  .mobile-only { display: block !important; }
+  .desktop-only { display: none !important; }
+
+  /* Header global */
+  .header { padding: 0 14px; }
+
+  /* Home: ocultar + Nuevo */
+  #btn-new-field { display: none !important; }
+
+  /* Home: lista de campos móvil */
+  .fields-mobile-cards { display: block; }
+  .mobile-field-card {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0; border-bottom: 0.5px solid var(--border); cursor: pointer;
+  }
+  .mobile-field-card:active { background: var(--bg3); }
+
+  /* Field: ocultar acciones del header y tabs */
+  .field-header-btn { display: none !important; }
+  .field-tabs { display: none !important; }
+
+  /* Description: ocultar gráficos, mostrar CTA */
+  .desc-charts-section { display: none !important; }
+  #mobile-cal-cta { display: block !important; }
+
+  /* Rating tab: layout apilado */
+  #tab-rating > div { flex-direction: column; min-height: auto; }
+  .cal-sidebar { width: 100% !important; max-height: calc(100vh - 180px); border-right: none; border-bottom: 0.5px solid var(--border); }
+  #cal-main-wrap { display: none; width: 100%; }
+  #tab-rating.film-active .cal-sidebar { display: none !important; }
+  #tab-rating.film-active #cal-main-wrap { display: block !important; padding: 16px; }
+}
 </style>
 </head>
 <body>
@@ -467,7 +503,7 @@ input[type=number] {
   <div class="header2" style="top:46px;">
     <span class="h2-title">Campos</span>
     <div class="h2-right">
-      <button class="btn-primary" onclick="showScreen('screen-new-field')">+ Nuevo</button>
+      <button class="btn-primary" id="btn-new-field" onclick="showScreen('screen-new-field')">+ Nuevo</button>
     </div>
   </div>
   <div class="body">
@@ -627,8 +663,8 @@ input[type=number] {
   <div class="header2">
     <span class="h2-title" id="field-title">—</span>
     <div class="h2-right">
-      <button class="btn" onclick="renameField()">Renombrar</button>
-      <button class="btn" style="color:#e06060;" onclick="showDeleteFieldModal()">Eliminar</button>
+      <button class="btn field-header-btn" onclick="renameField()">Renombrar</button>
+      <button class="btn field-header-btn" style="color:#e06060;" onclick="showDeleteFieldModal()">Eliminar</button>
       <button class="btn" onclick="showScreen('screen-home')">✕ Cerrar</button>
     </div>
   </div>
@@ -648,6 +684,10 @@ input[type=number] {
         <div class="form-label">GÉNEROS SECUNDARIOS EXCLUIDOS</div>
         <div class="tags" id="desc-excluded"></div>
       </div>
+      <div id="mobile-cal-cta" style="display:none;padding:16px 0 8px;">
+        <button class="btn-primary" style="width:100%;padding:14px;font-size:15px;" onclick="showTab('rating')" id="mobile-cal-btn">Calificar películas →</button>
+      </div>
+      <div class="desc-charts-section">
       <div class="divider"></div>
       <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;">Distribución por décadas</div>
       <div class="analysis-grid-2">
@@ -684,6 +724,7 @@ input[type=number] {
           <div style="flex:1;position:relative;min-height:0;"><canvas id="desc-chart-votes"></canvas></div>
         </div>
       </div>
+      </div><!-- /desc-charts-section -->
     </div>
   </div>
 
@@ -873,9 +914,11 @@ input[type=number] {
         </div>
         <div id="cal-groups"></div>
       </div>
-      <div style="flex:1;padding:20px 24px;" id="cal-main">
-        <div class="empty-state">
-          <div>Seleccioná una película del panel izquierdo para calificarla</div>
+      <div style="flex:1;" id="cal-main-wrap">
+        <div style="padding:20px 24px;" id="cal-main">
+          <div class="empty-state">
+            <div>Seleccioná una película del panel izquierdo para calificarla</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1046,22 +1089,50 @@ function openField(id) {
   appState.samplePage = 1;
   appState.sampleFilter = '';
   appState.sampleGenreFilter = '';
+  appState.currentCalFilm = null;
   const f = currentField();
   document.getElementById('field-title').textContent = f.name;
   showScreen('screen-field');
-  document.querySelectorAll('.ftab').forEach((t,i) => t.classList.toggle('active', i===0));
   document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-  document.getElementById('tab-desc').style.display = '';
-  renderDesc(f);
+  if (isMobile()) {
+    document.getElementById('tab-rating').classList.remove('film-active');
+    document.getElementById('tab-rating').style.display = '';
+    renderRatingTab(f);
+  } else {
+    document.querySelectorAll('.ftab').forEach((t,i) => t.classList.toggle('active', i===0));
+    document.getElementById('tab-desc').style.display = '';
+    renderDesc(f);
+  }
 }
 
 // ── SCREEN 1: FIELDS LIST ──
+function isMobile() { return window.innerWidth <= 768; }
+
 function renderFieldsList() {
   const el = document.getElementById('fields-list');
   if (!appState.fields.length) {
     el.innerHTML = `<div class="empty-state"><div class="big">◎</div><div>No hay campos todavía.<br>Creá uno para empezar.</div></div>`;
     return;
   }
+
+  if (isMobile()) {
+    el.innerHTML = `<div style="padding:0 20px;">` + appState.fields.map(f => {
+      const totalSample = f.sample ? f.sample.length : 0;
+      const rated = f.sample ? f.sample.filter(m => m.ratings && Object.keys(m.ratings).length === (f.differentials||[]).length).length : 0;
+      const pct = totalSample ? Math.round(rated/totalSample*100) : 0;
+      const statusClass = pct === 100 ? 'badge-green' : pct > 0 ? 'badge-amber' : 'badge';
+      const statusLabel = pct === 100 ? 'Completo' : pct > 0 ? 'En análisis' : 'Borrador';
+      return `<div class="mobile-field-card" onclick="openField('${f.id}')">
+        <div>
+          <div style="font-size:14px;font-weight:500;">${f.name}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:3px;">${GENRE_MAP[f.genreId]||f.genreId} · ${totalSample} películas</div>
+        </div>
+        <span class="badge ${statusClass}">${statusLabel}</span>
+      </div>`;
+    }).join('') + `</div>`;
+    return;
+  }
+
   el.innerHTML = `
   <table class="tbl">
     <thead><tr>
@@ -1508,9 +1579,16 @@ function renderDesc(f) {
     <div class="stat-card"><div class="stat-label">DÉCADAS</div><div class="stat-value" style="font-size:16px;margin-top:4px;">${f.decFrom}s–${f.decTo}s</div></div>
     <div class="stat-card"><div class="stat-label">PAÍSES</div><div class="stat-value" style="font-size:16px;margin-top:4px;">${f.countries && f.countries.length ? getCountryName(f.countries[0]) : 'Todos'}</div></div>`;
 
-  const excNames = f.excludedGenres.map(id => GENRE_MAP[id]||id).join(', ');
   document.getElementById('desc-excluded').innerHTML = f.excludedGenres.map(id =>
     `<span class="tag active">${GENRE_MAP[id]||id}</span>`).join('') || '<span style="font-size:12px;color:var(--text3);">Ninguno</span>';
+
+  if (isMobile()) {
+    const diffs = f.differentials || [];
+    const pending = (f.sample || []).filter(m => calClassify(m, diffs.length) !== 'done').length;
+    const btn = document.getElementById('mobile-cal-btn');
+    if (btn) btn.textContent = `Calificar películas${pending ? ` (${pending} pendientes)` : ''} →`;
+    return;
+  }
 
   buildDescCharts(f);
 }
@@ -2728,6 +2806,7 @@ async function selectCalFilm(filmId) {
   if (!film) return;
 
   renderCalSidebar(f);
+  if (isMobile()) document.getElementById('tab-rating').classList.add('film-active');
 
   const diffs = f.differentials || [];
   if (!film.ratings) film.ratings = {};
@@ -2762,6 +2841,7 @@ async function selectCalFilm(filmId) {
     <div style="font-size:12px;color:var(--text3);margin-top:10px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;" title="${overview.replace(/"/g,'&quot;')}">${overview}</div>` : '';
 
   document.getElementById('cal-main').innerHTML = `
+    ${isMobile() ? `<button class="btn mobile-only" style="margin-bottom:14px;width:100%;" onclick="backToCalList()">← Volver al listado</button>` : ''}
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
       <div class="film-header" style="margin-bottom:0;">
         ${posterHtml}
@@ -2850,6 +2930,10 @@ function calcMet(film, diffs) {
   }).filter(v => v !== undefined);
   if (!normalized.length) return null;
   return +(normalized.reduce((s, v) => s + v, 0) / normalized.length * 3).toFixed(2);
+}
+
+function backToCalList() {
+  document.getElementById('tab-rating').classList.remove('film-active');
 }
 
 function saveCalFilm(filmId) {
