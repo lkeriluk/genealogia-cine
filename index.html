@@ -1050,13 +1050,29 @@ let appState = {
   previewCache: null,
 };
 
-function getState() {
+async function getState() {
+  try {
+    const r = await fetch('/api/state');
+    if (r.ok) {
+      const data = await r.json();
+      appState.fields = data.fields || [];
+      localStorage.setItem('cg_state', JSON.stringify(data));
+      return;
+    }
+  } catch (e) {}
+  // fallback a localStorage si el servidor no responde
   const saved = localStorage.getItem('cg_state');
   if (saved) appState.fields = JSON.parse(saved).fields || [];
 }
 
 function saveState() {
-  localStorage.setItem('cg_state', JSON.stringify({ fields: appState.fields }));
+  const data = { fields: appState.fields };
+  localStorage.setItem('cg_state', JSON.stringify(data));
+  fetch('/api/state', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).catch(e => console.warn('No se pudo sincronizar con el servidor:', e));
 }
 
 function exportState() {
@@ -3141,8 +3157,7 @@ function renameField() {
 }
 
 // ── INIT ──
-getState();
-renderFieldsList();
+getState().then(() => renderFieldsList());
 loadCountries();
 </script>
 </body>
