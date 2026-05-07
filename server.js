@@ -29,8 +29,12 @@ async function initDB() {
       google_id TEXT UNIQUE NOT NULL,
       email TEXT UNIQUE NOT NULL,
       name TEXT,
+      picture TEXT,
       created_at TIMESTAMP DEFAULT NOW()
     )
+  `);
+  await pool.query(`
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS picture TEXT
   `);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS app_state (
@@ -69,12 +73,13 @@ passport.use(new GoogleStrategy({
     const email = profile.emails[0].value;
     const name = profile.displayName;
     const googleId = profile.id;
+    const picture = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
     const result = await pool.query(
-      `INSERT INTO users (google_id, email, name)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (google_id) DO UPDATE SET name = $3
+      `INSERT INTO users (google_id, email, name, picture)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (google_id) DO UPDATE SET name = $3, picture = $4
        RETURNING *`,
-      [googleId, email, name]
+      [googleId, email, name, picture]
     );
     done(null, result.rows[0]);
   } catch (e) {
@@ -112,7 +117,7 @@ app.get('/auth/logout', (req, res) => {
 
 app.get('/auth/me', (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'No autenticado' });
-  res.json({ id: req.user.id, name: req.user.name, email: req.user.email });
+  res.json({ id: req.user.id, name: req.user.name, email: req.user.email, picture: req.user.picture });
 });
 
 // ── MIDDLEWARE DE AUTH ──
