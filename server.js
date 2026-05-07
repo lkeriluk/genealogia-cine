@@ -156,6 +156,10 @@ app.get('/login.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'login.html'));
 });
 
+app.get('/help', (req, res) => {
+  res.sendFile(path.join(__dirname, 'help.html'));
+});
+
 app.use(requireAuth, express.static(path.join(__dirname, '.')));
 
 app.get('*', requireAuth, (req, res) => {

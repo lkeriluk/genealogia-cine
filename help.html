@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Centro de ayuda · Genealogía del Cine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d0d0d; --bg2: #111; --bg3: #1a1a1a; --bg4: #222;
+  --text: #e8e8e8; --text2: #aaa; --text3: #666;
+  --border: #1e1e1e; --border2: #2a2a2a;
+  --blue: #378ADD; --green: #1D9E75;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ── */
+.header {
+  position: fixed; top: 0; left: 0; right: 0; height: 46px; z-index: 100;
+  background: var(--bg); border-bottom: 0.5px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px; gap: 16px;
+}
+.header-brand { font-size: 14px; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap; text-decoration: none; color: var(--text); }
+.header-sep { color: var(--text3); font-size: 14px; }
+.header-sub { font-size: 13px; color: var(--text3); }
+.header-spacer { flex: 1; }
+.header-link { font-size: 13px; color: var(--text2); text-decoration: none; }
+.header-link:hover { color: var(--text); }
+
+/* ── LAYOUT ── */
+.layout { display: flex; padding-top: 46px; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 280px; flex-shrink: 0;
+  border-right: 0.5px solid var(--border);
+  position: fixed; top: 46px; bottom: 0;
+  overflow-y: auto; padding: 24px 0;
+}
+.sidebar-search {
+  margin: 0 16px 20px;
+  position: relative;
+}
+.sidebar-search input {
+  width: 100%; padding: 8px 12px 8px 32px;
+  background: var(--bg3); border: 0.5px solid var(--border2);
+  border-radius: 8px; color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 13px; outline: none;
+}
+.sidebar-search input::placeholder { color: var(--text3); }
+.sidebar-search input:focus { border-color: #444; }
+.sidebar-search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+.sidebar-group { margin-bottom: 4px; }
+.sidebar-group-label {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.08em;
+  color: var(--text3); text-transform: uppercase;
+  padding: 6px 20px 4px;
+}
+.sidebar-item {
+  display: block; padding: 7px 20px;
+  font-size: 13px; color: var(--text2);
+  cursor: pointer; text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: color .12s, background .12s;
+}
+.sidebar-item:hover { color: var(--text); background: var(--bg3); }
+.sidebar-item.active { color: var(--text); border-left-color: var(--blue); background: var(--bg3); }
+.sidebar-item.sub { padding-left: 32px; font-size: 12px; }
+.sidebar-item.hidden { display: none; }
+
+/* ── CONTENT ── */
+.content { margin-left: 280px; flex: 1; padding: 40px 60px; max-width: 860px; }
+.breadcrumb {
+  font-size: 12px; color: var(--text3); margin-bottom: 28px;
+  display: flex; align-items: center; gap: 6px;
+}
+.breadcrumb a { color: var(--text3); text-decoration: none; }
+.breadcrumb a:hover { color: var(--text2); }
+.breadcrumb-sep { color: var(--text3); }
+
+.article { display: none; }
+.article.active { display: block; }
+
+.article-title { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 6px; }
+.article-meta { font-size: 12px; color: var(--text3); margin-bottom: 32px; }
+
+.article h2 { font-size: 16px; font-weight: 500; margin: 32px 0 12px; letter-spacing: -0.01em; }
+.article h3 { font-size: 14px; font-weight: 500; margin: 24px 0 10px; color: var(--text2); }
+.article p { font-size: 14px; line-height: 1.7; color: var(--text2); margin-bottom: 12px; }
+.article ul, .article ol { padding-left: 20px; margin-bottom: 12px; }
+.article li { font-size: 14px; line-height: 1.7; color: var(--text2); margin-bottom: 4px; }
+.article strong { color: var(--text); font-weight: 500; }
+.article code { font-family: 'DM Mono', monospace; font-size: 12px; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: 4px; padding: 1px 6px; color: var(--text); }
+.article .formula {
+  font-family: 'DM Mono', monospace; font-size: 13px;
+  background: var(--bg3); border: 0.5px solid var(--border2);
+  border-radius: 8px; padding: 14px 18px; margin: 12px 0;
+  color: var(--text); display: inline-block;
+}
+.article .callout {
+  background: var(--bg3); border-left: 3px solid var(--blue);
+  border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 16px 0;
+  font-size: 13px; color: var(--text2); line-height: 1.6;
+}
+.article .callout strong { color: var(--text); }
+.article hr { border: none; border-top: 0.5px solid var(--border); margin: 32px 0; }
+.article table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+.article th { text-align: left; padding: 8px 12px; border-bottom: 0.5px solid var(--border2); color: var(--text3); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+.article td { padding: 8px 12px; border-bottom: 0.5px solid var(--border); color: var(--text2); }
+.article tr:last-child td { border-bottom: none; }
+
+/* ── HOME ── */
+#home { display: block; }
+.home-header { margin-bottom: 36px; }
+.home-header h1 { font-size: 26px; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 6px; }
+.home-header p { font-size: 14px; color: var(--text3); }
+.articles-list { display: flex; flex-direction: column; gap: 0; }
+.article-card {
+  padding: 18px 0; border-bottom: 0.5px solid var(--border);
+  cursor: pointer; transition: background .12s;
+}
+.article-card:first-child { border-top: 0.5px solid var(--border); }
+.article-card:hover .article-card-title { color: var(--blue); }
+.article-card-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; transition: color .12s; }
+.article-card-desc { font-size: 13px; color: var(--text3); line-height: 1.5; }
+.articles-count { font-size: 12px; color: var(--text3); margin-bottom: 20px; }
+.section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); margin: 28px 0 12px; }
+.no-results { font-size: 13px; color: var(--text3); padding: 20px 0; display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a class="header-brand" href="/">Genealogía del Cine</a>
+  <span class="header-sep">/</span>
+  <span class="header-sub">Centro de ayuda</span>
+  <div class="header-spacer"></div>
+  <a class="header-link" href="/">Volver a la app →</a>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-search">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search-input" placeholder="Buscar artículos..." oninput="filterArticles(this.value)">
+    </div>
+
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">Primeros pasos</div>
+      <a class="sidebar-item" data-article="home" onclick="showArticle('home')">Inicio</a>
+      <a class="sidebar-item" data-article="pantalla-inicio" onclick="showArticle('pantalla-inicio')">Pantalla de inicio</a>
+    </div>
+
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">Campos</div>
+      <a class="sidebar-item" data-article="crear-campo" onclick="showArticle('crear-campo')">Crear un campo</a>
+      <a class="sidebar-item sub" data-article="crear-campo" onclick="showArticle('crear-campo')">El formulario de configuración</a>
+      <a class="sidebar-item sub" data-article="crear-campo" onclick="showArticle('crear-campo')">La vista previa</a>
+      <a class="sidebar-item" data-article="descripcion" onclick="showArticle('descripcion')">Sección Descripción</a>
+      <a class="sidebar-item" data-article="muestra" onclick="showArticle('muestra')">Sección Muestra</a>
+      <a class="sidebar-item" data-article="diferenciales" onclick="showArticle('diferenciales')">Sección Diferenciales</a>
+      <a class="sidebar-item" data-article="calificacion" onclick="showArticle('calificacion')">Sección Calificación</a>
+    </div>
+
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">Más</div>
+      <a class="sidebar-item" data-article="mobile" onclick="showArticle('mobile')">Versión mobile</a>
+      <a class="sidebar-item" data-article="indicadores" onclick="showArticle('indicadores')">Cómo se calculan los indicadores</a>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- HOME -->
+    <div id="art-home" class="article active">
+      <div class="home-header">
+        <h1>Centro de ayuda</h1>
+        <p>Todo lo que necesitás saber para usar Genealogía del Cine.</p>
+      </div>
+
+      <div class="section-label">Primeros pasos</div>
+      <div class="articles-list">
+        <div class="article-card" onclick="showArticle('pantalla-inicio')">
+          <div class="article-card-title">Pantalla de inicio</div>
+          <div class="article-card-desc">La lista de campos de investigación, botones de importar, exportar y crear nuevo campo.</div>
+        </div>
+      </div>
+
+      <div class="section-label">Campos</div>
+      <div class="articles-list">
+        <div class="article-card" onclick="showArticle('crear-campo')">
+          <div class="article-card-title">Crear un campo</div>
+          <div class="article-card-desc">Cómo configurar el universo de películas: género, décadas, votos mínimos, países y vista previa.</div>
+        </div>
+        <div class="article-card" onclick="showArticle('descripcion')">
+          <div class="article-card-title">Sección Descripción</div>
+          <div class="article-card-desc">Stat cards y gráficos de distribución del universo por décadas, géneros, países y scores.</div>
+        </div>
+        <div class="article-card" onclick="showArticle('muestra')">
+          <div class="article-card-title">Sección Muestra</div>
+          <div class="article-card-desc">Dimensionar, generar y ajustar la muestra. Índice de representatividad y distribución comparativa.</div>
+        </div>
+        <div class="article-card" onclick="showArticle('diferenciales')">
+          <div class="article-card-title">Sección Diferenciales</div>
+          <div class="article-card-desc">Definir las tensiones narrativas binarias que se van a aplicar a cada película de la muestra.</div>
+        </div>
+        <div class="article-card" onclick="showArticle('calificacion')">
+          <div class="article-card-title">Sección Calificación</div>
+          <div class="article-card-desc">Asignar valores por diferencial a cada película. Metaestabilidad en tiempo real y navegación entre películas.</div>
+        </div>
+      </div>
+
+      <div class="section-label">Más</div>
+      <div class="articles-list">
+        <div class="article-card" onclick="showArticle('mobile')">
+          <div class="article-card-title">Versión para dispositivos móviles</div>
+          <div class="article-card-desc">Cómo se adapta la interfaz en pantallas pequeñas y qué funcionalidades están disponibles.</div>
+        </div>
+        <div class="article-card" onclick="showArticle('indicadores')">
+          <div class="article-card-title">Cómo se calculan los indicadores</div>
+          <div class="article-card-desc">Fórmulas y criterios detrás del mínimo sugerido, índice de representatividad y los gráficos de distribución.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA DE INICIO -->
+    <div id="art-pantalla-inicio" class="article">
+      <div class="breadcrumb">
+        <a onclick="showArticle('home')">Inicio</a>
+        <span class="breadcrumb-sep">/</span>
+        <span>Pantalla de inicio</span>
+      </div>
+      <div class="article-title">Pantalla de inicio</div>
+      <div class="article-meta">Primeros pasos</div>
+
+      <p>Al abrir la app aparece la pantalla de inicio, que lista todos los campos de investigación creados. Cada fila muestra:</p>
+      <ul>
+        <li><strong>Nombre</strong> del campo y género cinematográfico asociado.</li>
+        <li><strong>Campo:</strong> tamaño total del universo de películas que cumple los criterios definidos.</li>
+        <li><strong>Diferenciales:</strong> cantidad de tensiones narrativas definidas para ese campo.</li>
+        <li><strong>Calificación:</strong> barra de progreso y fracción de películas calificadas sobre el total de la muestra.</li>
+        <li><strong>Estado:</strong> badge que indica la etapa actual del análisis.</li>
+      </ul>
+
+      <p>En el extremo superior derecho hay tres botones:</p>
+      <ul>
+        <li><strong>Importar:</strong> carga un campo desde un archivo JSON exportado previamente.</li>
+        <li><strong>Exportar:</strong> descarga todos los campos como JSON (respaldo o intercambio entre dispositivos).</li>
+        <li><strong>+ Nuevo:</strong> abre el formulario para crear un campo nuevo.</li>
+      </ul>
+    </div>
+
+    <!-- CREAR UN CAMPO -->
+    <div id="art-crear-campo" class="article">
+      <div class="breadcrumb">
+        <a onclick="showArticle('home')">Inicio</a>
+        <span class="breadcrumb-sep">/</span>
+        <span>Crear un campo</span>
+      </div>
+      <div class="article-title">Crear un campo</div>
+      <div class="article-meta">Campos</div>
+
+      <p>Un campo es la unidad de trabajo de la app: define el universo de películas que vas a analizar y contiene la muestra, los diferenciales y las calificaciones del análisis.</p>
+
+      <h2>El formulario de configuración</h2>
+      <p>Al hacer clic en <strong>+ Nuevo</strong> se abre el formulario de configuración. Los parámetros disponibles son:</p>
+      <ul>
+        <li><strong>Nombre:</strong> etiqueta libre para identificar el campo (ej: "Terror en Japón").</li>
+        <li><strong>Género principal:</strong> el género TMDB que define el universo base.</li>
+        <li><strong>Mínimo de votos:</strong> filtra películas con muy baja visibilidad. 200 votos es un punto de partida razonable.</li>
+        <li><strong>Décadas:</strong> rango temporal del universo (desde / hasta).</li>
+        <li><strong>Países de producción:</strong> dejá vacío para incluir todos los países, o elegí uno para acotar el universo a ese país de producción.</li>
+        <li><strong>Excluir géneros secundarios:</strong> marcá los géneros que querés dejar fuera del universo.</li>
+        <li><strong>Permitir películas fuera de clasificación TMDB:</strong> incluye títulos que no fueron incorporados automáticamente al universo pero que el investigador considera relevantes.</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Parámetros bloqueados.</strong> Una vez creado el campo, el género, las décadas y el mínimo de votos quedan bloqueados permanentemente. Si necesitás cambiar estos parámetros, deberás crear un campo nuevo.
+      </div>
+
+      <h2>La vista previa</h2>
+      <p>Antes de crear el campo, la vista previa permite explorar el universo resultante de los parámetros elegidos. Para activarla, hacé clic en <strong>Cargar datos</strong>. Si los parámetros no cambiaron pero querés asegurarte de tener los últimos datos de TMDB, usá el botón <strong>Actualizar</strong>.</p>
+
+      <p>La vista previa muestra:</p>
+      <ul>
+        <li>Total de películas en el campo y rating promedio.</li>
+        <li><strong>Distribución por décadas:</strong> cantidad de películas y taquilla promedio (top 40) por cada década.</li>
+        <li><strong>Distribución por categoría:</strong> géneros secundarios más frecuentes y países de producción (top 10 de cada uno).</li>
+        <li><strong>Distribución de scores:</strong> histograma de rating de usuarios y cantidad de votos.</li>
+      </ul>
+
+      <p>Una vez que los parámetros del universo son correctos, hacé clic en <strong>Crear</strong> para guardar el campo.</p>
+    </div>
+
+    <!-- DESCRIPCIÓN -->
+    <div id="art-descripcion" class="article">
+      <div class="breadcrumb">
+        <a onclick="showArticle('home')">Inicio</a>
+        <span class="breadcrumb-sep">/</span>
+        <span>Sección Descripción</span>
+      </div>
+      <div class="article-title">Sección Descripción</div>
+      <div class="article-meta">Campos</div>
+
+      <p>La sección Descripción ofrece una visión general del universo de películas del campo. En la parte superior aparecen seis stat cards con los parámetros con los que fue creado:</p>
+      <ul>
+        <li><strong>Género:</strong> género principal del campo.</li>
+        <li><strong>Total películas:</strong> tamaño del universo.</li>
+        <li><strong>Rating promedio:</strong> promedio de puntuación TMDB de las películas del universo.</li>
+        <li><strong>Votos mínimos:</strong> umbral de votos aplicado al filtrar el universo.</li>
+        <li><strong>Décadas:</strong> rango temporal cubierto.</li>
+        <li><strong>Países:</strong> país de producción aplicado como filtro, o "Todos" si no se filtró.</li>
+      </ul>
+      <p>Si se excluyeron géneros secundarios al crear el campo, aparecen listados debajo de las stat cards.</p>
+
+      <h2>Distribución por décadas</h2>
+      <p>Muestra dos gráficos de barras lado a lado:</p>
+      <ul>
+        <li>Cantidad de películas por década en el universo.</li>
+        <li>Taquilla promedio en USD del top 40 de películas más taquilleras de cada década.</li>
+      </ul>
+
+      <h2>Distribución por categoría</h2>
+      <p>Muestra los géneros secundarios y países de producción más frecuentes en el universo (top 10 de cada uno). Los valores están escalados al total del universo.</p>
+
+      <h2>Distribución de scores</h2>
+      <p>Muestra el histograma de rating de usuarios y la distribución de la cantidad de votos.</p>
+    </div>
+
+    <!-- MUESTRA -->
+    <div id="art-muestra" class="article">
+      <div class="breadcrumb">
+        <a onclick="showArticle('home')">Inicio</a>
+        <span class="breadcrumb-sep">/</span>
+        <span>Sección Muestra</span>
+      </div>
+      <div class="article-title">Sección Muestra</div>
+      <div class="article-meta">Campos</div>
+
+      <p>La sección Muestra permite definir el conjunto de películas sobre el que se van a aplicar los diferenciales. Incluye herramientas para dimensionar, generar y ajustar la muestra.</p>
+
+      <h2>Stat cards</h2>
+      <p>En la parte superior aparecen tres indicadores:</p>
+      <ul>
+        <li><strong>Mínimo sugerido:</strong> tamaño de muestra mínimo estimado para alcanzar el índice de representatividad objetivo.</li>
+        <li><strong>Tamaño elegido:</strong> tamaño actual de la muestra, ajustable con el slider.</li>
+        <li><strong>Sin calificar:</strong> películas de la muestra que todavía no tienen calificación asignada.</li>
+      </ul>
+
+      <h2>Slider y tabla</h2>
+      <p>El slider permite ajustar el tamaño de la muestra libremente. Al modificarlo, el botón <strong>Generar</strong> se activa. La tabla muestra las películas incluidas actualmente con columnas de Película, Año, País, Géneros Secundarios, Votos, Rating y Taquilla. Se puede ordenar por cualquier columna y filtrar por texto o por género secundario.</p>
+
+      <h2>Generar y agregar películas</h2>
+      <p>El botón <strong>Generar</strong> (re)arma la muestra automáticamente según el tamaño elegido. Al hacer clic, si ya existe una muestra previa, aparece un modal que permite optar por:</p>
+      <ul>
+        <li>Mantener las películas agregadas manualmente.</li>
+        <li>Mantener las películas ya calificadas.</li>
+      </ul>
+      <p>El botón <strong>+ Agregar película</strong> permite incorporar manualmente un título buscándolo en TMDB. Si la película no pertenece al género principal del campo, se requiere una justificación. El botón <strong>Excel</strong> exporta la tabla de la muestra en formato .xlsx.</p>
+
+      <h2>Distribución de la muestra</h2>
+      <p>En la parte inferior aparece la sección Distribución de la muestra, que compara la composición del universo con la de la muestra actual mediante gráficos pareados. Cada gráfico muestra la distribución del universo (azul) y de la muestra (verde) para décadas, géneros secundarios, países, rating y votos.</p>
+      <p>En el encabezado de la sección se muestra el <strong>Índice de representatividad global</strong>, calculado como el promedio de la similitud entre las distribuciones del universo y la muestra en cada variable. Un índice del 100% indica que la muestra replica exactamente la composición del universo.</p>
+    </div>
+
+    <!-- DIFERENCIALES -->
+    <div id="art-diferenciales" class="article">
+      <div class="breadcrumb">
+        <a onclick="showArticle('home')">Inicio</a>
+        <span class="breadcrumb-sep">/</span>
+        <span>Sección Diferenciales</span>
+      </div>
+      <div class="article-title">Sección Diferenciales</div>
+      <div class="article-meta">Campos</div>
+
+      <p>La sección Diferenciales es donde se definen las tensiones narrativas binarias que se van a aplicar a cada película de la muestra. Cada diferencial representa un eje de análisis con dos polos opuestos.</p>
+
+      <h2>Estructura de la lista</h2>
+      <p>La lista muestra todos los diferenciales creados para el campo, con las siguientes columnas:</p>
+      <ul>
+        <li><strong>Nombre:</strong> etiqueta del diferencial (ej: "Naturaleza/Técnica").</li>
+        <li><strong>Polo − y Polo +:</strong> los dos extremos del eje de análisis.</li>
+        <li><strong>Rango:</strong> rango de valores posibles para el slider de calificación.</li>
+        <li><strong>Calificadas:</strong> fracción de películas de la muestra que ya tienen asignado un valor para ese diferencial.</li>
+      </ul>
+      <p>El handle a la izquierda de cada fila permite reordenarlos mediante drag & drop. Desde la lista se puede acceder a la opción editar para modificar cualquier diferencial existente.</p>
+
+      <h2>Crear un diferencial</h2>
+      <p>Al hacer clic en <strong>+ Nuevo diferencial</strong> se abre el panel lateral de edición con los siguientes campos:</p>
+      <ul>
+        <li><strong>Nombre:</strong> etiqueta del diferencial.</li>
+        <li><strong>Polo − y Polo +:</strong> nombre de cada extremo del eje.</li>
+        <li><strong>Máx. polo − y Máx. polo +:</strong> valor máximo del slider en cada dirección (por defecto 3).</li>
+        <li><strong>Descripción:</strong> campo libre para documentar qué mide el diferencial y cómo interpretarlo.</li>
+      </ul>
+
+      <div class="callout">
+        Si se agrega un diferencial nuevo a un campo que ya tiene películas calificadas, esas películas quedarán pendientes para el nuevo diferencial.
+      </div>
+
+      <h2>Importar diferenciales</h2>
+      <p>El botón <strong>Importar de otro campo</strong> permite copiar los diferenciales de cualquier otro campo existente en la app. Es útil cuando se trabaja con múltiples campos que comparten los mismos ejes de análisis.</p>
+    </div>
+
+    <!-- CALIFICACIÓN -->
+    <div id="art-calificacion" class="article">
+      <div class="breadcrumb">
+        <a onclick="showArticle('home')">Inicio</a>
+        <span class="breadcrumb-sep">/</span>
+        <span>Sección Calificación</span>
+      </div>
+      <div class="article-title">Sección Calificación</div>
+      <div class="article-meta">Campos</div>
+
+      <p>La sección Calificación es el espacio de trabajo principal del análisis. Permite asignar a cada película de la muestra un valor en cada diferencial.</p>
+
+      <h2>Estructura de la pantalla</h2>
+      <p>La sección se divide en dos zonas:</p>
+      <ul>
+        <li><strong>Sidebar izquierdo:</strong> lista de películas de la muestra, dividida en tres grupos: Pendientes, En proceso y Calificadas. Permite navegar directamente a cualquier película.</li>
+        <li><strong>Área principal:</strong> muestra la película activa con su póster, metadata (año, votos, rating, géneros secundarios, presupuesto, taquilla) y sinopsis.</li>
+      </ul>
+
+      <h2>Calificar una película</h2>
+      <p>Para cada película activa, la sección Diferenciales muestra un slider por cada diferencial definido que permite asignar un valor. Al mover los sliders, la <strong>metaestabilidad</strong> se actualiza en tiempo real en la parte inferior de la pantalla.</p>
+      <p>La metaestabilidad se calcula como el promedio de los valores absolutos de todas las calificaciones, dividido por el valor máximo del rango. Una metaestabilidad alta indica que la película tensiona fuertemente los diferenciales del género; una baja indica que los reproduce de forma estable.</p>
+
+      <h2>Navegación y guardado</h2>
+      <p>Los botones <strong>Anterior</strong> y <strong>Siguiente</strong> permiten moverse entre películas sin volver al sidebar. El botón <strong>Guardar</strong> registra los valores asignados.</p>
+      <p>Las películas con al menos un diferencial calificado pasan al grupo <strong>En proceso</strong>; cuando todos los diferenciales tienen valor asignado, pasan a <strong>Calificadas</strong>.</p>
+    </div>
+
+    <!-- MOBILE -->
+    <div id="art-mobile" class="article">
+      <div class="breadcrumb">
+        <a onclick="showArticle('home')">Inicio</a>
+        <span class="breadcrumb-sep">/</span>
+        <span>Versión mobile</span>
+      </div>
+      <div class="article-title">Versión para dispositivos móviles</div>
+      <div class="article-meta">Más</div>
+
+      <p>La app está diseñada para funcionar también en pantallas pequeñas. En dispositivos móviles, la interfaz adapta su estructura: las columnas se apilan verticalmente, la tabla de la sección Muestra se vuelve desplazable horizontalmente, y los sliders de calificación ocupan el ancho completo de la pantalla.</p>
+
+      <p>Las tres pantallas disponibles en mobile mantienen toda su funcionalidad:</p>
+      <ul>
+        <li><strong>Pantalla de inicio:</strong> muestra los campos en formato de lista simplificada con nombre, género, cantidad de películas y estado.</li>
+        <li><strong>Sección Calificación — listado:</strong> presenta el sidebar de navegación con los grupos Pendientes, En proceso y Calificadas.</li>
+        <li><strong>Sección Calificación — película activa:</strong> muestra el poster, la metadata y los sliders de diferenciales en una sola columna.</li>
+      </ul>
+
+      <div class="callout">
+        En mobile, al abrir un campo se accede directamente a la sección Calificación. Las secciones Descripción, Muestra, Diferenciales y Análisis están disponibles solo en desktop.
+      </div>
+    </div>
+
+    <!-- INDICADORES -->
+    <div id="art-indicadores" class="article">
+      <div class="breadcrumb">
+        <a onclick="showArticle('home')">Inicio</a>
+        <span class="breadcrumb-sep">/</span>
+        <span>Cómo se calculan los indicadores</span>
+      </div>
+      <div class="article-title">Cómo se calculan los indicadores</div>
+      <div class="article-meta">Más</div>
+
+      <h2>Gráficos de la sección Descripción</h2>
+      <p>Cuatro de los seis gráficos — géneros secundarios, países, rating y cantidad de votos — se construyen consultando hasta 10 páginas de la API de TMDB (20 películas por página), distribuidas equidistantemente a lo largo del universo completo. El factor de escala ajusta los conteos al universo total estimado:</p>
+      <div class="formula">factor = universo_total / (páginas_consultadas × 20)</div>
+      <p>Por ejemplo: si el universo tiene 500 películas, hay 25 páginas en total pero la app solo consulta 10 equidistantes. El factor sería 500 / (10 × 20) = 2,5.</p>
+      <p>Los otros dos gráficos — cantidad de películas por década y taquilla promedio — no usan este factor: el primero es un conteo directo de TMDB, y el segundo es un promedio sobre las 40 películas más taquilleras de cada década consultadas explícitamente.</p>
+
+      <p>Los seis gráficos son:</p>
+      <ul>
+        <li><strong>Cantidad de películas por década:</strong> conteo directo de los resultados de TMDB dentro de cada rango de años.</li>
+        <li><strong>Taquilla promedio (top 40 por década):</strong> promedio en USD (millones) del revenue de las 40 películas más taquilleras de cada década.</li>
+        <li><strong>Géneros secundarios (top 10):</strong> frecuencia de aparición de cada género secundario en los resultados, escalada al universo total.</li>
+        <li><strong>Países de producción (top 10):</strong> frecuencia de aparición de cada país como productor primario, escalada al universo total.</li>
+        <li><strong>Rating de usuarios:</strong> distribución de las películas por franjas de rating TMDB (1–2, 2–3, …, 9–10), escalada al universo total.</li>
+        <li><strong>Cantidad de votos:</strong> distribución por franjas de votos (&lt;500, 500–2k, 2k–5k, 5k–15k, &gt;15k), escalada al universo total.</li>
+      </ul>
+      <div class="callout">El escalado es una estimación: TMDB no garantiza una distribución uniforme entre páginas, por lo que los valores son orientativos y no conteos exactos del universo completo.</div>
+
+      <hr>
+
+      <h2>Tamaño mínimo sugerido de la muestra</h2>
+      <p>El mínimo sugerido es el tamaño de muestra a partir del cual la distribución de la muestra replica la del universo con al menos un <strong>95% de similitud</strong>. La similitud se mide por variable comparando, categoría por categoría, el menor de los dos porcentajes (universo vs. muestra) y sumando los resultados.</p>
+      <p>El algoritmo prueba N = 1, 2, 3… para cinco variables: décadas, rating, votos, géneros secundarios (top 10) y países (top 10, solo si no hay filtro de país activo). El mínimo sugerido final es el máximo de todos esos valores, con dos ajustes:</p>
+      <ul>
+        <li><strong>Piso mínimo:</strong> 10 películas por cada década activa en el universo.</li>
+        <li><strong>Techo máximo:</strong> 80% del universo total.</li>
+      </ul>
+
+      <h3>Ejemplo con décadas (género: Western)</h3>
+      <p>El universo tiene esta distribución: 1950s 5%, 1960s 25%, 1970s 40%, 1980s 20%, 1990s 10%.</p>
+      <p>Con N=7, la muestra esperada es:</p>
+      <table>
+        <thead><tr><th>Década</th><th>Universo</th><th>Muestra (N=7)</th><th>Muestra %</th><th>Coincidencia</th></tr></thead>
+        <tbody>
+          <tr><td>1950s</td><td>5%</td><td>0 películas</td><td>0%</td><td>0%</td></tr>
+          <tr><td>1960s</td><td>25%</td><td>2 películas</td><td>28,6%</td><td>25%</td></tr>
+          <tr><td>1970s</td><td>40%</td><td>3 películas</td><td>42,9%</td><td>40%</td></tr>
+          <tr><td>1980s</td><td>20%</td><td>1 película</td><td>14,3%</td><td>14,3%</td></tr>
+          <tr><td>1990s</td><td>10%</td><td>1 película</td><td>14,3%</td><td>10%</td></tr>
+        </tbody>
+      </table>
+      <p>Suma = 0 + 25 + 40 + 14,3 + 10 = <strong>89,3%</strong> → no llega al 95%, N=7 no alcanza. El algoritmo sigue probando hasta N=15, donde la similitud llega al 95%. El piso mínimo es 5 décadas × 10 = 50 películas, por lo que el mínimo sugerido final es <strong>50</strong>.</p>
+
+      <hr>
+
+      <h2>Índice de representatividad</h2>
+      <p>El índice de representatividad mide qué tan bien replica la muestra la composición del universo. Se calcula para cinco variables: décadas, rating, votos, géneros secundarios y países. El índice global es el promedio simple de esos cinco valores.</p>
+      <p>Por ejemplo: si los índices individuales son décadas 89%, rating 94%, votos 91%, géneros 87% y países 96%, el índice global es (89 + 94 + 91 + 87 + 96) / 5 = <strong>91%</strong>.</p>
+      <p>La taquilla se muestra como índice separado pero no se incluye en el global: al trabajar con una muestra pequeña, el "top 40 por taquilla" pierde representatividad respecto al universo y distorsionaría el índice general.</p>
+
+      <hr>
+
+      <h2>Gráficos comparativos muestra / universo</h2>
+      <p>Los seis gráficos de la sección Distribución de la muestra muestran, para cada variable, la distribución del universo (azul) y de la muestra (verde) en paralelo. Las distribuciones se expresan siempre en porcentajes para que sean comparables independientemente de los tamaños absolutos.</p>
+      <ul>
+        <li><strong>Cantidad de películas por década:</strong> porcentaje de películas de cada década en el universo vs. en la muestra.</li>
+        <li><strong>Taquilla promedio por década:</strong> taquilla promedio en USD (millones) del top 40 de cada década en el universo vs. taquilla promedio de las películas de esa década en la muestra.</li>
+        <li><strong>Géneros secundarios:</strong> porcentaje de aparición de cada género secundario en el universo vs. en la muestra.</li>
+        <li><strong>Países de producción:</strong> porcentaje de cada país en el universo vs. en la muestra.</li>
+        <li><strong>Rating de usuarios:</strong> distribución porcentual por franjas de rating en el universo vs. en la muestra.</li>
+        <li><strong>Cantidad de votos:</strong> distribución porcentual por franjas de votos en el universo vs. en la muestra.</li>
+      </ul>
+      <p>Cada gráfico incluye al pie su propio índice de representatividad parcial, que contribuye al índice global mostrado en el encabezado de la sección.</p>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /layout -->
+
+<script>
+const articles = {
+  'home':            { title: 'Inicio', text: 'pantalla inicio campos crear explorar diferenciales calificación muestra mobile indicadores' },
+  'pantalla-inicio': { title: 'Pantalla de inicio', text: 'inicio campos lista importar exportar nuevo badge estado calificación diferenciales' },
+  'crear-campo':     { title: 'Crear un campo', text: 'crear campo formulario configuración género décadas votos mínimos países excluir vista previa cargar datos universo bloqueado' },
+  'descripcion':     { title: 'Sección Descripción', text: 'descripción stat cards gráficos décadas taquilla géneros países rating votos distribución universo' },
+  'muestra':         { title: 'Sección Muestra', text: 'muestra slider generar agregar película representatividad distribución índice excel exportar' },
+  'diferenciales':   { title: 'Sección Diferenciales', text: 'diferenciales tensiones narrativas polo drag drop importar crear editar slider rango' },
+  'calificacion':    { title: 'Sección Calificación', text: 'calificación película metaestabilidad slider pendientes en proceso calificadas guardar anterior siguiente sidebar' },
+  'mobile':          { title: 'Versión mobile', text: 'mobile celular dispositivo móvil responsive pantalla pequeña' },
+  'indicadores':     { title: 'Cómo se calculan los indicadores', text: 'indicadores fórmula cálculo factor escala mínimo sugerido representatividad coseno solapamiento décadas' },
+};
+
+let currentArticle = 'home';
+
+function showArticle(id) {
+  document.querySelectorAll('.article').forEach(a => a.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(a => a.classList.remove('active'));
+  document.getElementById('art-' + id).classList.add('active');
+  document.querySelectorAll(`[data-article="${id}"]`).forEach(el => el.classList.add('active'));
+  currentArticle = id;
+  window.scrollTo(0, 0);
+}
+
+function filterArticles(q) {
+  const term = q.toLowerCase().trim();
+  document.querySelectorAll('.sidebar-item').forEach(el => {
+    const id = el.dataset.article;
+    const art = articles[id];
+    if (!art) return;
+    const match = !term || art.title.toLowerCase().includes(term) || art.text.toLowerCase().includes(term);
+    el.classList.toggle('hidden', !match);
+  });
+}
+</script>
+</body>
+</html>
