@@ -1,6 +1,10 @@
 const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const session = require('express-session');
+const PgSession = require('connect-pg-simple')(session);
 
 const app = express();
 const pool = new Pool({
@@ -8,44 +12,140 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-app.use(express.json({ limit: '20mb' }));
-app.use(express.static(path.join(__dirname, '.')));
-
+// ── BASE DE DATOS ──
 async function initDB() {
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      google_id TEXT UNIQUE NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      name TEXT,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS app_state (
-      id INTEGER PRIMARY KEY DEFAULT 1,
+      user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
       data JSONB NOT NULL DEFAULT '{"fields":[]}'::jsonb,
       updated_at TIMESTAMP DEFAULT NOW()
     )
   `);
   await pool.query(`
-    INSERT INTO app_state (id, data) VALUES (1, '{"fields":[]}')
-    ON CONFLICT DO NOTHING
+    CREATE TABLE IF NOT EXISTS session (
+      sid VARCHAR NOT NULL COLLATE "default",
+      sess JSON NOT NULL,
+      expire TIMESTAMP(6) NOT NULL,
+      CONSTRAINT session_pkey PRIMARY KEY (sid)
+    )
   `);
 }
 initDB().catch(console.error);
 
-app.get('/api/state', async (req, res) => {
+// ── SESIONES ──
+app.use(session({
+  store: new PgSession({ pool, tableName: 'session' }),
+  secret: process.env.SESSION_SECRET || 'dev-secret-change-in-prod',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 días
+}));
+
+// ── PASSPORT / GOOGLE AUTH ──
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: '/auth/google/callback'
+}, async (accessToken, refreshToken, profile, done) => {
   try {
-    const r = await pool.query('SELECT data FROM app_state WHERE id = 1');
+    const email = profile.emails[0].value;
+    const name = profile.displayName;
+    const googleId = profile.id;
+    const result = await pool.query(
+      `INSERT INTO users (google_id, email, name)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (google_id) DO UPDATE SET name = $3
+       RETURNING *`,
+      [googleId, email, name]
+    );
+    done(null, result.rows[0]);
+  } catch (e) {
+    done(e);
+  }
+}));
+
+passport.serializeUser((user, done) => done(null, user.id));
+passport.deserializeUser(async (id, done) => {
+  try {
+    const r = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    done(null, r.rows[0] || null);
+  } catch (e) {
+    done(e);
+  }
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(express.json({ limit: '20mb' }));
+
+// ── RUTAS DE AUTH ──
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login.html' }),
+  (req, res) => res.redirect('/')
+);
+
+app.get('/auth/logout', (req, res) => {
+  req.logout(() => res.redirect('/login.html'));
+});
+
+app.get('/auth/me', (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'No autenticado' });
+  res.json({ id: req.user.id, name: req.user.name, email: req.user.email });
+});
+
+// ── MIDDLEWARE DE AUTH ──
+function requireAuth(req, res, next) {
+  if (req.user) return next();
+  if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'No autenticado' });
+  res.redirect('/login.html');
+}
+
+// ── API DE ESTADO (por usuario) ──
+app.get('/api/state', requireAuth, async (req, res) => {
+  try {
+    const r = await pool.query('SELECT data FROM app_state WHERE user_id = $1', [req.user.id]);
     res.json(r.rows[0]?.data || { fields: [] });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-app.put('/api/state', async (req, res) => {
+app.put('/api/state', requireAuth, async (req, res) => {
   try {
     await pool.query(
-      `INSERT INTO app_state (id, data) VALUES (1, $1)
-       ON CONFLICT (id) DO UPDATE SET data = $1, updated_at = NOW()`,
-      [req.body]
+      `INSERT INTO app_state (user_id, data) VALUES ($1, $2)
+       ON CONFLICT (user_id) DO UPDATE SET data = $2, updated_at = NOW()`,
+      [req.user.id, req.body]
     );
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// ── ARCHIVOS ESTÁTICOS ──
+// login.html es público, el resto requiere auth
+app.get('/login.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+app.use(requireAuth, express.static(path.join(__dirname, '.')));
+
+app.get('*', requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
