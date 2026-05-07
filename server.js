@@ -1,3 +1,12 @@
+// ENV CHECK — logged before anything else to diagnose Railway injection
+console.log('ENV CHECK:', {
+  HAS_CLIENT_ID: !!process.env.GOOGLE_CLIENT_ID,
+  HAS_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET,
+  HAS_SESSION_SECRET: !!process.env.SESSION_SECRET,
+  HAS_DATABASE_URL: !!process.env.DATABASE_URL,
+  NODE_ENV: process.env.NODE_ENV,
+});
+
 const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
