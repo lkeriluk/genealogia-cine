@@ -698,7 +698,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.1</span>
+    <span class="footer-txt">Genealogía del Cine v4.2</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -837,7 +837,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.1</span>
+    <span class="footer-txt">Genealogía del Cine v4.2</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1142,7 +1142,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.1</span>
+    <span class="footer-txt">Genealogía del Cine v4.2</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3509,6 +3509,7 @@ async function openActivityModal(userId, userName) {
       const label = ACTION_LABELS[row.action] || row.action;
       const d = row.details || {};
       const parts = [];
+      if (d.name) parts.push(d.name);
       if (d.field) parts.push(d.field);
       if (d.title) parts.push(d.title);
       if (d.diff) parts.push(d.diff);
