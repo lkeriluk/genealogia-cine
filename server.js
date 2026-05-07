@@ -103,12 +103,25 @@ app.use(express.json({ limit: '20mb' }));
 
 // ── RUTAS DE AUTH ──
 app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'none' })
+);
+
+// Ruta alternativa cuando el usuario hace click en el botón por primera vez (sin sesión Google activa)
+app.get('/auth/google/select',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
 app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login.html' }),
-  (req, res) => res.redirect('/')
+  (req, res, next) => {
+    passport.authenticate('google', (err, user) => {
+      if (err && err.message && err.message.includes('immediate')) {
+        // prompt:none falló — no hay sesión Google activa, redirigir a flujo normal
+        return res.redirect('/auth/google/select');
+      }
+      if (!user) return res.redirect('/login.html');
+      req.logIn(user, (e) => { if (e) return next(e); res.redirect('/'); });
+    })(req, res, next);
+  }
 );
 
 app.get('/auth/logout', (req, res) => {
