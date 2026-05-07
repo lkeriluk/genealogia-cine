@@ -234,7 +234,7 @@ appState = {
 3. Agregar entrada en el artículo **Release Notes** de `help.html` (formato: `## vX.Y — Mes Año` + lista de cambios)
 4. Incluir la nueva versión en el mensaje del commit
 
-**Criterio para actualizar docs:** cualquier cambio en flujo de uso, comportamiento de una feature existente o feature nueva. Los bugfixes sin impacto en la UX y los cambios de backend sin efecto visible no requieren actualización de artículos (sí van en Release Notes).
+**Criterio para actualizar docs:** cualquier cambio en flujo de uso, comportamiento de una feature existente o feature nueva. Los bugfixes sin impacto en la UX y los cambios de backend sin efecto visible no requieren actualización de artículos (sí van en Release Notes). Las actualizaciones de documentación no se mencionan en Release Notes.
 
 ---
 
