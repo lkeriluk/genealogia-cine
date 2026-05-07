@@ -130,6 +130,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .no-results { font-size: 13px; color: var(--text3); padding: 20px 0; display: none; }
 figure { margin: 24px 0; }
 figure img { width: 100%; border-radius: 8px; border: 0.5px solid var(--border2); display: block; }
+figure.img-mobile { text-align: center; }
+figure.img-mobile img { width: auto; max-height: 480px; display: inline-block; }
 figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: center; }
 </style>
 </head>
@@ -153,8 +155,7 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
     </div>
 
     <div class="sidebar-group">
-      <div class="sidebar-group-label">Primeros pasos</div>
-      <a class="sidebar-item" data-article="home" onclick="showArticle('home')">Inicio</a>
+      <div class="sidebar-group-label">Pantalla de inicio</div>
       <a class="sidebar-item" data-article="pantalla-inicio" onclick="showArticle('pantalla-inicio')">Pantalla de inicio</a>
     </div>
 
@@ -173,71 +174,16 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <div class="sidebar-group-label">Más</div>
       <a class="sidebar-item" data-article="mobile" onclick="showArticle('mobile')">Versión mobile</a>
       <a class="sidebar-item" data-article="indicadores" onclick="showArticle('indicadores')">Cómo se calculan los indicadores</a>
+      <a class="sidebar-item" data-article="release-notes" onclick="showArticle('release-notes')">Release Notes</a>
     </div>
   </div>
 
   <!-- CONTENT -->
   <div class="content">
 
-    <!-- HOME -->
-    <div id="art-home" class="article active">
-      <div class="home-header">
-        <h1>Centro de ayuda</h1>
-        <p>Todo lo que necesitás saber para usar Genealogía del Cine.</p>
-      </div>
-
-      <div class="section-label">Primeros pasos</div>
-      <div class="articles-list">
-        <div class="article-card" onclick="showArticle('pantalla-inicio')">
-          <div class="article-card-title">Pantalla de inicio</div>
-          <div class="article-card-desc">La lista de campos de investigación, botones de importar, exportar y crear nuevo campo.</div>
-        </div>
-      </div>
-
-      <div class="section-label">Campos</div>
-      <div class="articles-list">
-        <div class="article-card" onclick="showArticle('crear-campo')">
-          <div class="article-card-title">Crear un campo</div>
-          <div class="article-card-desc">Cómo configurar el universo de películas: género, décadas, votos mínimos, países y vista previa.</div>
-        </div>
-        <div class="article-card" onclick="showArticle('descripcion')">
-          <div class="article-card-title">Sección Descripción</div>
-          <div class="article-card-desc">Stat cards y gráficos de distribución del universo por décadas, géneros, países y scores.</div>
-        </div>
-        <div class="article-card" onclick="showArticle('muestra')">
-          <div class="article-card-title">Sección Muestra</div>
-          <div class="article-card-desc">Dimensionar, generar y ajustar la muestra. Índice de representatividad y distribución comparativa.</div>
-        </div>
-        <div class="article-card" onclick="showArticle('diferenciales')">
-          <div class="article-card-title">Sección Diferenciales</div>
-          <div class="article-card-desc">Definir las tensiones narrativas binarias que se van a aplicar a cada película de la muestra.</div>
-        </div>
-        <div class="article-card" onclick="showArticle('calificacion')">
-          <div class="article-card-title">Sección Calificación</div>
-          <div class="article-card-desc">Asignar valores por diferencial a cada película. Metaestabilidad en tiempo real y navegación entre películas.</div>
-        </div>
-      </div>
-
-      <div class="section-label">Más</div>
-      <div class="articles-list">
-        <div class="article-card" onclick="showArticle('mobile')">
-          <div class="article-card-title">Versión para dispositivos móviles</div>
-          <div class="article-card-desc">Cómo se adapta la interfaz en pantallas pequeñas y qué funcionalidades están disponibles.</div>
-        </div>
-        <div class="article-card" onclick="showArticle('indicadores')">
-          <div class="article-card-title">Cómo se calculan los indicadores</div>
-          <div class="article-card-desc">Fórmulas y criterios detrás del mínimo sugerido, índice de representatividad y los gráficos de distribución.</div>
-        </div>
-      </div>
-    </div>
 
     <!-- PANTALLA DE INICIO -->
-    <div id="art-pantalla-inicio" class="article">
-      <div class="breadcrumb">
-        <a onclick="showArticle('home')">Inicio</a>
-        <span class="breadcrumb-sep">/</span>
-        <span>Pantalla de inicio</span>
-      </div>
+    <div id="art-pantalla-inicio" class="article active">
       <div class="article-title">Pantalla de inicio</div>
       <div class="article-meta">Primeros pasos</div>
 
@@ -264,11 +210,6 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
 
     <!-- CREAR UN CAMPO -->
     <div id="art-crear-campo" class="article">
-      <div class="breadcrumb">
-        <a onclick="showArticle('home')">Inicio</a>
-        <span class="breadcrumb-sep">/</span>
-        <span>Crear un campo</span>
-      </div>
       <div class="article-title">Crear un campo</div>
       <div class="article-meta">Campos</div>
 
@@ -322,11 +263,6 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
 
     <!-- DESCRIPCIÓN -->
     <div id="art-descripcion" class="article">
-      <div class="breadcrumb">
-        <a onclick="showArticle('home')">Inicio</a>
-        <span class="breadcrumb-sep">/</span>
-        <span>Sección Descripción</span>
-      </div>
       <div class="article-title">Sección Descripción</div>
       <div class="article-meta">Campos</div>
 
@@ -345,6 +281,7 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
         <img src="/help-img/image14.png" alt="Sección Descripción: stat cards y distribución por décadas">
         <figcaption>Figura 6. Sección Descripción: stat cards del campo y distribución por décadas.</figcaption>
       </figure>
+      <p>Los gráficos presentados son los mismos que se muestran en la vista previa durante la creación del campo.</p>
       <h2>Distribución por décadas</h2>
       <p>Muestra dos gráficos de barras lado a lado:</p>
       <ul>
@@ -361,11 +298,6 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
 
     <!-- MUESTRA -->
     <div id="art-muestra" class="article">
-      <div class="breadcrumb">
-        <a onclick="showArticle('home')">Inicio</a>
-        <span class="breadcrumb-sep">/</span>
-        <span>Sección Muestra</span>
-      </div>
       <div class="article-title">Sección Muestra</div>
       <div class="article-meta">Campos</div>
 
@@ -417,11 +349,6 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
 
     <!-- DIFERENCIALES -->
     <div id="art-diferenciales" class="article">
-      <div class="breadcrumb">
-        <a onclick="showArticle('home')">Inicio</a>
-        <span class="breadcrumb-sep">/</span>
-        <span>Sección Diferenciales</span>
-      </div>
       <div class="article-title">Sección Diferenciales</div>
       <div class="article-meta">Campos</div>
 
@@ -460,11 +387,6 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
 
     <!-- CALIFICACIÓN -->
     <div id="art-calificacion" class="article">
-      <div class="breadcrumb">
-        <a onclick="showArticle('home')">Inicio</a>
-        <span class="breadcrumb-sep">/</span>
-        <span>Sección Calificación</span>
-      </div>
       <div class="article-title">Sección Calificación</div>
       <div class="article-meta">Campos</div>
 
@@ -492,11 +414,6 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
 
     <!-- MOBILE -->
     <div id="art-mobile" class="article">
-      <div class="breadcrumb">
-        <a onclick="showArticle('home')">Inicio</a>
-        <span class="breadcrumb-sep">/</span>
-        <span>Versión mobile</span>
-      </div>
       <div class="article-title">Versión para dispositivos móviles</div>
       <div class="article-meta">Más</div>
 
@@ -509,15 +426,15 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
         <li><strong>Sección Calificación — película activa:</strong> muestra el poster, la metadata y los sliders de diferenciales en una sola columna.</li>
       </ul>
 
-      <figure>
+      <figure class="img-mobile">
         <img src="/help-img/image3.png" alt="Pantalla de inicio en mobile">
         <figcaption>Figura 14. Pantalla de inicio en mobile: lista de campos con nombre, género y estado.</figcaption>
       </figure>
-      <figure>
+      <figure class="img-mobile">
         <img src="/help-img/image2.png" alt="Sección Calificación en mobile: listado">
         <figcaption>Figura 15. Sección Calificación en mobile: listado de películas.</figcaption>
       </figure>
-      <figure>
+      <figure class="img-mobile">
         <img src="/help-img/image1.png" alt="Sección Calificación en mobile: película activa">
         <figcaption>Figura 16. Sección Calificación en mobile: película activa con sliders.</figcaption>
       </figure>
@@ -528,11 +445,6 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
 
     <!-- INDICADORES -->
     <div id="art-indicadores" class="article">
-      <div class="breadcrumb">
-        <a onclick="showArticle('home')">Inicio</a>
-        <span class="breadcrumb-sep">/</span>
-        <span>Cómo se calculan los indicadores</span>
-      </div>
       <div class="article-title">Cómo se calculan los indicadores</div>
       <div class="article-meta">Más</div>
 
@@ -600,12 +512,25 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <p>Cada gráfico incluye al pie su propio índice de representatividad parcial, que contribuye al índice global mostrado en el encabezado de la sección.</p>
     </div>
 
+    <!-- RELEASE NOTES -->
+    <div id="art-release-notes" class="article">
+      <div class="article-title">Release Notes</div>
+      <div class="article-meta">Más</div>
+
+      <h2>v3.8 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Mayo 2026</span></h2>
+      <ul>
+        <li>Centro de ayuda disponible en <code>/help</code> con búsqueda, navegación lateral y capturas de pantalla integradas.</li>
+        <li>Avatar de usuario en el header con nombre, email y opción de cerrar sesión.</li>
+        <li>Autenticación con Google OAuth: acceso protegido, sesión persistente por 30 días.</li>
+        <li>Link "Ayuda" en el header de la app.</li>
+      </ul>
+    </div>
+
   </div><!-- /content -->
 </div><!-- /layout -->
 
 <script>
 const articles = {
-  'home':            { title: 'Inicio', text: 'pantalla inicio campos crear explorar diferenciales calificación muestra mobile indicadores' },
   'pantalla-inicio': { title: 'Pantalla de inicio', text: 'inicio campos lista importar exportar nuevo badge estado calificación diferenciales' },
   'crear-campo':     { title: 'Crear un campo', text: 'crear campo formulario configuración género décadas votos mínimos países excluir vista previa cargar datos universo bloqueado' },
   'descripcion':     { title: 'Sección Descripción', text: 'descripción stat cards gráficos décadas taquilla géneros países rating votos distribución universo' },
@@ -614,9 +539,10 @@ const articles = {
   'calificacion':    { title: 'Sección Calificación', text: 'calificación película metaestabilidad slider pendientes en proceso calificadas guardar anterior siguiente sidebar' },
   'mobile':          { title: 'Versión mobile', text: 'mobile celular dispositivo móvil responsive pantalla pequeña' },
   'indicadores':     { title: 'Cómo se calculan los indicadores', text: 'indicadores fórmula cálculo factor escala mínimo sugerido representatividad coseno solapamiento décadas' },
+  'release-notes':   { title: 'Release Notes', text: 'versiones cambios novedades historial release notes v3' },
 };
 
-let currentArticle = 'home';
+let currentArticle = 'pantalla-inicio';
 
 function showArticle(id) {
   document.querySelectorAll('.article').forEach(a => a.classList.remove('active'));
