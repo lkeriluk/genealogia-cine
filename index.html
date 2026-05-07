@@ -137,6 +137,41 @@ body {
 }
 .users-avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
 .users-cell-user { display: flex; align-items: center; gap: 10px; }
+.u-activity-btn {
+  background: none; border: 0.5px solid var(--border2); border-radius: 6px;
+  color: var(--text3); font-size: 11px; padding: 3px 8px; cursor: pointer;
+  white-space: nowrap; transition: color .1s, border-color .1s;
+}
+.u-activity-btn:hover { color: var(--blue); border-color: var(--blue); }
+.activity-modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.65); display: none; align-items: center; justify-content: center;
+}
+.activity-modal-overlay.open { display: flex; }
+.activity-modal {
+  background: var(--bg2); border: 0.5px solid var(--border2);
+  border-radius: 12px; width: 100%; max-width: 560px; max-height: 80vh;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.55); display: flex; flex-direction: column; overflow: hidden;
+}
+.activity-modal-header {
+  padding: 16px 20px; border-bottom: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.activity-modal-title { font-size: 14px; font-weight: 500; }
+.activity-modal-subtitle { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.activity-modal-body { overflow-y: auto; flex: 1; padding: 8px 0; }
+.activity-entry {
+  padding: 10px 20px; display: flex; align-items: flex-start; gap: 12px;
+  border-bottom: 0.5px solid var(--border);
+}
+.activity-entry:last-child { border-bottom: none; }
+.activity-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--blue);
+  margin-top: 5px; flex-shrink: 0;
+}
+.activity-label { font-size: 13px; color: var(--text); line-height: 1.4; }
+.activity-detail { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.activity-time { font-size: 11px; color: var(--text3); white-space: nowrap; margin-left: auto; padding-left: 12px; }
 .tmdb-badge {
   font-size: 10px; font-weight: 500; padding: 2px 7px;
   border-radius: 4px; background: var(--tmdb); color: #fff;
@@ -625,10 +660,23 @@ input[type=number] {
     </div>
     <div id="users-modal-body">
       <table class="users-table">
-        <thead><tr><th>Usuario</th><th>Último ingreso</th></tr></thead>
+        <thead><tr><th>Usuario</th><th>Último ingreso</th><th></th></tr></thead>
         <tbody id="users-table-body"></tbody>
       </table>
     </div>
+  </div>
+</div>
+
+<div class="activity-modal-overlay" id="activity-modal-overlay" onclick="closeActivityModal()">
+  <div class="activity-modal" onclick="event.stopPropagation()">
+    <div class="activity-modal-header">
+      <div>
+        <div class="activity-modal-title" id="activity-modal-title">Actividad</div>
+        <div class="activity-modal-subtitle" id="activity-modal-subtitle"></div>
+      </div>
+      <button class="users-modal-close" onclick="closeActivityModal()">×</button>
+    </div>
+    <div class="activity-modal-body" id="activity-modal-body"></div>
   </div>
 </div>
 
@@ -650,7 +698,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.0</span>
+    <span class="footer-txt">Genealogía del Cine v4.1</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -789,7 +837,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.0</span>
+    <span class="footer-txt">Genealogía del Cine v4.1</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1094,7 +1142,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.0</span>
+    <span class="footer-txt">Genealogía del Cine v4.1</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1223,6 +1271,31 @@ function saveState() {
   }).catch(e => console.warn('No se pudo sincronizar con el servidor:', e));
 }
 
+// ── AUDITORÍA ──
+const ACTION_LABELS = {
+  'field.create':   'Creó el campo',
+  'field.delete':   'Eliminó el campo',
+  'field.rename':   'Renombró el campo',
+  'sample.generate':'Generó la muestra',
+  'sample.regen':   'Regeneró la muestra',
+  'movie.add':      'Agregó película',
+  'movie.remove':   'Eliminó película',
+  'diff.create':    'Creó diferencial',
+  'diff.edit':      'Editó diferencial',
+  'diff.delete':    'Eliminó diferencial',
+  'rating.save':    'Guardó calificación',
+  'state.import':   'Importó datos',
+  'state.export':   'Exportó datos',
+};
+
+function logActivity(action, details) {
+  fetch('/api/activity', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, details })
+  }).catch(() => {});
+}
+
 function exportState() {
   const data = JSON.stringify({ fields: appState.fields }, null, 2);
   const blob = new Blob([data], { type: 'application/json' });
@@ -1234,6 +1307,7 @@ function exportState() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  logActivity('state.export', { fields: appState.fields.length });
 }
 
 function importState() {
@@ -1252,6 +1326,7 @@ function importState() {
         appState.fields = data.fields;
         saveState();
         renderFieldsList();
+        logActivity('state.import', { fields: data.fields.length });
       } catch(e) { alert('No se pudo leer el archivo.'); }
     };
     reader.readAsText(file);
@@ -1768,6 +1843,7 @@ async function createField() {
   appState.fields.push(field);
   saveState();
   btn.textContent = 'Crear';
+  logActivity('field.create', { name, genre: GENRE_MAP[+genreId] || genreId, universeTotal });
   openField(field.id);
 }
 
@@ -1981,6 +2057,7 @@ async function generateSample(f) {
   filtered.forEach(m => delete m._originCountries);
 
   f.sample = [...protected_, ...filtered];
+  logActivity('sample.generate', { field: f.name, size: f.sample.length });
   saveState();
   markSampleDirty(false);
 }
@@ -2223,7 +2300,9 @@ function goSamplePage(p) {
 function removeFromSample(filmId) {
   const f = currentField();
   if (!f) return;
+  const removed = f.sample.find(m => m.id === filmId);
   f.sample = f.sample.filter(m => m.id !== filmId);
+  logActivity('movie.remove', { field: f.name, title: removed?.title });
   saveState();
   renderSampleTable(f);
   renderSampleStats(f);
@@ -2695,6 +2774,7 @@ async function doRegen() {
     (keepRated && m.ratings && Object.keys(m.ratings).length > 0)
   );
   f.sample = protected_;
+  logActivity('sample.regen', { field: f.name, keepManual, keepRated });
   await generateSample(f);
   await renderSample(f);
   markSampleDirty(false);
@@ -2757,6 +2837,7 @@ async function confirmAddFilm() {
       movie.genreIds = d.genres ? d.genres.map(g => g.id) : [];
     } catch(e) {}
     f.sample.push(movie);
+    logActivity('movie.add', { field: f.name, title: m.title, year: m.year, manual: true });
     saveState();
   }
   closeModal('modal-add-film');
@@ -2904,8 +2985,10 @@ function saveDiff(existingId) {
   if (existingId) {
     const d = f.differentials.find(x => x.id === existingId);
     if (d) { d.name = name; d.negPole = negPole; d.posPole = posPole; d.desc = desc; d.negMax = negMax; d.posMax = posMax; }
+    logActivity('diff.edit', { field: f.name, diff: name });
   } else {
     f.differentials.push({ id: 'd_' + Date.now(), name, negPole, posPole, desc, negMax, posMax });
+    logActivity('diff.create', { field: f.name, diff: name });
   }
   saveState();
   renderDiffs(f);
@@ -2915,8 +2998,10 @@ function saveDiff(existingId) {
 function deleteDiff(id) {
   if (!confirm('¿Eliminar este diferencial? Se borrarán todas las calificaciones asociadas.')) return;
   const f = currentField();
+  const diff = f.differentials.find(d => d.id === id);
   f.differentials = f.differentials.filter(d => d.id !== id);
   (f.sample || []).forEach(m => { if (m.ratings) delete m.ratings[id]; });
+  logActivity('diff.delete', { field: f.name, diff: diff?.name });
   saveState();
   renderDiffs(f);
   cancelDiffEdit();
@@ -3159,6 +3244,12 @@ function backToCalList() {
 
 function saveCalFilm(filmId) {
   const f = currentField();
+  const m = (f.sample || []).find(x => x.id === filmId);
+  if (m) {
+    const diffs = f.differentials || [];
+    const met = calcMet(m, diffs);
+    logActivity('rating.save', { field: f.name, title: m.title, metaestability: met });
+  }
   saveState();
   renderCalSidebar(f);
 }
@@ -3305,6 +3396,8 @@ function showDeleteFieldModal(id) {
 function confirmDeleteField() {
   const modal = document.getElementById('modal-delete-field');
   const fieldId = modal.dataset.fieldId;
+  const f = appState.fields.find(x => x.id === fieldId);
+  logActivity('field.delete', { name: f?.name });
   appState.fields = appState.fields.filter(f => f.id !== fieldId);
   if (appState.currentFieldId === fieldId) appState.currentFieldId = null;
   saveState();
@@ -3317,9 +3410,11 @@ function renameField() {
   if (!f) return;
   const name = prompt('Nuevo nombre:', f.name);
   if (name && name.trim()) {
+    const oldName = f.name;
     f.name = name.trim();
     document.getElementById('field-title').textContent = f.name;
     saveState();
+    logActivity('field.rename', { old_name: oldName, new_name: f.name });
   }
 }
 
@@ -3384,6 +3479,7 @@ async function openUsersModal() {
           </div>
         </td>
         <td class="u-login">${login}</td>
+        <td style="text-align:right;"><button class="u-activity-btn" onclick="openActivityModal(${u.id},'${(u.name||u.email||'').replace(/'/g,"\\'")}')">Ver actividad →</button></td>
       </tr>`;
     }).join('');
   } catch(e) {
@@ -3393,6 +3489,52 @@ async function openUsersModal() {
 
 function closeUsersModal() {
   document.getElementById('users-modal-overlay').classList.remove('open');
+}
+
+// ── MODAL: ACTIVIDAD ──
+async function openActivityModal(userId, userName) {
+  document.getElementById('activity-modal-title').textContent = 'Actividad';
+  document.getElementById('activity-modal-subtitle').textContent = userName;
+  const body = document.getElementById('activity-modal-body');
+  body.innerHTML = '<div style="padding:20px;color:var(--text3);font-size:13px;">Cargando...</div>';
+  document.getElementById('activity-modal-overlay').classList.add('open');
+  try {
+    const r = await fetch(`/api/users/${userId}/activity`);
+    const rows = await r.json();
+    if (!rows.length) {
+      body.innerHTML = '<div style="padding:20px;color:var(--text3);font-size:13px;">Sin actividad registrada.</div>';
+      return;
+    }
+    body.innerHTML = rows.map(row => {
+      const label = ACTION_LABELS[row.action] || row.action;
+      const d = row.details || {};
+      const parts = [];
+      if (d.field) parts.push(d.field);
+      if (d.title) parts.push(d.title);
+      if (d.diff) parts.push(d.diff);
+      if (d.old_name && d.new_name) parts.push(`${d.old_name} → ${d.new_name}`);
+      if (d.size != null) parts.push(`${d.size} películas`);
+      if (d.metaestability != null) parts.push(`met. ${d.metaestability}`);
+      const detail = parts.join(' · ');
+      const ts = new Date(row.created_at).toLocaleString('es-AR', {
+        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+      return `<div class="activity-entry">
+        <div class="activity-dot"></div>
+        <div style="flex:1;min-width:0;">
+          <div class="activity-label">${label}</div>
+          ${detail ? `<div class="activity-detail">${detail}</div>` : ''}
+        </div>
+        <div class="activity-time">${ts}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    body.innerHTML = '<div style="padding:20px;color:var(--red);font-size:13px;">Error al cargar actividad.</div>';
+  }
+}
+
+function closeActivityModal() {
+  document.getElementById('activity-modal-overlay').classList.remove('open');
 }
 
 // ── INIT ──

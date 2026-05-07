@@ -36,6 +36,16 @@ async function initDB() {
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS picture TEXT`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP`);
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS activity_log (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      action TEXT NOT NULL,
+      details JSONB,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+  await pool.query(`CREATE INDEX IF NOT EXISTS activity_log_user_idx ON activity_log(user_id, created_at DESC)`);
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS app_state (
       user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
       data JSONB NOT NULL DEFAULT '{"fields":[]}'::jsonb,
@@ -117,6 +127,33 @@ app.get('/auth/logout', (req, res) => {
 app.get('/auth/me', (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'No autenticado' });
   res.json({ id: req.user.id, name: req.user.name, email: req.user.email, picture: req.user.picture });
+});
+
+// ── AUDITORÍA ──
+app.post('/api/activity', requireAuth, async (req, res) => {
+  try {
+    const { action, details } = req.body;
+    await pool.query(
+      `INSERT INTO activity_log (user_id, action, details) VALUES ($1, $2, $3)`,
+      [req.user.id, action, details || null]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/users/:id/activity', requireAuth, async (req, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT action, details, created_at FROM activity_log
+       WHERE user_id = $1 ORDER BY created_at DESC LIMIT 200`,
+      [req.params.id]
+    );
+    res.json(r.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ── API DE USUARIOS ──
