@@ -33,9 +33,8 @@ async function initDB() {
       created_at TIMESTAMP DEFAULT NOW()
     )
   `);
-  await pool.query(`
-    ALTER TABLE users ADD COLUMN IF NOT EXISTS picture TEXT
-  `);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS picture TEXT`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP`);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS app_state (
       user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
@@ -75,9 +74,9 @@ passport.use(new GoogleStrategy({
     const googleId = profile.id;
     const picture = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
     const result = await pool.query(
-      `INSERT INTO users (google_id, email, name, picture)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (google_id) DO UPDATE SET name = $3, picture = $4
+      `INSERT INTO users (google_id, email, name, picture, last_login)
+       VALUES ($1, $2, $3, $4, NOW())
+       ON CONFLICT (google_id) DO UPDATE SET name = $3, picture = $4, last_login = NOW()
        RETURNING *`,
       [googleId, email, name, picture]
     );
@@ -118,6 +117,18 @@ app.get('/auth/logout', (req, res) => {
 app.get('/auth/me', (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'No autenticado' });
   res.json({ id: req.user.id, name: req.user.name, email: req.user.email, picture: req.user.picture });
+});
+
+// ── API DE USUARIOS ──
+app.get('/api/users', requireAuth, async (req, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT id, name, email, picture, last_login FROM users ORDER BY last_login DESC NULLS LAST`
+    );
+    res.json(r.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ── MIDDLEWARE DE AUTH ──

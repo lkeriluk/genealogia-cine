@@ -96,6 +96,47 @@ body {
   transition: background .12s;
 }
 .user-menu-action:hover { background: var(--bg3); color: var(--text); }
+.user-menu-sep { height: 0.5px; background: var(--border); margin: 4px 0; }
+.users-modal-overlay {
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center;
+}
+.users-modal-overlay.open { display: flex; }
+.users-modal {
+  background: var(--bg2); border: 0.5px solid var(--border2);
+  border-radius: 12px; width: 100%; max-width: 520px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5); overflow: hidden;
+}
+.users-modal-header {
+  padding: 16px 20px; border-bottom: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.users-modal-title { font-size: 14px; font-weight: 500; }
+.users-modal-close {
+  cursor: pointer; color: var(--text3); background: none; border: none;
+  font-size: 18px; line-height: 1; padding: 2px 6px;
+}
+.users-modal-close:hover { color: var(--text); }
+.users-table { width: 100%; border-collapse: collapse; }
+.users-table th {
+  text-align: left; padding: 8px 20px;
+  font-size: 10px; font-weight: 500; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text3);
+  border-bottom: 0.5px solid var(--border);
+}
+.users-table td { padding: 10px 20px; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.users-table tr:last-child td { border-bottom: none; }
+.users-table .u-name { color: var(--text); font-weight: 500; }
+.users-table .u-email { color: var(--text3); font-size: 11px; margin-top: 1px; }
+.users-table .u-login { color: var(--text3); font-size: 12px; }
+.users-avatar-sm {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--bg3); overflow: hidden; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 500; color: var(--text2);
+}
+.users-avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
+.users-cell-user { display: flex; align-items: center; gap: 10px; }
 .tmdb-badge {
   font-size: 10px; font-weight: 500; padding: 2px 7px;
   border-radius: 4px; background: var(--tmdb); color: #fff;
@@ -564,9 +605,30 @@ input[type=number] {
       <div class="user-menu-email" id="user-menu-email"></div>
     </div>
   </div>
+  <div class="user-menu-action" onclick="openUsersModal()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Usuarios
+  </div>
+  <div class="user-menu-sep"></div>
   <div class="user-menu-action" onclick="window.location.href='/auth/logout'">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     Cerrar sesión
+  </div>
+</div>
+
+<!-- Modal usuarios -->
+<div class="users-modal-overlay" id="users-modal-overlay" onclick="closeUsersModal()">
+  <div class="users-modal" onclick="event.stopPropagation()">
+    <div class="users-modal-header">
+      <span class="users-modal-title">Usuarios</span>
+      <button class="users-modal-close" onclick="closeUsersModal()">×</button>
+    </div>
+    <div id="users-modal-body">
+      <table class="users-table">
+        <thead><tr><th>Usuario</th><th>Último ingreso</th></tr></thead>
+        <tbody id="users-table-body"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -588,7 +650,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v3.9</span>
+    <span class="footer-txt">Genealogía del Cine v4.0</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -727,7 +789,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v3.9</span>
+    <span class="footer-txt">Genealogía del Cine v4.0</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1032,7 +1094,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v3.9</span>
+    <span class="footer-txt">Genealogía del Cine v4.0</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3293,6 +3355,44 @@ function toggleUserMenu() {
 function closeUserMenu() {
   document.getElementById('user-menu').style.display = 'none';
   document.getElementById('user-menu-overlay').classList.remove('open');
+}
+
+async function openUsersModal() {
+  closeUserMenu();
+  document.getElementById('users-modal-overlay').classList.add('open');
+  const tbody = document.getElementById('users-table-body');
+  tbody.innerHTML = '<tr><td colspan="2" style="color:var(--text3);padding:20px;">Cargando...</td></tr>';
+  try {
+    const r = await fetch('/api/users');
+    const users = await r.json();
+    tbody.innerHTML = users.map(u => {
+      const initial = (u.name || u.email || '?')[0].toUpperCase();
+      const avatar = u.picture
+        ? `<div class="users-avatar-sm"><img src="${u.picture}" alt=""></div>`
+        : `<div class="users-avatar-sm">${initial}</div>`;
+      const login = u.last_login
+        ? new Date(u.last_login).toLocaleString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+        : '—';
+      return `<tr>
+        <td>
+          <div class="users-cell-user">
+            ${avatar}
+            <div>
+              <div class="u-name">${u.name || '—'}</div>
+              <div class="u-email">${u.email}</div>
+            </div>
+          </div>
+        </td>
+        <td class="u-login">${login}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="2" style="color:var(--red);padding:20px;">Error al cargar usuarios.</td></tr>';
+  }
+}
+
+function closeUsersModal() {
+  document.getElementById('users-modal-overlay').classList.remove('open');
 }
 
 // ── INIT ──
