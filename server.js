@@ -160,6 +160,8 @@ app.get('/help', (req, res) => {
   res.sendFile(path.join(__dirname, 'help.html'));
 });
 
+app.use('/help-img', express.static(path.join(__dirname, 'help-img')));
+
 app.use(requireAuth, express.static(path.join(__dirname, '.')));
 
 app.get('*', requireAuth, (req, res) => {

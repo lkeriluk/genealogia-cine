@@ -128,6 +128,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .articles-count { font-size: 12px; color: var(--text3); margin-bottom: 20px; }
 .section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); margin: 28px 0 12px; }
 .no-results { font-size: 13px; color: var(--text3); padding: 20px 0; display: none; }
+figure { margin: 24px 0; }
+figure img { width: 100%; border-radius: 8px; border: 0.5px solid var(--border2); display: block; }
+figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: center; }
 </style>
 </head>
 <body>
@@ -253,6 +256,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <li><strong>Exportar:</strong> descarga todos los campos como JSON (respaldo o intercambio entre dispositivos).</li>
         <li><strong>+ Nuevo:</strong> abre el formulario para crear un campo nuevo.</li>
       </ul>
+      <figure>
+        <img src="/help-img/image4.png" alt="Pantalla de inicio con la lista de campos">
+        <figcaption>Figura 1. Pantalla de inicio con la lista de campos de investigación.</figcaption>
+      </figure>
     </div>
 
     <!-- CREAR UN CAMPO -->
@@ -279,6 +286,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <li><strong>Permitir películas fuera de clasificación TMDB:</strong> incluye títulos que no fueron incorporados automáticamente al universo pero que el investigador considera relevantes.</li>
       </ul>
 
+      <figure>
+        <img src="/help-img/image8.png" alt="Formulario de creación de campo">
+        <figcaption>Figura 2. Formulario de creación de campo con los parámetros del universo.</figcaption>
+      </figure>
       <div class="callout">
         <strong>Parámetros bloqueados.</strong> Una vez creado el campo, el género, las décadas y el mínimo de votos quedan bloqueados permanentemente. Si necesitás cambiar estos parámetros, deberás crear un campo nuevo.
       </div>
@@ -294,6 +305,18 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <li><strong>Distribución de scores:</strong> histograma de rating de usuarios y cantidad de votos.</li>
       </ul>
 
+      <figure>
+        <img src="/help-img/image10.png" alt="Vista previa: stat cards y distribución por décadas">
+        <figcaption>Figura 3. Vista previa: stat cards y distribución por décadas.</figcaption>
+      </figure>
+      <figure>
+        <img src="/help-img/image12.png" alt="Vista previa: distribución por categoría">
+        <figcaption>Figura 4. Vista previa: distribución por categoría (géneros secundarios y países).</figcaption>
+      </figure>
+      <figure>
+        <img src="/help-img/image7.png" alt="Vista previa: distribución de scores">
+        <figcaption>Figura 5. Vista previa: distribución de scores (rating y cantidad de votos).</figcaption>
+      </figure>
       <p>Una vez que los parámetros del universo son correctos, hacé clic en <strong>Crear</strong> para guardar el campo.</p>
     </div>
 
@@ -318,6 +341,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       </ul>
       <p>Si se excluyeron géneros secundarios al crear el campo, aparecen listados debajo de las stat cards.</p>
 
+      <figure>
+        <img src="/help-img/image14.png" alt="Sección Descripción: stat cards y distribución por décadas">
+        <figcaption>Figura 6. Sección Descripción: stat cards del campo y distribución por décadas.</figcaption>
+      </figure>
       <h2>Distribución por décadas</h2>
       <p>Muestra dos gráficos de barras lado a lado:</p>
       <ul>
@@ -355,6 +382,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <h2>Slider y tabla</h2>
       <p>El slider permite ajustar el tamaño de la muestra libremente. Al modificarlo, el botón <strong>Generar</strong> se activa. La tabla muestra las películas incluidas actualmente con columnas de Película, Año, País, Géneros Secundarios, Votos, Rating y Taquilla. Se puede ordenar por cualquier columna y filtrar por texto o por género secundario.</p>
 
+      <figure>
+        <img src="/help-img/image5.png" alt="Sección Muestra: stat cards, slider y tabla">
+        <figcaption>Figura 7. Sección Muestra: stat cards, slider, buscador y tabla de películas.</figcaption>
+      </figure>
       <h2>Generar y agregar películas</h2>
       <p>El botón <strong>Generar</strong> (re)arma la muestra automáticamente según el tamaño elegido. Al hacer clic, si ya existe una muestra previa, aparece un modal que permite optar por:</p>
       <ul>
@@ -362,10 +393,26 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <li>Mantener las películas ya calificadas.</li>
       </ul>
       <p>El botón <strong>+ Agregar película</strong> permite incorporar manualmente un título buscándolo en TMDB. Si la película no pertenece al género principal del campo, se requiere una justificación. El botón <strong>Excel</strong> exporta la tabla de la muestra en formato .xlsx.</p>
+      <figure>
+        <img src="/help-img/image6.png" alt="Modal para agregar películas manualmente">
+        <figcaption>Figura 8. Agregar películas manualmente.</figcaption>
+      </figure>
 
       <h2>Distribución de la muestra</h2>
       <p>En la parte inferior aparece la sección Distribución de la muestra, que compara la composición del universo con la de la muestra actual mediante gráficos pareados. Cada gráfico muestra la distribución del universo (azul) y de la muestra (verde) para décadas, géneros secundarios, países, rating y votos.</p>
       <p>En el encabezado de la sección se muestra el <strong>Índice de representatividad global</strong>, calculado como el promedio de la similitud entre las distribuciones del universo y la muestra en cada variable. Un índice del 100% indica que la muestra replica exactamente la composición del universo.</p>
+      <figure>
+        <img src="/help-img/image13.png" alt="Distribución de la muestra: comparación por décadas">
+        <figcaption>Figura 9. Distribución de la muestra: comparación por décadas.</figcaption>
+      </figure>
+      <figure>
+        <img src="/help-img/image9.png" alt="Distribución de la muestra: géneros secundarios y países">
+        <figcaption>Figura 10. Distribución de la muestra: comparación de géneros secundarios y países.</figcaption>
+      </figure>
+      <figure>
+        <img src="/help-img/image11.png" alt="Distribución de la muestra: scores">
+        <figcaption>Figura 11. Distribución de la muestra: distribución de scores (rating y votos).</figcaption>
+      </figure>
     </div>
 
     <!-- DIFERENCIALES -->
@@ -403,6 +450,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         Si se agrega un diferencial nuevo a un campo que ya tiene películas calificadas, esas películas quedarán pendientes para el nuevo diferencial.
       </div>
 
+      <figure>
+        <img src="/help-img/image15.png" alt="Sección Diferenciales: lista y panel de edición">
+        <figcaption>Figura 12. Sección Diferenciales: lista de diferenciales y panel de edición lateral.</figcaption>
+      </figure>
       <h2>Importar diferenciales</h2>
       <p>El botón <strong>Importar de otro campo</strong> permite copiar los diferenciales de cualquier otro campo existente en la app. Es útil cuando se trabaja con múltiples campos que comparten los mismos ejes de análisis.</p>
     </div>
@@ -430,6 +481,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <p>Para cada película activa, la sección Diferenciales muestra un slider por cada diferencial definido que permite asignar un valor. Al mover los sliders, la <strong>metaestabilidad</strong> se actualiza en tiempo real en la parte inferior de la pantalla.</p>
       <p>La metaestabilidad se calcula como el promedio de los valores absolutos de todas las calificaciones, dividido por el valor máximo del rango. Una metaestabilidad alta indica que la película tensiona fuertemente los diferenciales del género; una baja indica que los reproduce de forma estable.</p>
 
+      <figure>
+        <img src="/help-img/image16.png" alt="Sección Calificación: película activa y sliders">
+        <figcaption>Figura 13. Sección Calificación: película activa, sliders de diferenciales y metaestabilidad en tiempo real.</figcaption>
+      </figure>
       <h2>Navegación y guardado</h2>
       <p>Los botones <strong>Anterior</strong> y <strong>Siguiente</strong> permiten moverse entre películas sin volver al sidebar. El botón <strong>Guardar</strong> registra los valores asignados.</p>
       <p>Las películas con al menos un diferencial calificado pasan al grupo <strong>En proceso</strong>; cuando todos los diferenciales tienen valor asignado, pasan a <strong>Calificadas</strong>.</p>
@@ -454,6 +509,18 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         <li><strong>Sección Calificación — película activa:</strong> muestra el poster, la metadata y los sliders de diferenciales en una sola columna.</li>
       </ul>
 
+      <figure>
+        <img src="/help-img/image3.png" alt="Pantalla de inicio en mobile">
+        <figcaption>Figura 14. Pantalla de inicio en mobile: lista de campos con nombre, género y estado.</figcaption>
+      </figure>
+      <figure>
+        <img src="/help-img/image2.png" alt="Sección Calificación en mobile: listado">
+        <figcaption>Figura 15. Sección Calificación en mobile: listado de películas.</figcaption>
+      </figure>
+      <figure>
+        <img src="/help-img/image1.png" alt="Sección Calificación en mobile: película activa">
+        <figcaption>Figura 16. Sección Calificación en mobile: película activa con sliders.</figcaption>
+      </figure>
       <div class="callout">
         En mobile, al abrir un campo se accede directamente a la sección Calificación. Las secciones Descripción, Muestra, Diferenciales y Análisis están disponibles solo en desktop.
       </div>
