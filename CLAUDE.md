@@ -227,12 +227,20 @@ appState = {
 
 ---
 
-## Checklist antes de cada commit con cambios visibles
+## Proceso pre-push
 
-1. Bump el footer de `index.html` (3 lugares, formato `Genealogía del Cine vX.Y`)
+### Hecho automáticamente antes de cada commit con cambios visibles:
+1. Bump el footer de `index.html` (todos los footers, formato `Genealogía del Cine vX.Y`)
 2. Actualizar el artículo correspondiente en `help.html` si el cambio afecta algo visible para el usuario (ver mapa abajo)
 3. Agregar entrada en el artículo **Release Notes** de `help.html` (formato: `## vX.Y — Mes Año` + lista de cambios)
-4. Incluir la nueva versión en el mensaje del commit
+4. Actualizar `README.md` si cambia la API, el stack o la arquitectura
+5. Incluir la nueva versión en el mensaje del commit
+
+### Requiere decisión del usuario antes de ejecutar:
+- Crear un artículo nuevo en `help.html`
+- Eliminar o fusionar artículos existentes
+- Cambios estructurales en el help center (sidebar, secciones)
+- Adaptación responsive de features nuevas o modificadas
 
 **Criterio para actualizar docs:** cualquier cambio en flujo de uso, comportamiento de una feature existente o feature nueva. Los bugfixes sin impacto en la UX y los cambios de backend sin efecto visible no requieren actualización de artículos (sí van en Release Notes). Las actualizaciones de documentación no se mencionan en Release Notes.
 
@@ -240,21 +248,21 @@ appState = {
 
 ## Mapa help.html → features
 
-| Artículo (`id`) | Cubre |
-|---|---|
-| `pantalla-inicio` | Listado de campos: tabla, columnas, badges de estado, botón "+ Nuevo" |
-| `crear-campo` | Pantalla nuevo campo: formulario, vista previa, gráficos de preview |
-| `descripcion` | Tab Descripción: stat cards, gráficos de distribución |
-| `muestra` | Tab Muestra: slider, tabla, generar, agregar película, índice de representatividad |
-| `diferenciales` | Tab Diferenciales: lista, editor, importar de otro campo |
-| `calificacion` | Tab Calificación: sidebar, sliders, metaestabilidad, navegación |
-| `mobile` | Versión mobile: header, navegación, pantallas |
-| `indicadores` | Conceptos del método: metaestabilidad, índice de representatividad, distribución 60/40 |
-| `release-notes` | Historial de versiones — **siempre actualizar** |
+| Artículo (`id`) | Grupo sidebar | Cubre |
+|---|---|---|
+| `pantalla-inicio` | Campos | Listado de campos: tabla, columnas, badges de estado, botones Importar/Exportar/Nuevo |
+| `crear-campo` | Campos | Pantalla nuevo campo: formulario, vista previa, gráficos de preview |
+| `descripcion` | Campos | Tab Descripción: stat cards, gráficos de distribución |
+| `muestra` | Campos | Tab Muestra: slider, tabla, generar, agregar película, índice de representatividad |
+| `diferenciales` | Campos | Tab Diferenciales: lista, editor, importar de otro campo |
+| `calificacion` | Campos | Tab Calificación: sidebar, sliders, metaestabilidad, navegación |
+| `peliculas` | Películas | Sección Películas: formulario de búsqueda, tabla de resultados, detalle, distribución |
+| `usuario` | General | Menú de usuario: avatar, listado de usuarios, historial de actividad |
+| `mobile` | General | Versión mobile: header, navegación, pantallas |
+| `indicadores` | General | Conceptos del método: metaestabilidad, índice de representatividad, distribución 60/40 |
+| `release-notes` | General | Historial de versiones — **siempre actualizar** |
 
-Los cambios en la sección Películas (buscador avanzado) no tienen artículo propio todavía — van en Release Notes hasta que se cree el artículo.
-
-Los cambios en autenticación, usuarios, sesiones o infraestructura de servidor van solo en Release Notes (no tienen artículo propio).
+Los cambios en autenticación, sesiones o infraestructura de servidor van solo en Release Notes (no tienen artículo propio).
 
 ---
 

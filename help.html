@@ -155,12 +155,8 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
     </div>
 
     <div class="sidebar-group">
-      <div class="sidebar-group-label">Pantalla de inicio</div>
-      <a class="sidebar-item" data-article="pantalla-inicio" onclick="showArticle('pantalla-inicio')">Pantalla de inicio</a>
-    </div>
-
-    <div class="sidebar-group">
       <div class="sidebar-group-label">Campos</div>
+      <a class="sidebar-item" data-article="pantalla-inicio" onclick="showArticle('pantalla-inicio')">Listado de campos</a>
       <a class="sidebar-item" data-article="crear-campo" onclick="showArticle('crear-campo')">Crear un campo</a>
       <a class="sidebar-item sub" data-article="crear-campo" onclick="showArticle('crear-campo')">El formulario de configuración</a>
       <a class="sidebar-item sub" data-article="crear-campo" onclick="showArticle('crear-campo')">La vista previa</a>
@@ -171,7 +167,13 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
     </div>
 
     <div class="sidebar-group">
-      <div class="sidebar-group-label">Más</div>
+      <div class="sidebar-group-label">Películas</div>
+      <a class="sidebar-item" data-article="peliculas" onclick="showArticle('peliculas')">Buscador avanzado</a>
+    </div>
+
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">General</div>
+      <a class="sidebar-item" data-article="usuario" onclick="showArticle('usuario')">Menú de usuario</a>
       <a class="sidebar-item" data-article="mobile" onclick="showArticle('mobile')">Versión mobile</a>
       <a class="sidebar-item" data-article="indicadores" onclick="showArticle('indicadores')">Cómo se calculan los indicadores</a>
       <a class="sidebar-item" data-article="release-notes" onclick="showArticle('release-notes')">Release Notes</a>
@@ -184,10 +186,10 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
 
     <!-- PANTALLA DE INICIO -->
     <div id="art-pantalla-inicio" class="article active">
-      <div class="article-title">Pantalla de inicio</div>
-      <div class="article-meta">Primeros pasos</div>
+      <div class="article-title">Listado de campos</div>
+      <div class="article-meta">Campos</div>
 
-      <p>Al abrir la app aparece la pantalla de inicio, que lista todos los campos de investigación creados. Cada fila muestra:</p>
+      <p>Al abrir la app aparece el listado de todos los campos de investigación creados. Cada fila muestra:</p>
       <ul>
         <li><strong>Nombre</strong> del campo y género cinematográfico asociado.</li>
         <li><strong>Campo:</strong> tamaño total del universo de películas que cumple los criterios definidos.</li>
@@ -203,33 +205,8 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
         <li><strong>+ Nuevo:</strong> abre el formulario para crear un campo nuevo.</li>
       </ul>
       <figure>
-        <img src="/help-img/image4.png" alt="Pantalla de inicio con la lista de campos">
-        <figcaption>Figura 1. Pantalla de inicio con la lista de campos de investigación.</figcaption>
-      </figure>
-
-      <h2>Menú de usuario</h2>
-      <p>En el extremo superior derecho del header aparece el avatar del usuario autenticado. Al hacer clic se despliega un menú con:</p>
-      <ul>
-        <li><strong>Nombre y email</strong> de la cuenta con la que se ingresó.</li>
-        <li><strong>Usuarios:</strong> abre el listado de todas las cuentas que han accedido a la app, con nombre, email y fecha del último ingreso. Desde cada fila se puede ver el historial de actividad de ese usuario.</li>
-        <li><strong>Cerrar sesión:</strong> finaliza la sesión actual.</li>
-      </ul>
-      <!-- TODO screenshot → help-img/image17.png: menú de usuario desplegado (nombre, email, botones Usuarios y Cerrar sesión) -->
-      <figure>
-        <img src="/help-img/image17.png" alt="Menú de usuario desplegado">
-        <figcaption>Figura 17. Menú de usuario: nombre, email y acciones disponibles.</figcaption>
-      </figure>
-
-      <!-- TODO screenshot → help-img/image18.png: modal de usuarios (tabla con Usuario, Último ingreso, botón Ver actividad →) -->
-      <figure>
-        <img src="/help-img/image18.png" alt="Listado de usuarios">
-        <figcaption>Figura 18. Listado de usuarios con fecha de último ingreso y acceso al historial de actividad.</figcaption>
-      </figure>
-
-      <!-- TODO screenshot → help-img/image19.png: modal de actividad (historial con etiquetas de acción y fechas) -->
-      <figure>
-        <img src="/help-img/image19.png" alt="Historial de actividad de un usuario">
-        <figcaption>Figura 19. Historial de actividad: acciones registradas con fecha y hora.</figcaption>
+        <img src="/help-img/image4.png" alt="Listado de campos de investigación">
+        <figcaption>Figura 1. Listado de campos de investigación.</figcaption>
       </figure>
     </div>
 
@@ -435,6 +412,81 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <h2>Navegación y guardado</h2>
       <p>Los botones <strong>Anterior</strong> y <strong>Siguiente</strong> permiten moverse entre películas sin volver al sidebar. El botón <strong>Guardar</strong> registra los valores asignados.</p>
       <p>Las películas con al menos un diferencial calificado pasan al grupo <strong>En proceso</strong>; cuando todos los diferenciales tienen valor asignado, pasan a <strong>Calificadas</strong>.</p>
+    </div>
+
+    <!-- BUSCADOR AVANZADO -->
+    <div id="art-peliculas" class="article">
+      <div class="article-title">Buscador avanzado</div>
+      <div class="article-meta">Películas</div>
+
+      <p>La sección Películas es un buscador independiente para explorar el catálogo de TMDB sin necesidad de estar dentro de un campo. Sirve para investigar películas antes de agregarlas a una muestra o para explorar la distribución de un género.</p>
+
+      <h2>El formulario de búsqueda</h2>
+      <p>El buscador tiene dos modos:</p>
+      <ul>
+        <li><strong>Por título:</strong> devuelve resultados de búsqueda textual. En este modo los demás filtros no aplican; una nota en ámbar lo indica.</li>
+        <li><strong>Por filtros:</strong> usa el motor de descubrimiento de TMDB. Permite combinar género principal, géneros secundarios (incluir y/o excluir), país, rango de décadas, votos mínimos y máximos, rating mínimo y máximo, y taquilla mínima y máxima.</li>
+      </ul>
+      <div class="callout">Búsqueda por título y filtros son mutuamente excluyentes: si hay texto en el campo Título, los demás filtros se ignoran.</div>
+      <!-- TODO screenshot → help-img/image20.png: formulario de búsqueda con filtros activos (género, décadas, votos) -->
+      <figure>
+        <img src="/help-img/image20.png" alt="Formulario de búsqueda avanzada">
+        <figcaption>Figura 20. Formulario de búsqueda con filtros de género, décadas y votos activos.</figcaption>
+      </figure>
+
+      <h2>Los resultados</h2>
+      <p>La tabla muestra hasta 20 resultados por página con las columnas Título (en idioma original), Año, País, Géneros, Votos y Rating. Todas las columnas excepto Géneros son ordenables: en modo filtros el orden lo aplica TMDB directamente; en modo título y para la columna País el orden es local sobre los resultados de la página.</p>
+      <p>Al hacer clic en cualquier fila se abre el detalle de la película.</p>
+      <!-- TODO screenshot → help-img/image21.png: tabla de resultados con columna ordenada activa -->
+      <figure>
+        <img src="/help-img/image21.png" alt="Tabla de resultados del buscador">
+        <figcaption>Figura 21. Tabla de resultados con ordenamiento activo por votos.</figcaption>
+      </figure>
+
+      <h2>Detalle de película</h2>
+      <p>Muestra póster, título original, tagline (si existe), año, duración, rating y cantidad de votos, países de producción, géneros, presupuesto y taquilla (si TMDB los tiene), sinopsis y un enlace directo a la página de la película en TMDB.</p>
+      <!-- TODO screenshot → help-img/image22.png: modal de detalle de película abierto -->
+      <figure>
+        <img src="/help-img/image22.png" alt="Modal de detalle de película">
+        <figcaption>Figura 22. Detalle de una película con todos los datos disponibles.</figcaption>
+      </figure>
+
+      <h2>Distribución</h2>
+      <p>Debajo de los resultados aparece la sección Distribución. Al presionar <strong>Cargar gráficos</strong>, la app obtiene todos los resultados de la búsqueda actual (hasta 200 películas, 10 páginas) y genera seis gráficos: cantidad de películas por décadas, popularidad promedio por décadas, géneros secundarios (top 10), países de producción (top 10), rating de usuarios y cantidad de votos.</p>
+      <div class="callout">En modo título la distribución se calcula solo sobre los resultados ya cargados (una página), no sobre el universo completo.</div>
+      <!-- TODO screenshot → help-img/image23.png: sección de distribución con los seis gráficos cargados -->
+      <figure>
+        <img src="/help-img/image23.png" alt="Sección de distribución con gráficos">
+        <figcaption>Figura 23. Sección de distribución con los seis gráficos de la búsqueda.</figcaption>
+      </figure>
+    </div>
+
+    <!-- MENÚ DE USUARIO -->
+    <div id="art-usuario" class="article">
+      <div class="article-title">Menú de usuario</div>
+      <div class="article-meta">General</div>
+
+      <p>En el extremo superior derecho del header aparece el avatar del usuario autenticado. Al hacer clic se despliega un menú con:</p>
+      <ul>
+        <li><strong>Nombre y email</strong> de la cuenta con la que se ingresó.</li>
+        <li><strong>Usuarios:</strong> abre el listado de todas las cuentas que han accedido a la app, con nombre, email y fecha del último ingreso. Desde cada fila se puede ver el historial de actividad de ese usuario.</li>
+        <li><strong>Cerrar sesión:</strong> finaliza la sesión actual.</li>
+      </ul>
+      <!-- TODO screenshot → help-img/image17.png: menú de usuario desplegado (nombre, email, botones Usuarios y Cerrar sesión) -->
+      <figure>
+        <img src="/help-img/image17.png" alt="Menú de usuario desplegado">
+        <figcaption>Figura 17. Menú de usuario: nombre, email y acciones disponibles.</figcaption>
+      </figure>
+      <!-- TODO screenshot → help-img/image18.png: modal de usuarios (tabla con Usuario, Último ingreso, botón Ver actividad →) -->
+      <figure>
+        <img src="/help-img/image18.png" alt="Listado de usuarios">
+        <figcaption>Figura 18. Listado de usuarios con fecha de último ingreso y acceso al historial de actividad.</figcaption>
+      </figure>
+      <!-- TODO screenshot → help-img/image19.png: modal de actividad (historial con etiquetas de acción y fechas) -->
+      <figure>
+        <img src="/help-img/image19.png" alt="Historial de actividad de un usuario">
+        <figcaption>Figura 19. Historial de actividad: acciones registradas con fecha y hora.</figcaption>
+      </figure>
     </div>
 
     <!-- MOBILE -->
