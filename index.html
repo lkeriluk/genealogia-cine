@@ -747,7 +747,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.6</span>
+    <span class="footer-txt">Genealogía del Cine v4.7</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -866,8 +866,8 @@ input[type=number] {
         <div style="position:relative;height:110px;"><canvas id="srch-chart-decades"></canvas></div>
       </div>
       <div class="analysis-card">
-        <div class="analysis-card-title">POPULARIDAD PROMEDIO</div>
-        <div style="position:relative;height:110px;"><canvas id="srch-chart-popularity"></canvas></div>
+        <div class="analysis-card-title">TAQUILLA PROMEDIO (USD)</div>
+        <div style="position:relative;height:110px;"><canvas id="srch-chart-revenue"></canvas></div>
       </div>
     </div>
     <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución por categoría</div>
@@ -894,7 +894,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.6</span>
+    <span class="footer-txt">Genealogía del Cine v4.7</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1033,7 +1033,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.6</span>
+    <span class="footer-txt">Genealogía del Cine v4.7</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1340,7 +1340,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.6</span>
+    <span class="footer-txt">Genealogía del Cine v4.7</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -4064,9 +4064,9 @@ async function loadSrchCharts() {
   if (btn) btn.disabled = true;
   if (loading) loading.style.display = '';
   try {
-    let allMovies;
+    let baseMovies;
     if (srchState.titleMode) {
-      allMovies = srchState.lastResults;
+      baseMovies = srchState.lastResults;
     } else {
       const params   = buildSrchDiscoverParams();
       const maxPages = Math.min(srchState.lastTotalPages, 10);
@@ -4074,8 +4074,22 @@ async function loadSrchCharts() {
         fetch(`${BASE}/discover/movie?${params}&page=${i + 1}`, { headers: HEADERS }).then(r => r.json())
       );
       const pages = await Promise.all(fetches);
-      allMovies = pages.flatMap(d => (d.results || []).map(m => mapSrchMovie(m)));
+      baseMovies = pages.flatMap(d => (d.results || []).map(m => mapSrchMovie(m)));
     }
+    // Fetch details for origin_country and revenue (not available in list endpoints)
+    const details = await Promise.all(
+      baseMovies.map(m =>
+        fetch(`${BASE}/movie/${m.id}`, { headers: HEADERS }).then(r => r.json()).catch(() => null)
+      )
+    );
+    const allMovies = baseMovies.map((m, i) => {
+      const d = details[i];
+      return {
+        ...m,
+        country: (d && d.origin_country && d.origin_country[0]) || '',
+        revenue: (d && d.revenue) || 0,
+      };
+    });
     renderSrchCharts(allMovies);
   } catch(e) { /* silent */ }
   finally {
@@ -4113,22 +4127,22 @@ function renderSrchCharts(movies) {
   movies.forEach(m => {
     if (!m.year) return;
     const dec = Math.floor(m.year / 10) * 10;
-    if (!decMap[dec]) decMap[dec] = { count: 0, popSum: 0 };
+    if (!decMap[dec]) decMap[dec] = { count: 0, revSum: 0, revCount: 0 };
     decMap[dec].count++;
-    decMap[dec].popSum += m.popularity || 0;
+    if (m.revenue > 0) { decMap[dec].revSum += m.revenue; decMap[dec].revCount++; }
   });
   const decades   = Object.keys(decMap).map(Number).sort((a, b) => a - b);
   const decCounts = decades.map(d => decMap[d].count);
-  const decPop    = decades.map(d => decMap[d].count > 0 ? +(decMap[d].popSum / decMap[d].count).toFixed(1) : null);
+  const decRev    = decades.map(d => decMap[d].revCount > 0 ? Math.round(decMap[d].revSum / decMap[d].revCount / 1e6) : null);
   const decTotal  = decCounts.reduce((s, v) => s + v, 0) || 1;
   makeSrchChart('srch-chart-decades', decades.map(d => d + 's'), decCounts, '#378ADD', false, decTotal);
 
-  const popCtx = document.getElementById('srch-chart-popularity');
-  if (popCtx) {
-    srchState.chartInstances['srch-chart-popularity'] = new Chart(popCtx, {
+  const revCtx = document.getElementById('srch-chart-revenue');
+  if (revCtx) {
+    srchState.chartInstances['srch-chart-revenue'] = new Chart(revCtx, {
       type: 'bar',
-      data: { labels: decades.map(d => d + 's'), datasets: [{ data: decPop, backgroundColor: '#EF9F2780', borderColor: '#EF9F27', borderWidth: 1 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y !== null ? c.parsed.y.toFixed(1) : 'sin datos' } } }, scales: { x: { grid: { display: false }, ticks: { color: '#5A5754', font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } } } }
+      data: { labels: decades.map(d => d + 's'), datasets: [{ data: decRev, backgroundColor: '#EF9F2780', borderColor: '#EF9F27', borderWidth: 1 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y !== null ? '$' + c.parsed.y + 'M' : 'sin datos' } } }, scales: { x: { grid: { display: false }, ticks: { color: '#5A5754', font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: v => '$' + v + 'M' } } } }
     });
   }
 
