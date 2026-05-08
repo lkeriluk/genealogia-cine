@@ -745,7 +745,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.1</span>
+    <span class="footer-txt">Genealogía del Cine v5.2</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -874,11 +874,13 @@ input[type=number] {
         <div class="analysis-card-title">GÉNEROS SECUNDARIOS (TOP 10)</div>
         <div style="position:relative;height:280px;"><canvas id="srch-chart-genres"></canvas></div>
         <div style="font-size:11px;color:var(--text3);margin-top:6px;">Frecuencia de aparición de cada género secundario sobre una muestra representativa, escalada al universo total seleccionado</div>
+        <div id="srch-genres-note" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
       </div>
       <div class="analysis-card">
         <div class="analysis-card-title">PAÍSES DE PRODUCCIÓN (TOP 10)</div>
         <div style="position:relative;height:280px;"><canvas id="srch-chart-countries"></canvas></div>
         <div style="font-size:11px;color:var(--text3);margin-top:6px;">Frecuencia de cada país como productor primario sobre una muestra representativa, escalada al universo total seleccionado</div>
+        <div id="srch-countries-note" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
       </div>
     </div>
     <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución de scores</div>
@@ -896,7 +898,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.1</span>
+    <span class="footer-txt">Genealogía del Cine v5.2</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1041,7 +1043,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.1</span>
+    <span class="footer-txt">Genealogía del Cine v5.2</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1354,7 +1356,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.1</span>
+    <span class="footer-txt">Genealogía del Cine v5.2</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -4270,16 +4272,32 @@ function renderSrchCharts(movies, totalResults, decRevOverride, decCountOverride
   // Genres top10
   const genreCount = {};
   movies.forEach(m => (m.genreIds || []).forEach(id => { genreCount[id] = (genreCount[id] || 0) + 1; }));
-  const genreTop10  = Object.entries(genreCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([id, n]) => [GENRE_MAP[id] || id, scaled(n)]);
+  const allGenreEntries = Object.entries(genreCount).sort((a, b) => b[1] - a[1]);
+  const genreTop10  = allGenreEntries.slice(0, 10).map(([id, n]) => [GENRE_MAP[id] || id, scaled(n)]);
   const genreTotal  = genreTop10.reduce((s, x) => s + x[1], 0) || 1;
   makeSrchChart('srch-chart-genres', genreTop10.map(x => x[0]), genreTop10.map(x => x[1]), '#9F77DD', true, genreTotal);
+  const gNote = document.getElementById('srch-genres-note');
+  if (gNote && allGenreEntries.length) {
+    const top10RawSum = allGenreEntries.slice(0, 10).reduce((s, x) => s + x[1], 0);
+    const allRawSum   = allGenreEntries.reduce((s, x) => s + x[1], 0);
+    const pctG = allRawSum > 0 ? Math.round(top10RawSum / allRawSum * 100) : 0;
+    gNote.textContent = `Se muestran los ${genreTop10.length} géneros con más participación de los ${allGenreEntries.length} totales, representando un ${pctG}% de las apariciones de géneros secundarios.`;
+  }
 
   // Countries top10
   const countryCount = {};
   movies.forEach(m => { if (m.country) countryCount[m.country] = (countryCount[m.country] || 0) + 1; });
-  const countryTop10 = Object.entries(countryCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([code, n]) => [getCountryName(code), scaled(n)]);
+  const allCountryEntries = Object.entries(countryCount).sort((a, b) => b[1] - a[1]);
+  const countryTop10 = allCountryEntries.slice(0, 10).map(([code, n]) => [getCountryName(code), scaled(n)]);
   const countryTotal = countryTop10.reduce((s, x) => s + x[1], 0) || 1;
   makeSrchChart('srch-chart-countries', countryTop10.map(x => x[0]), countryTop10.map(x => x[1]), '#D85A30', true, countryTotal);
+  const cNote = document.getElementById('srch-countries-note');
+  if (cNote && allCountryEntries.length) {
+    const top10CRawSum = allCountryEntries.slice(0, 10).reduce((s, x) => s + x[1], 0);
+    const allCRawSum   = allCountryEntries.reduce((s, x) => s + x[1], 0);
+    const pctC = allCRawSum > 0 ? Math.round(top10CRawSum / allCRawSum * 100) : 0;
+    cNote.textContent = `Se muestran los ${countryTop10.length} países con más participación de los ${allCountryEntries.length} totales, representando un ${pctC}% del total de películas.`;
+  }
 }
 
 // ── INIT ──
