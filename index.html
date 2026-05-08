@@ -745,7 +745,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.4</span>
+    <span class="footer-txt">Genealogía del Cine v5.5</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -766,7 +766,18 @@ input[type=number] {
       </div>
       <div>
         <div class="form-label">País</div>
-        <select class="form-select" id="srch-country"><option value="">Todos los países</option></select>
+        <div class="ms-wrap" id="srch-countries-wrap">
+          <div class="ms-input" onclick="toggleSrchCountriesDropdown(event)">
+            <span id="srch-countries-placeholder" style="color:var(--text3);">Todos los países</span>
+            <span style="margin-left:auto;color:var(--text3);font-size:10px;">▾</span>
+          </div>
+          <div class="ms-dropdown" id="srch-countries-dropdown">
+            <div style="padding:5px 8px;border-bottom:0.5px solid var(--border2);">
+              <input class="ms-search" id="srch-countries-search" placeholder="Buscar país..." oninput="filterSrchCountries()" onclick="event.stopPropagation()" style="width:100%;" />
+            </div>
+            <div id="srch-countries-options"><div class="ms-no-results">Cargando países...</div></div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="form-row form-row-2">
@@ -898,7 +909,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.4</span>
+    <span class="footer-txt">Genealogía del Cine v5.5</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -930,7 +941,7 @@ input[type=number] {
     <div class="form-row form-row-4">
       <div class="form-group" style="margin:0">
         <label class="form-label">MÍNIMO DE VOTOS</label>
-        <input class="form-input" id="nf-votes" type="number" value="200" min="0" step="50" onchange="onFieldParamChange()" />
+        <input class="form-input" id="nf-votes" type="text" value="200" placeholder="0" onfocus="onVotesFocus(this)" onblur="onVotesBlur(this); onFieldParamChange();" />
       </div>
       <div class="form-group" style="margin:0">
         <label class="form-label">DÉCADA INICIO</label>
@@ -1043,7 +1054,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.4</span>
+    <span class="footer-txt">Genealogía del Cine v5.5</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1356,7 +1367,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.4</span>
+    <span class="footer-txt">Genealogía del Cine v5.5</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1737,13 +1748,66 @@ function updateCountriesInput() {
   ph.style.color = selectedCountry ? 'var(--text2)' : 'var(--text3)';
 }
 
-// Close dropdown when clicking outside
+// Close dropdowns when clicking outside
 document.addEventListener('click', function(e) {
   if (!e.target.closest('#nf-countries-wrap')) {
     const dd = document.getElementById('nf-countries-dropdown');
     if (dd) dd.classList.remove('open');
   }
+  if (!e.target.closest('#srch-countries-wrap')) {
+    const dd = document.getElementById('srch-countries-dropdown');
+    if (dd) dd.classList.remove('open');
+  }
 });
+
+let selectedSrchCountry = '';
+
+function renderSrchCountriesDropdown(filter) {
+  const opts = document.getElementById('srch-countries-options');
+  if (!opts) return;
+  const q = filter.toLowerCase();
+  const filtered = allCountries.filter(c => !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q));
+  const todosHtml = `<div class="ms-option ${!selectedSrchCountry?'selected':''}" onclick="toggleSrchCountry('')">Todos los países</div>`;
+  if (!filtered.length) { opts.innerHTML = todosHtml + '<div class="ms-no-results">Sin resultados</div>'; return; }
+  opts.innerHTML = todosHtml + filtered.map(c => {
+    const sel = selectedSrchCountry === c.code;
+    return `<div class="ms-option ${sel?'selected':''}" onclick="toggleSrchCountry('${c.code}')">
+      <span>${c.name}</span>
+      <span style="color:var(--text3);font-size:10px;margin-left:auto;">${c.code}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleSrchCountriesDropdown(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('srch-countries-dropdown');
+  const isOpen = dd.classList.contains('open');
+  if (isOpen) {
+    dd.classList.remove('open');
+  } else {
+    renderSrchCountriesDropdown('');
+    dd.classList.add('open');
+    const search = document.getElementById('srch-countries-search');
+    if (search) { search.value = ''; search.focus(); }
+  }
+}
+
+function filterSrchCountries() {
+  renderSrchCountriesDropdown(document.getElementById('srch-countries-search').value);
+}
+
+function toggleSrchCountry(code) {
+  selectedSrchCountry = code;
+  updateSrchCountriesInput();
+  document.getElementById('srch-countries-dropdown').classList.remove('open');
+}
+
+function updateSrchCountriesInput() {
+  const ph = document.getElementById('srch-countries-placeholder');
+  if (!ph) return;
+  ph.textContent = selectedSrchCountry ? getCountryName(selectedSrchCountry) : 'Todos los países';
+  ph.style.color = selectedSrchCountry ? 'var(--text2)' : 'var(--text3)';
+}
 
 async function loadGenres() {
   try {
@@ -1800,7 +1864,7 @@ async function loadPreview() {
   btn.textContent = 'Cargando...';
   btn.style.opacity = '0.5';
   const genreId = document.getElementById('nf-genre').value;
-  const votes = document.getElementById('nf-votes').value || 10;
+  const votes = parseVotesInput('nf-votes') || 10;
   const decFrom = document.getElementById('nf-dec-from').value;
   const decTo = document.getElementById('nf-dec-to').value;
   document.getElementById('preview-total').textContent = '...';
@@ -2016,7 +2080,7 @@ async function createField() {
   const name = document.getElementById('nf-name').value.trim();
   if (!name) { alert('Ingresá un nombre para el campo'); return; }
   const genreId = document.getElementById('nf-genre').value;
-  const votes = +document.getElementById('nf-votes').value || 200;
+  const votes = parseVotesInput('nf-votes') || 200;
   const decFrom = +document.getElementById('nf-dec-from').value;
   const decTo = +document.getElementById('nf-dec-to').value;
   const excluded = [...document.querySelectorAll('#nf-exclude-tags .tag.active')].map(t => +t.dataset.genreId);
@@ -3769,11 +3833,6 @@ function initMoviesScreen() {
     genSel.innerHTML = '<option value="">Todos</option>' +
       appState.allGenres.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
   }
-  const cntSel = document.getElementById('srch-country');
-  if (cntSel && allCountries.length) {
-    cntSel.innerHTML = '<option value="">Todos los países</option>' +
-      allCountries.map(c => `<option value="${c.code}">${c.name}</option>`).join('');
-  }
   populateSrchGenreChips();
 }
 
@@ -3841,7 +3900,7 @@ function updateDecadeConstraints() {
 
 function buildSrchDiscoverParams() {
   const genreId   = document.getElementById('srch-genre').value;
-  const country   = document.getElementById('srch-country').value;
+  const country   = selectedSrchCountry;
   const votesMin  = parseVotesInput('srch-votes-min');
   const votesMax  = parseVotesInput('srch-votes-max');
   const ratingMin = document.getElementById('srch-rating-min').value;
@@ -3871,7 +3930,7 @@ function buildSrchDiscoverParams() {
 
 function buildSrchRevBaseParams() {
   const genreId   = document.getElementById('srch-genre').value;
-  const country   = document.getElementById('srch-country').value;
+  const country   = selectedSrchCountry;
   const votesMin  = parseVotesInput('srch-votes-min');
   const votesMax  = parseVotesInput('srch-votes-max');
   const ratingMin = document.getElementById('srch-rating-min').value;
@@ -4095,6 +4154,8 @@ function clearMovieSearch() {
   });
   document.getElementById('srch-dec-from').value = '1920';
   document.getElementById('srch-dec-to').value = '2020';
+  selectedSrchCountry = '';
+  updateSrchCountriesInput();
   srchState.incGenres.clear();
   srchState.excGenres.clear();
   srchState.sortCol = 'votes'; srchState.sortDir = 'desc';
@@ -4296,7 +4357,7 @@ function renderSrchCharts(movies, totalResults, decRevOverride, decCountOverride
   }
 
   // Countries top10
-  const activeCountry = document.getElementById('srch-country').value;
+  const activeCountry = selectedSrchCountry;
   const cNote = document.getElementById('srch-countries-note');
   if (activeCountry) {
     makeSrchChart('srch-chart-countries', [getCountryName(activeCountry)], [totalResults || scaled(movies.length)], '#D85A30', true, totalResults || 1);
