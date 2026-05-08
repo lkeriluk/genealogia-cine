@@ -1423,30 +1423,18 @@ let appState = {
 };
 
 async function getState() {
-  const local = localStorage.getItem('cg_state');
-  const localFields = local ? (JSON.parse(local).fields || []) : [];
   try {
     const r = await fetch('/api/state');
     if (r.ok) {
       const data = await r.json();
-      const serverFields = data.fields || [];
-      if (serverFields.length >= localFields.length) {
-        // el servidor tiene al menos tanta data como local → usamos server
-        appState.fields = serverFields;
-        localStorage.setItem('cg_state', JSON.stringify(data));
-      } else {
-        // local tiene más data → la usamos y la subimos al servidor
-        appState.fields = localFields;
-        fetch('/api/state', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fields: localFields })
-        }).catch(() => {});
-      }
+      appState.fields = data.fields || [];
+      localStorage.setItem('cg_state', JSON.stringify(data));
       return;
     }
   } catch (e) {}
-  appState.fields = localFields;
+  // Servidor no disponible — usar caché local
+  const local = localStorage.getItem('cg_state');
+  appState.fields = local ? (JSON.parse(local).fields || []) : [];
 }
 
 function saveState() {
