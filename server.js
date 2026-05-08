@@ -52,6 +52,23 @@ async function initDB() {
       updated_at TIMESTAMP DEFAULT NOW()
     )
   `);
+  // Migración: si la tabla existe sin la columna user_id, recrearla
+  await pool.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'app_state' AND column_name = 'user_id'
+      ) THEN
+        DROP TABLE IF EXISTS app_state;
+        CREATE TABLE app_state (
+          user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          data JSONB NOT NULL DEFAULT '{"fields":[]}'::jsonb,
+          updated_at TIMESTAMP DEFAULT NOW()
+        );
+      END IF;
+    END $$;
+  `);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS session (
       sid VARCHAR NOT NULL COLLATE "default",
