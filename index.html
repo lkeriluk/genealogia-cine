@@ -747,7 +747,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.7</span>
+    <span class="footer-txt">Genealogía del Cine v4.8</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -894,7 +894,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.7</span>
+    <span class="footer-txt">Genealogía del Cine v4.8</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1033,7 +1033,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.7</span>
+    <span class="footer-txt">Genealogía del Cine v4.8</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1340,7 +1340,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.7</span>
+    <span class="footer-txt">Genealogía del Cine v4.8</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -4090,7 +4090,7 @@ async function loadSrchCharts() {
         revenue: (d && d.revenue) || 0,
       };
     });
-    renderSrchCharts(allMovies);
+    renderSrchCharts(allMovies, srchState.lastTotal);
   } catch(e) { /* silent */ }
   finally {
     if (btn) btn.disabled = false;
@@ -4098,10 +4098,13 @@ async function loadSrchCharts() {
   }
 }
 
-function renderSrchCharts(movies) {
+function renderSrchCharts(movies, totalResults) {
   if (!movies.length) return;
   Object.values(srchState.chartInstances).forEach(c => c && c.destroy && c.destroy());
   srchState.chartInstances = {};
+
+  const scale = (totalResults && totalResults > movies.length) ? totalResults / movies.length : 1;
+  const scaled = v => Math.round(v * scale);
 
   const makeSrchChart = (canvasId, labels, data, color, isHoriz, total) => {
     const ctx = document.getElementById(canvasId);
@@ -4132,7 +4135,7 @@ function renderSrchCharts(movies) {
     if (m.revenue > 0) { decMap[dec].revSum += m.revenue; decMap[dec].revCount++; }
   });
   const decades   = Object.keys(decMap).map(Number).sort((a, b) => a - b);
-  const decCounts = decades.map(d => decMap[d].count);
+  const decCounts = decades.map(d => scaled(decMap[d].count));
   const decRev    = decades.map(d => decMap[d].revCount > 0 ? Math.round(decMap[d].revSum / decMap[d].revCount / 1e6) : null);
   const decTotal  = decCounts.reduce((s, v) => s + v, 0) || 1;
   makeSrchChart('srch-chart-decades', decades.map(d => d + 's'), decCounts, '#378ADD', false, decTotal);
@@ -4153,12 +4156,14 @@ function renderSrchCharts(movies) {
     const b = Math.min(8, Math.floor(m.rating) - 1);
     if (b >= 0) ratingBuckets[b]++;
   });
+  const scaledRating = [...ratingBuckets].map(scaled);
+  const ratingTotal  = scaledRating.reduce((s, v) => s + v, 0) || 1;
   const ratingCtx = document.getElementById('srch-chart-rating');
   if (ratingCtx) {
     srchState.chartInstances['srch-chart-rating'] = new Chart(ratingCtx, {
       type: 'bar',
-      data: { labels: ['9-10','8-9','7-8','6-7','5-6','4-5','3-4','2-3','1-2'], datasets: [{ data: [...ratingBuckets].reverse(), backgroundColor: '#1D9E7580', borderColor: '#1D9E75', borderWidth: 1 }] },
-      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(movies.length, 'x') }, scales: { y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }, x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } } } }
+      data: { labels: ['9-10','8-9','7-8','6-7','5-6','4-5','3-4','2-3','1-2'], datasets: [{ data: [...scaledRating].reverse(), backgroundColor: '#1D9E7580', borderColor: '#1D9E75', borderWidth: 1 }] },
+      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(ratingTotal, 'x') }, scales: { y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }, x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } } } }
     });
   }
 
@@ -4172,26 +4177,28 @@ function renderSrchCharts(movies) {
     else if (v >= 500)   voteBuckets[1]++;
     else                 voteBuckets[0]++;
   });
+  const scaledVotes = voteBuckets.map(scaled);
+  const votesTotal  = scaledVotes.reduce((s, v) => s + v, 0) || 1;
   const votesCtx = document.getElementById('srch-chart-votes');
   if (votesCtx) {
     srchState.chartInstances['srch-chart-votes'] = new Chart(votesCtx, {
       type: 'bar',
-      data: { labels: ['>15k','5k-15k','2k-5k','500-2k','<500'], datasets: [{ data: [...voteBuckets].reverse(), backgroundColor: '#EF9F2780', borderColor: '#EF9F27', borderWidth: 1 }] },
-      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(movies.length, 'x') }, scales: { x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } }, y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } } } }
+      data: { labels: ['>15k','5k-15k','2k-5k','500-2k','<500'], datasets: [{ data: [...scaledVotes].reverse(), backgroundColor: '#EF9F2780', borderColor: '#EF9F27', borderWidth: 1 }] },
+      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(votesTotal, 'x') }, scales: { x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } }, y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } } } }
     });
   }
 
   // Genres top10
   const genreCount = {};
   movies.forEach(m => (m.genreIds || []).forEach(id => { genreCount[id] = (genreCount[id] || 0) + 1; }));
-  const genreTop10  = Object.entries(genreCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([id, n]) => [GENRE_MAP[id] || id, n]);
+  const genreTop10  = Object.entries(genreCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([id, n]) => [GENRE_MAP[id] || id, scaled(n)]);
   const genreTotal  = genreTop10.reduce((s, x) => s + x[1], 0) || 1;
   makeSrchChart('srch-chart-genres', genreTop10.map(x => x[0]), genreTop10.map(x => x[1]), '#9F77DD', true, genreTotal);
 
   // Countries top10
   const countryCount = {};
   movies.forEach(m => { if (m.country) countryCount[m.country] = (countryCount[m.country] || 0) + 1; });
-  const countryTop10 = Object.entries(countryCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([code, n]) => [getCountryName(code), n]);
+  const countryTop10 = Object.entries(countryCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([code, n]) => [getCountryName(code), scaled(n)]);
   const countryTotal = countryTop10.reduce((s, x) => s + x[1], 0) || 1;
   makeSrchChart('srch-chart-countries', countryTop10.map(x => x[0]), countryTop10.map(x => x[1]), '#D85A30', true, countryTotal);
 }
