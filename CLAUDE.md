@@ -252,6 +252,8 @@ appState = {
 | `indicadores` | Conceptos del método: metaestabilidad, índice de representatividad, distribución 60/40 |
 | `release-notes` | Historial de versiones — **siempre actualizar** |
 
+Los cambios en la sección Películas (buscador avanzado) no tienen artículo propio todavía — van en Release Notes hasta que se cree el artículo.
+
 Los cambios en autenticación, usuarios, sesiones o infraestructura de servidor van solo en Release Notes (no tienen artículo propio).
 
 ---

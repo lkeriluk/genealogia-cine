@@ -615,6 +615,41 @@ input[type=number] {
   /* Lista de películas: altura completa */
   .cal-sidebar { max-height: calc(100vh - 160px) !important; min-height: 300px; }
 }
+
+/* ── NAV TABS ── */
+.nav-tabs { display: flex; gap: 2px; margin-left: 14px; }
+.nav-tab {
+  font-size: 12px; font-weight: 500; padding: 4px 12px;
+  border-radius: 6px; cursor: pointer; color: var(--text3);
+  transition: color .15s, background .15s; user-select: none;
+}
+.nav-tab:hover { color: var(--text2); background: var(--bg3); }
+.nav-tab.active { color: var(--text); background: var(--bg3); }
+
+/* ── SEARCH SCREEN ── */
+.srch-form { padding: 16px 24px; border-bottom: 0.5px solid var(--border); }
+.srch-chips-row { margin-top: 10px; }
+.srch-chips-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+.tag.inc.active { background: var(--green-bg); color: var(--green); border-color: rgba(29,158,117,.3); }
+.tag.exc.active { background: rgba(216,90,48,0.1); color: var(--red); border-color: rgba(216,90,48,.3); }
+
+/* ── MOVIE DETAIL MODAL ── */
+.movie-modal-overlay {
+  position: fixed; inset: 0; z-index: 600;
+  background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center;
+}
+.movie-modal-overlay.open { display: flex; }
+.movie-modal {
+  background: var(--bg2); border: 0.5px solid var(--border2);
+  border-radius: var(--radius-lg); width: 100%; max-width: 620px; max-height: 85vh;
+  overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+.movie-modal-header {
+  padding: 14px 20px; border-bottom: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; background: var(--bg2); z-index: 1;
+}
+.movie-modal-body { padding: 20px; }
 </style>
 </head>
 <body>
@@ -625,6 +660,10 @@ input[type=number] {
 <div class="header1">
   <span class="app-name">Genealogía del Cine</span>
   <svg xmlns="http://www.w3.org/2000/svg" id="tmdb-logo" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 273.42 35.52" style="height:16px;width:auto;flex-shrink:0;"><defs><style>.tmdb-cls{fill:url(#tmdb-grad);}</style><linearGradient id="tmdb-grad" y1="17.76" x2="273.42" y2="17.76" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#90cea1"/><stop offset="0.56" stop-color="#3cbec9"/><stop offset="1" stop-color="#00b3e5"/></linearGradient></defs><g><g><path class="tmdb-cls" d="M191.85,35.37h63.9A17.67,17.67,0,0,0,273.42,17.7h0A17.67,17.67,0,0,0,255.75,0h-63.9A17.67,17.67,0,0,0,174.18,17.7h0A17.67,17.67,0,0,0,191.85,35.37ZM10.1,35.42h7.8V6.92H28V0H0v6.9H10.1Zm28.1,0H46V8.25h.1L55.05,35.4h6L70.3,8.25h.1V35.4h7.8V0H66.45l-8.2,23.1h-.1L50,0H38.2ZM89.14.12h11.7a33.56,33.56,0,0,1,8.08,1,18.52,18.52,0,0,1,6.67,3.08,15.09,15.09,0,0,1,4.53,5.52,18.5,18.5,0,0,1,1.67,8.25,16.91,16.91,0,0,1-1.62,7.58,16.3,16.3,0,0,1-4.38,5.5,19.24,19.24,0,0,1-6.35,3.37,24.53,24.53,0,0,1-7.55,1.15H89.14Zm7.8,28.2h4a21.66,21.66,0,0,0,5-.55A10.58,10.58,0,0,0,110,26a8.73,8.73,0,0,0,2.68-3.35,11.9,11.9,0,0,0,1-5.08,9.87,9.87,0,0,0-1-4.52,9.17,9.17,0,0,0-2.63-3.18A11.61,11.61,0,0,0,106.22,8a17.06,17.06,0,0,0-4.68-.63h-4.6ZM133.09.12h13.2a32.87,32.87,0,0,1,4.63.33,12.66,12.66,0,0,1,4.17,1.3,7.94,7.94,0,0,1,3,2.72,8.34,8.34,0,0,1,1.15,4.65,7.48,7.48,0,0,1-1.67,5,9.13,9.13,0,0,1-4.43,2.82V17a10.28,10.28,0,0,1,3.18,1,8.51,8.51,0,0,1,2.45,1.85,7.79,7.79,0,0,1,1.57,2.62,9.16,9.16,0,0,1,.55,3.2,8.52,8.52,0,0,1-1.2,4.68,9.32,9.32,0,0,1-3.1,3A13.38,13.38,0,0,1,152.32,35a22.5,22.5,0,0,1-4.73.5h-14.5Zm7.8,14.15h5.65a7.65,7.65,0,0,0,1.78-.2,4.78,4.78,0,0,0,1.57-.65,3.43,3.43,0,0,0,1.13-1.2,3.63,3.63,0,0,0,.42-1.8A3.3,3.3,0,0,0,151,8.6a3.42,3.42,0,0,0-1.23-1.13A6.07,6.07,0,0,0,148,6.9a9.9,9.9,0,0,0-1.85-.18h-5.3Zm0,14.65h7a8.27,8.27,0,0,0,1.83-.2,4.67,4.67,0,0,0,1.67-.7,3.93,3.93,0,0,0,1.23-1.3,3.8,3.8,0,0,0,.47-1.95,3.16,3.16,0,0,0-.62-2,4,4,0,0,0-1.58-1.18,8.23,8.23,0,0,0-2-.55,15.12,15.12,0,0,0-2.05-.15h-5.9Z"/></g></g></svg>
+  <div class="nav-tabs">
+    <span class="nav-tab active" id="nav-campos" onclick="showScreen('screen-home')">Campos</span>
+    <span class="nav-tab" id="nav-peliculas" onclick="showScreen('screen-movies')">Películas</span>
+  </div>
   <div class="header1-spacer"></div>
   <a href="/help" class="help-link" style="font-size:12px;color:var(--text3);text-decoration:none;margin-right:8px;" onmouseover="this.style.color='var(--text2)'" onmouseout="this.style.color='var(--text3)'">Ayuda</a>
   <div class="user-avatar" id="user-avatar-btn" onclick="toggleUserMenu()"></div>
@@ -680,6 +719,16 @@ input[type=number] {
   </div>
 </div>
 
+<div class="movie-modal-overlay" id="movie-modal-overlay" onclick="closeMovieDetail()">
+  <div class="movie-modal" onclick="event.stopPropagation()">
+    <div class="movie-modal-header">
+      <span id="movie-modal-title" style="font-size:14px;font-weight:500;max-width:500px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      <button class="users-modal-close" onclick="closeMovieDetail()">×</button>
+    </div>
+    <div class="movie-modal-body" id="movie-modal-body"></div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════
      PANTALLA 1 — LISTADO DE CAMPOS
      ═══════════════════════════════════ -->
@@ -698,7 +747,94 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.2</span>
+    <span class="footer-txt">Genealogía del Cine v4.3</span>
+    <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PANTALLA — BUSCADOR DE PELÍCULAS
+     ═══════════════════════════════════ -->
+<div id="screen-movies" class="screen">
+  <div class="srch-form">
+    <div class="form-row form-row-3">
+      <div>
+        <div class="form-label">Título</div>
+        <input class="form-input" id="srch-title" placeholder="Título de la película..." oninput="onSrchTitleInput()" onkeydown="if(event.key==='Enter')doMovieSearch(1)">
+      </div>
+      <div>
+        <div class="form-label">Género principal</div>
+        <select class="form-select" id="srch-genre"><option value="">Todos</option></select>
+      </div>
+      <div>
+        <div class="form-label">País</div>
+        <select class="form-select" id="srch-country"><option value="">Todos los países</option></select>
+      </div>
+    </div>
+    <div class="form-row form-row-4">
+      <div>
+        <div class="form-label">Votos mínimos</div>
+        <input class="form-input" type="number" id="srch-votes-min" placeholder="0" min="0">
+      </div>
+      <div>
+        <div class="form-label">Votos máximos</div>
+        <input class="form-input" type="number" id="srch-votes-max" placeholder="—" min="0">
+      </div>
+      <div>
+        <div class="form-label">Rating mínimo</div>
+        <input class="form-input" type="number" id="srch-rating-min" placeholder="0" step="0.1" min="0" max="10">
+      </div>
+      <div>
+        <div class="form-label">Rating máximo</div>
+        <input class="form-input" type="number" id="srch-rating-max" placeholder="10" step="0.1" min="0" max="10">
+      </div>
+    </div>
+    <div class="form-row form-row-2">
+      <div>
+        <div class="form-label">Taquilla mínima (millones USD)</div>
+        <input class="form-input" type="number" id="srch-rev-min" placeholder="0" min="0">
+      </div>
+      <div>
+        <div class="form-label">Taquilla máxima (millones USD)</div>
+        <input class="form-input" type="number" id="srch-rev-max" placeholder="—" min="0">
+      </div>
+    </div>
+    <div class="srch-chips-row">
+      <div class="srch-chips-label">Incluir géneros secundarios</div>
+      <div class="tags" id="srch-inc-tags"></div>
+    </div>
+    <div class="srch-chips-row">
+      <div class="srch-chips-label">Excluir géneros secundarios</div>
+      <div class="tags" id="srch-exc-tags"></div>
+    </div>
+    <div id="srch-title-note" style="display:none;font-size:11px;color:var(--amber);margin-top:10px;">Al buscar por título, los demás filtros no aplican.</div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn-primary" onclick="doMovieSearch(1)">Buscar</button>
+      <button class="btn" onclick="clearMovieSearch()">Limpiar</button>
+    </div>
+  </div>
+  <div style="padding:16px 24px;">
+    <div id="srch-results-info" style="font-size:12px;color:var(--text3);margin-bottom:12px;min-height:18px;"></div>
+    <div class="tbl-wrap" id="srch-tbl-wrap" style="display:none;">
+      <table class="tbl" style="table-layout:fixed;">
+        <thead>
+          <tr>
+            <th style="width:32%;">Título</th>
+            <th style="width:7%;">Año</th>
+            <th style="width:12%;">País</th>
+            <th style="width:19%;">Géneros</th>
+            <th style="width:11%;">Votos</th>
+            <th style="width:8%;">Rating</th>
+            <th style="width:11%;">Taquilla</th>
+          </tr>
+        </thead>
+        <tbody id="srch-tbody"></tbody>
+      </table>
+    </div>
+    <div id="srch-pager" style="margin-top:12px;"></div>
+  </div>
+  <div class="app-footer">
+    <span class="footer-txt">Genealogía del Cine v4.3</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -837,7 +973,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.2</span>
+    <span class="footer-txt">Genealogía del Cine v4.3</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1142,7 +1278,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.2</span>
+    <span class="footer-txt">Genealogía del Cine v4.3</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1342,8 +1478,11 @@ function currentField() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  document.getElementById('nav-campos').classList.toggle('active', id === 'screen-home');
+  document.getElementById('nav-peliculas').classList.toggle('active', id === 'screen-movies');
   if (id === 'screen-home') renderFieldsList();
   if (id === 'screen-new-field') { selectedCountry = ''; loadGenres(); loadCountries(); markPreviewDirty(); }
+  if (id === 'screen-movies') initMoviesScreen();
 }
 
 function showTab(name) {
@@ -3536,6 +3675,207 @@ async function openActivityModal(userId, userName) {
 
 function closeActivityModal() {
   document.getElementById('activity-modal-overlay').classList.remove('open');
+}
+
+// ── BUSCADOR DE PELÍCULAS ──
+const srchState = { incGenres: new Set(), excGenres: new Set() };
+
+function initMoviesScreen() {
+  const genSel = document.getElementById('srch-genre');
+  if (genSel && genSel.options.length <= 1 && appState.allGenres.length) {
+    genSel.innerHTML = '<option value="">Todos</option>' +
+      appState.allGenres.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+  }
+  const cntSel = document.getElementById('srch-country');
+  if (cntSel && cntSel.options.length <= 1 && allCountries.length) {
+    cntSel.innerHTML = '<option value="">Todos los países</option>' +
+      allCountries.map(c => `<option value="${c.code}">${c.name}</option>`).join('');
+  }
+  populateSrchGenreChips();
+}
+
+function populateSrchGenreChips() {
+  const genres = appState.allGenres || [];
+  ['inc', 'exc'].forEach(type => {
+    const el = document.getElementById(`srch-${type}-tags`);
+    if (!el) return;
+    el.innerHTML = genres.map(g => {
+      const active = type === 'inc' ? srchState.incGenres.has(g.id) : srchState.excGenres.has(g.id);
+      return `<span class="tag ${type}${active ? ' active' : ''}" onclick="srchToggleGenre(${g.id},'${type}')">${g.name}</span>`;
+    }).join('');
+  });
+}
+
+function srchToggleGenre(id, type) {
+  const other = type === 'inc' ? srchState.excGenres : srchState.incGenres;
+  const own   = type === 'inc' ? srchState.incGenres : srchState.excGenres;
+  other.delete(id);
+  own.has(id) ? own.delete(id) : own.add(id);
+  populateSrchGenreChips();
+}
+
+function onSrchTitleInput() {
+  const hasTitle = document.getElementById('srch-title').value.trim().length > 0;
+  document.getElementById('srch-title-note').style.display = hasTitle ? '' : 'none';
+}
+
+async function doMovieSearch(page = 1) {
+  const title     = document.getElementById('srch-title').value.trim();
+  const genreId   = document.getElementById('srch-genre').value;
+  const country   = document.getElementById('srch-country').value;
+  const votesMin  = document.getElementById('srch-votes-min').value;
+  const votesMax  = document.getElementById('srch-votes-max').value;
+  const ratingMin = document.getElementById('srch-rating-min').value;
+  const ratingMax = document.getElementById('srch-rating-max').value;
+  const revMin    = document.getElementById('srch-rev-min').value;
+  const revMax    = document.getElementById('srch-rev-max').value;
+
+  const info = document.getElementById('srch-results-info');
+  info.textContent = 'Buscando...';
+  document.getElementById('srch-tbl-wrap').style.display = 'none';
+  document.getElementById('srch-pager').innerHTML = '';
+
+  try {
+    let movies, total, totalPages;
+
+    if (title) {
+      const r = await fetch(`${BASE}/search/movie?query=${encodeURIComponent(title)}&language=es&page=${page}`, { headers: HEADERS });
+      const d = await r.json();
+      movies = (d.results || []).map(m => mapSrchMovie(m));
+      total = d.total_results || 0;
+      totalPages = Math.min(d.total_pages || 1, 10);
+    } else {
+      let params = `language=es&sort_by=vote_count.desc&page=${page}`;
+      const incArr = [...srchState.incGenres];
+      const genreIds = genreId ? [+genreId, ...incArr] : incArr;
+      if (genreIds.length) params += `&with_genres=${genreIds.join(',')}`;
+      if (srchState.excGenres.size) params += `&without_genres=${[...srchState.excGenres].join(',')}`;
+      if (country)   params += `&with_origin_country=${country}`;
+      if (votesMin)  params += `&vote_count.gte=${votesMin}`;
+      if (votesMax)  params += `&vote_count.lte=${votesMax}`;
+      if (ratingMin) params += `&vote_average.gte=${ratingMin}`;
+      if (ratingMax) params += `&vote_average.lte=${ratingMax}`;
+      if (revMin)    params += `&with_revenue.gte=${+revMin * 1e6}`;
+      if (revMax)    params += `&with_revenue.lte=${+revMax * 1e6}`;
+      const r = await fetch(`${BASE}/discover/movie?${params}`, { headers: HEADERS });
+      const d = await r.json();
+      movies = (d.results || []).map(m => mapSrchMovie(m));
+      total = d.total_results || 0;
+      totalPages = Math.min(d.total_pages || 1, 10);
+    }
+
+    renderMovieResults(movies, total, page, totalPages);
+  } catch(e) {
+    info.textContent = 'Error al buscar. Intentá de nuevo.';
+  }
+}
+
+function mapSrchMovie(m) {
+  return {
+    id: m.id,
+    title: m.title,
+    year: +(m.release_date || '0000').slice(0, 4) || null,
+    votes: m.vote_count || 0,
+    rating: m.vote_average || 0,
+    country: (m.origin_country || [])[0] || '',
+    genreIds: m.genre_ids || [],
+  };
+}
+
+function renderMovieResults(movies, total, page, totalPages) {
+  const info  = document.getElementById('srch-results-info');
+  const wrap  = document.getElementById('srch-tbl-wrap');
+  const tbody = document.getElementById('srch-tbody');
+
+  if (!movies.length) { info.textContent = 'Sin resultados.'; wrap.style.display = 'none'; return; }
+
+  info.textContent = `${total.toLocaleString('es-AR')} resultados · página ${page} de ${totalPages}`;
+  wrap.style.display = '';
+
+  tbody.innerHTML = movies.map(m => {
+    const genres = (m.genreIds || []).map(id => GENRE_MAP[id] || String(id));
+    const genreCell = genres.length
+      ? genres.slice(0, 3).join(', ') + (genres.length > 3 ? ` +${genres.length - 3}` : '')
+      : '—';
+    const countryDisplay = m.country ? getCountryName(m.country) : '—';
+    return `<tr style="cursor:pointer;" onclick="openMovieDetail(${m.id})" title="Ver detalle">
+      <td class="td-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.title}</td>
+      <td class="td-mono">${m.year || '—'}</td>
+      <td class="td-mono" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${countryDisplay}</td>
+      <td class="td-mono" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${genreCell}</td>
+      <td class="td-mono">${m.votes.toLocaleString('es-AR')}</td>
+      <td class="td-mono">${m.rating ? m.rating.toFixed(1) : '—'}</td>
+      <td class="td-mono">—</td>
+    </tr>`;
+  }).join('');
+
+  const pagerEl = document.getElementById('srch-pager');
+  if (totalPages <= 1) { pagerEl.innerHTML = ''; return; }
+  let btns = page > 1 ? `<span class="pager-btn" onclick="doMovieSearch(${page - 1})">←</span>` : '';
+  for (let p = Math.max(1, page - 2); p <= Math.min(totalPages, page + 2); p++) {
+    btns += `<span class="pager-btn ${p === page ? 'active' : ''}" onclick="doMovieSearch(${p})">${p}</span>`;
+  }
+  if (page < totalPages) btns += `<span class="pager-btn" onclick="doMovieSearch(${page + 1})">→</span>`;
+  btns += `<span class="pager-info">${total.toLocaleString('es-AR')} resultados · pág ${page}/${totalPages}</span>`;
+  pagerEl.innerHTML = btns;
+}
+
+async function openMovieDetail(movieId) {
+  document.getElementById('movie-modal-title').textContent = 'Cargando...';
+  document.getElementById('movie-modal-body').innerHTML = '<div style="padding:20px;color:var(--text3);font-size:13px;">Cargando...</div>';
+  document.getElementById('movie-modal-overlay').classList.add('open');
+  try {
+    const r = await fetch(`${BASE}/movie/${movieId}?language=es`, { headers: HEADERS });
+    const d = await r.json();
+    const year = (d.release_date || '').slice(0, 4) || '—';
+    const countries = (d.production_countries || []).map(c => c.name).join(', ') || '—';
+    const genreBadges = (d.genres || []).map(g => `<span class="badge">${g.name}</span>`).join(' ');
+    const posterHtml = d.poster_path
+      ? `<div class="film-poster"><img src="https://image.tmdb.org/t/p/w154${d.poster_path}" alt="${d.title}"></div>`
+      : `<div class="film-poster" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3);">sin póster</div>`;
+    const financeHtml = (d.budget || d.revenue) ? `
+      <div style="display:flex;gap:16px;margin-top:8px;">
+        ${d.budget  ? `<div><div style="font-size:10px;color:var(--text3);letter-spacing:.04em;">PRESUPUESTO</div><div style="font-size:13px;font-family:'DM Mono',monospace;">${fmtRevenue(d.budget)}</div></div>` : ''}
+        ${d.revenue ? `<div><div style="font-size:10px;color:var(--text3);letter-spacing:.04em;">TAQUILLA</div><div style="font-size:13px;font-family:'DM Mono',monospace;">${fmtRevenue(d.revenue)}</div></div>` : ''}
+      </div>` : '';
+    const overviewHtml = d.overview
+      ? `<div style="font-size:12px;color:var(--text3);line-height:1.6;margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border);">${d.overview}</div>` : '';
+
+    document.getElementById('movie-modal-title').textContent = d.title;
+    document.getElementById('movie-modal-body').innerHTML = `
+      <div class="film-header">
+        ${posterHtml}
+        <div style="min-width:0;flex:1;">
+          <div class="film-title">${d.title}</div>
+          <div class="film-meta">${year} · ${(d.vote_count||0).toLocaleString('es-AR')} votos · ★${(d.vote_average||0).toFixed(1)}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px;">${countries}</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;">${genreBadges}</div>
+          ${financeHtml}
+        </div>
+      </div>
+      ${overviewHtml}`;
+  } catch(e) {
+    document.getElementById('movie-modal-body').innerHTML = '<div style="padding:20px;color:var(--red);font-size:13px;">Error al cargar detalle.</div>';
+  }
+}
+
+function closeMovieDetail() {
+  document.getElementById('movie-modal-overlay').classList.remove('open');
+}
+
+function clearMovieSearch() {
+  ['srch-title','srch-votes-min','srch-votes-max','srch-rating-min','srch-rating-max','srch-rev-min','srch-rev-max'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('srch-genre').value = '';
+  document.getElementById('srch-country').value = '';
+  srchState.incGenres.clear();
+  srchState.excGenres.clear();
+  document.getElementById('srch-title-note').style.display = 'none';
+  document.getElementById('srch-results-info').textContent = '';
+  document.getElementById('srch-tbl-wrap').style.display = 'none';
+  document.getElementById('srch-pager').innerHTML = '';
+  populateSrchGenreChips();
 }
 
 // ── INIT ──
