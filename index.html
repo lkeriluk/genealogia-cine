@@ -745,7 +745,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.2</span>
+    <span class="footer-txt">Genealogía del Cine v5.3</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -898,7 +898,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.2</span>
+    <span class="footer-txt">Genealogía del Cine v5.3</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1043,7 +1043,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.2</span>
+    <span class="footer-txt">Genealogía del Cine v5.3</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1356,7 +1356,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.2</span>
+    <span class="footer-txt">Genealogía del Cine v5.3</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -4119,12 +4119,21 @@ async function loadSrchCharts() {
     if (srchState.titleMode) {
       baseMovies = srchState.lastResults;
     } else {
-      const params   = buildSrchDiscoverParams();
-      const maxPages = Math.min(srchState.lastTotalPages, 10);
-      const fetches  = Array.from({length: maxPages}, (_, i) =>
-        fetch(`${BASE}/discover/movie?${params}&page=${i + 1}`, { headers: HEADERS }).then(r => r.json())
-      );
-      const pages = await Promise.all(fetches);
+      // Equidistant pages sorted by original_title.asc — same methodology as tab Descripción
+      const totalPgs  = Math.max(1, Math.min(500, Math.ceil(srchState.lastTotal / 20)));
+      const numPgs    = Math.min(10, totalPgs);
+      const pagesToFetch = [];
+      for (let i = 0; i < numPgs; i++) {
+        const pg = numPgs === 1 ? 1 : 1 + Math.round(i * (totalPgs - 1) / (numPgs - 1));
+        if (!pagesToFetch.includes(pg)) pagesToFetch.push(pg);
+      }
+      const decFrom = document.getElementById('srch-dec-from').value;
+      const decTo   = document.getElementById('srch-dec-to').value;
+      const dateP   = decFrom && decTo ? `&primary_release_date.gte=${decFrom}-01-01&primary_release_date.lte=${+decTo + 9}-12-31` : '';
+      const chartParams = buildSrchRevBaseParams().replace('sort_by=revenue.desc', 'sort_by=original_title.asc');
+      const pages = await Promise.all(pagesToFetch.map(pg =>
+        fetch(`${BASE}/discover/movie?${chartParams}${dateP}&page=${pg}`, { headers: HEADERS }).then(r => r.json())
+      ));
       baseMovies = pages.flatMap(d => (d.results || []).map(m => mapSrchMovie(m)));
     }
     // Fetch details for origin_country and revenue (not available in list endpoints)
