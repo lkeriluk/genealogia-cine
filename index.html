@@ -641,7 +641,7 @@ input[type=number] {
 .movie-modal-overlay.open { display: flex; }
 .movie-modal {
   background: var(--bg2); border: 0.5px solid var(--border2);
-  border-radius: var(--radius-lg); width: 100%; max-width: 620px; max-height: 85vh;
+  border-radius: var(--radius-lg); width: 100%; max-width: 720px; max-height: 90vh;
   overflow-y: auto; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
 }
 .movie-modal-header {
@@ -747,7 +747,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.5</span>
+    <span class="footer-txt">Genealogía del Cine v4.6</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -774,7 +774,7 @@ input[type=number] {
     <div class="form-row form-row-2">
       <div>
         <div class="form-label">Década desde</div>
-        <select class="form-select" id="srch-dec-from">
+        <select class="form-select" id="srch-dec-from" onchange="updateDecadeConstraints()">
           <option value="">Todas</option>
           <option>1920</option><option>1930</option><option>1940</option><option>1950</option>
           <option>1960</option><option>1970</option><option>1980</option><option>1990</option>
@@ -783,7 +783,7 @@ input[type=number] {
       </div>
       <div>
         <div class="form-label">Década hasta</div>
-        <select class="form-select" id="srch-dec-to">
+        <select class="form-select" id="srch-dec-to" onchange="updateDecadeConstraints()">
           <option value="">Todas</option>
           <option>1920</option><option>1930</option><option>1940</option><option>1950</option>
           <option>1960</option><option>1970</option><option>1980</option><option>1990</option>
@@ -794,11 +794,11 @@ input[type=number] {
     <div class="form-row form-row-4">
       <div>
         <div class="form-label">Votos mínimos</div>
-        <input class="form-input" type="number" id="srch-votes-min" placeholder="0" min="0">
+        <input class="form-input" type="text" id="srch-votes-min" placeholder="0" onfocus="onVotesFocus(this)" onblur="onVotesBlur(this)">
       </div>
       <div>
         <div class="form-label">Votos máximos</div>
-        <input class="form-input" type="number" id="srch-votes-max" placeholder="—" min="0">
+        <input class="form-input" type="text" id="srch-votes-max" placeholder="—" onfocus="onVotesFocus(this)" onblur="onVotesBlur(this)">
       </div>
       <div>
         <div class="form-label">Rating mínimo</div>
@@ -852,8 +852,49 @@ input[type=number] {
     </div>
     <div id="srch-pager" style="margin-top:12px;"></div>
   </div>
+  <div id="srch-charts-section" style="display:none;padding:0 24px 24px;">
+    <div class="divider"></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <span style="font-size:12px;font-weight:500;color:var(--text2);">Distribución</span>
+      <button class="btn" style="font-size:11px;padding:4px 10px;" id="srch-charts-btn" onclick="loadSrchCharts()">Cargar gráficos</button>
+      <span id="srch-charts-loading" style="font-size:11px;color:var(--text3);display:none;">Cargando...</span>
+    </div>
+    <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;">Distribución por décadas</div>
+    <div class="analysis-grid-2">
+      <div class="analysis-card">
+        <div class="analysis-card-title">CANTIDAD DE PELÍCULAS</div>
+        <div style="position:relative;height:110px;"><canvas id="srch-chart-decades"></canvas></div>
+      </div>
+      <div class="analysis-card">
+        <div class="analysis-card-title">POPULARIDAD PROMEDIO</div>
+        <div style="position:relative;height:110px;"><canvas id="srch-chart-popularity"></canvas></div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución por categoría</div>
+    <div class="analysis-grid-2">
+      <div class="analysis-card">
+        <div class="analysis-card-title">GÉNEROS SECUNDARIOS (TOP 10)</div>
+        <div style="position:relative;height:280px;"><canvas id="srch-chart-genres"></canvas></div>
+      </div>
+      <div class="analysis-card">
+        <div class="analysis-card-title">PAÍSES DE PRODUCCIÓN (TOP 10)</div>
+        <div style="position:relative;height:280px;"><canvas id="srch-chart-countries"></canvas></div>
+      </div>
+    </div>
+    <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución de scores</div>
+    <div class="analysis-grid-2">
+      <div class="analysis-card">
+        <div class="analysis-card-title">RATING DE USUARIOS</div>
+        <div style="position:relative;height:280px;"><canvas id="srch-chart-rating"></canvas></div>
+      </div>
+      <div class="analysis-card" style="display:flex;flex-direction:column;">
+        <div class="analysis-card-title">CANTIDAD DE VOTOS</div>
+        <div style="flex:1;position:relative;min-height:0;"><canvas id="srch-chart-votes"></canvas></div>
+      </div>
+    </div>
+  </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.5</span>
+    <span class="footer-txt">Genealogía del Cine v4.6</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -992,7 +1033,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.5</span>
+    <span class="footer-txt">Genealogía del Cine v4.6</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1299,7 +1340,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.5</span>
+    <span class="footer-txt">Genealogía del Cine v4.6</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3713,6 +3754,7 @@ const srchState = {
   sortCol: 'votes', sortDir: 'desc',
   lastResults: [], titleMode: false,
   lastTotal: 0, lastTotalPages: 1, lastPage: 1,
+  chartInstances: {},
 };
 const TMDB_SORT = { title: 'original_title', year: 'primary_release_date', votes: 'vote_count', rating: 'vote_average' };
 
@@ -3767,16 +3809,63 @@ function parseRevInput(id) {
   return (!isNaN(n) && n > 0) ? n : null;
 }
 
-async function doMovieSearch(page = 1) {
-  const title     = document.getElementById('srch-title').value.trim();
+function onVotesFocus(el) {
+  el.value = el.value.replace(/\./g, '');
+}
+function onVotesBlur(el) {
+  const n = parseInt(el.value.replace(/[^0-9]/g, ''));
+  el.value = (!isNaN(n) && n > 0) ? n.toLocaleString('es-AR') : '';
+}
+function parseVotesInput(id) {
+  const n = parseInt(document.getElementById(id).value.replace(/[^0-9]/g, ''));
+  return (!isNaN(n) && n > 0) ? n : null;
+}
+
+function updateDecadeConstraints() {
+  const fromSel = document.getElementById('srch-dec-from');
+  const toSel   = document.getElementById('srch-dec-to');
+  const fromVal = fromSel.value ? +fromSel.value : null;
+  const toVal   = toSel.value   ? +toSel.value   : null;
+  [...fromSel.options].forEach(opt => {
+    opt.disabled = opt.value !== '' && toVal !== null && +opt.value > toVal;
+  });
+  [...toSel.options].forEach(opt => {
+    opt.disabled = opt.value !== '' && fromVal !== null && +opt.value < fromVal;
+  });
+}
+
+function buildSrchDiscoverParams() {
   const genreId   = document.getElementById('srch-genre').value;
   const country   = document.getElementById('srch-country').value;
-  const votesMin  = document.getElementById('srch-votes-min').value;
-  const votesMax  = document.getElementById('srch-votes-max').value;
+  const votesMin  = parseVotesInput('srch-votes-min');
+  const votesMax  = parseVotesInput('srch-votes-max');
   const ratingMin = document.getElementById('srch-rating-min').value;
   const ratingMax = document.getElementById('srch-rating-max').value;
   const revMin    = parseRevInput('srch-rev-min');
   const revMax    = parseRevInput('srch-rev-max');
+  const decFrom   = document.getElementById('srch-dec-from').value;
+  const decTo     = document.getElementById('srch-dec-to').value;
+  const tmdbSort  = TMDB_SORT[srchState.sortCol];
+  const sortBy    = tmdbSort ? `${tmdbSort}.${srchState.sortDir}` : `vote_count.desc`;
+  let params = `language=es&sort_by=${sortBy}`;
+  const incArr = [...srchState.incGenres];
+  const genreIds = genreId ? [+genreId, ...incArr] : incArr;
+  if (genreIds.length)      params += `&with_genres=${genreIds.join(',')}`;
+  if (srchState.excGenres.size) params += `&without_genres=${[...srchState.excGenres].join(',')}`;
+  if (decFrom)              params += `&primary_release_date.gte=${decFrom}-01-01`;
+  if (decTo)                params += `&primary_release_date.lte=${+decTo + 9}-12-31`;
+  if (country)              params += `&with_origin_country=${country}`;
+  if (votesMin != null)     params += `&vote_count.gte=${votesMin}`;
+  if (votesMax != null)     params += `&vote_count.lte=${votesMax}`;
+  if (ratingMin)            params += `&vote_average.gte=${ratingMin}`;
+  if (ratingMax)            params += `&vote_average.lte=${ratingMax}`;
+  if (revMin != null)       params += `&with_revenue.gte=${revMin * 1e6}`;
+  if (revMax != null)       params += `&with_revenue.lte=${revMax * 1e6}`;
+  return params;
+}
+
+async function doMovieSearch(page = 1) {
+  const title = document.getElementById('srch-title').value.trim();
 
   srchState.titleMode = !!title;
   srchState.lastPage = page;
@@ -3796,25 +3885,8 @@ async function doMovieSearch(page = 1) {
       total = d.total_results || 0;
       totalPages = Math.min(d.total_pages || 1, 10);
     } else {
-      const tmdbSort = TMDB_SORT[srchState.sortCol];
-      const sortBy = tmdbSort ? `${tmdbSort}.${srchState.sortDir}` : `vote_count.desc`;
-      let params = `language=es&sort_by=${sortBy}&page=${page}`;
-      const incArr = [...srchState.incGenres];
-      const genreIds = genreId ? [+genreId, ...incArr] : incArr;
-      if (genreIds.length) params += `&with_genres=${genreIds.join(',')}`;
-      if (srchState.excGenres.size) params += `&without_genres=${[...srchState.excGenres].join(',')}`;
-      const decFrom = document.getElementById('srch-dec-from').value;
-      const decTo   = document.getElementById('srch-dec-to').value;
-      if (decFrom) params += `&primary_release_date.gte=${decFrom}-01-01`;
-      if (decTo)   params += `&primary_release_date.lte=${+decTo + 9}-12-31`;
-      if (country)   params += `&with_origin_country=${country}`;
-      if (votesMin)  params += `&vote_count.gte=${votesMin}`;
-      if (votesMax)  params += `&vote_count.lte=${votesMax}`;
-      if (ratingMin) params += `&vote_average.gte=${ratingMin}`;
-      if (ratingMax) params += `&vote_average.lte=${ratingMax}`;
-      if (revMin != null) params += `&with_revenue.gte=${revMin * 1e6}`;
-      if (revMax != null) params += `&with_revenue.lte=${revMax * 1e6}`;
-      const r = await fetch(`${BASE}/discover/movie?${params}`, { headers: HEADERS });
+      const params = buildSrchDiscoverParams();
+      const r = await fetch(`${BASE}/discover/movie?${params}&page=${page}`, { headers: HEADERS });
       const d = await r.json();
       movies = (d.results || []).map(m => mapSrchMovie(m));
       total = d.total_results || 0;
@@ -3868,6 +3940,7 @@ function mapSrchMovie(m) {
     rating: m.vote_average || 0,
     country: (m.origin_country || [])[0] || '',
     genreIds: m.genre_ids || [],
+    popularity: m.popularity || 0,
   };
 }
 
@@ -3876,9 +3949,10 @@ function renderMovieResults(movies, total, page, totalPages) {
   const wrap  = document.getElementById('srch-tbl-wrap');
   const tbody = document.getElementById('srch-tbody');
 
-  if (!movies.length) { info.textContent = 'Sin resultados.'; wrap.style.display = 'none'; return; }
+  if (!movies.length) { info.textContent = 'Sin resultados.'; wrap.style.display = 'none'; document.getElementById('srch-charts-section').style.display = 'none'; return; }
 
   info.textContent = `${total.toLocaleString('es-AR')} resultados · página ${page} de ${totalPages}`;
+  document.getElementById('srch-charts-section').style.display = '';
   wrap.style.display = '';
 
   tbody.innerHTML = movies.map(m => {
@@ -3916,36 +3990,46 @@ async function openMovieDetail(movieId) {
   try {
     const r = await fetch(`${BASE}/movie/${movieId}?language=es`, { headers: HEADERS });
     const d = await r.json();
-    const year = (d.release_date || '').slice(0, 4) || '—';
+    const year     = (d.release_date || '').slice(0, 4) || '—';
+    const runtime  = d.runtime ? `${d.runtime} min` : null;
     const countries = (d.production_countries || []).map(c => c.name).join(', ') || '—';
     const genreBadges = (d.genres || []).map(g => `<span class="badge">${g.name}</span>`).join(' ');
+    const metaParts = [year, runtime, `★ ${(d.vote_average||0).toFixed(1)}`, `${(d.vote_count||0).toLocaleString('es-AR')} votos`].filter(Boolean);
+
     const posterHtml = d.poster_path
-      ? `<img src="https://image.tmdb.org/t/p/w342${d.poster_path}" alt="${d.title}" style="width:176px;border-radius:var(--radius);display:block;flex-shrink:0;">`
-      : `<div style="width:176px;height:264px;border-radius:var(--radius);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3);flex-shrink:0;">sin póster</div>`;
+      ? `<img src="https://image.tmdb.org/t/p/w342${d.poster_path}" alt="${d.title}" style="width:185px;border-radius:var(--radius);display:block;flex-shrink:0;">`
+      : `<div style="width:185px;height:278px;border-radius:var(--radius);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3);flex-shrink:0;">sin póster</div>`;
+
+    const taglineHtml = d.tagline
+      ? `<div style="font-size:12px;color:var(--text3);font-style:italic;margin-bottom:10px;line-height:1.5;">${d.tagline}</div>` : '';
+
     const financeHtml = (d.budget || d.revenue) ? `
-      <div style="display:flex;gap:16px;margin-top:10px;">
-        ${d.budget  ? `<div><div style="font-size:10px;color:var(--text3);letter-spacing:.04em;">PRESUPUESTO</div><div style="font-size:13px;font-family:'DM Mono',monospace;">${fmtRevenue(d.budget)}</div></div>` : ''}
-        ${d.revenue ? `<div><div style="font-size:10px;color:var(--text3);letter-spacing:.04em;">TAQUILLA</div><div style="font-size:13px;font-family:'DM Mono',monospace;">${fmtRevenue(d.revenue)}</div></div>` : ''}
+      <div style="display:flex;gap:20px;margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border);">
+        ${d.budget  ? `<div><div style="font-size:10px;color:var(--text3);letter-spacing:.04em;margin-bottom:3px;">PRESUPUESTO</div><div style="font-size:13px;font-family:'DM Mono',monospace;">${fmtRevenue(d.budget)}</div></div>` : ''}
+        ${d.revenue ? `<div><div style="font-size:10px;color:var(--text3);letter-spacing:.04em;margin-bottom:3px;">TAQUILLA</div><div style="font-size:13px;font-family:'DM Mono',monospace;">${fmtRevenue(d.revenue)}</div></div>` : ''}
       </div>` : '';
+
     const overviewHtml = d.overview
-      ? `<div style="font-size:12px;color:var(--text3);line-height:1.6;margin-top:16px;padding-top:16px;border-top:0.5px solid var(--border);">${d.overview}</div>` : '';
-    const tmdbLink = `<a href="https://www.themoviedb.org/movie/${d.id}" target="_blank" rel="noopener" style="font-size:11px;color:var(--blue);text-decoration:none;margin-top:12px;display:inline-block;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Ver en TMDB →</a>`;
+      ? `<div style="font-size:12px;color:var(--text3);line-height:1.7;margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border);">${d.overview}</div>` : '';
+
+    const tmdbLink = `<a href="https://www.themoviedb.org/movie/${d.id}" target="_blank" rel="noopener" style="font-size:11px;color:var(--blue);text-decoration:none;margin-top:14px;display:inline-block;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Ver en TMDB →</a>`;
 
     const displayTitle = d.original_title || d.title;
     document.getElementById('movie-modal-title').textContent = displayTitle;
     document.getElementById('movie-modal-body').innerHTML = `
-      <div style="display:flex;gap:20px;align-items:flex-start;">
+      <div style="display:flex;gap:24px;align-items:flex-start;">
         ${posterHtml}
-        <div style="min-width:0;flex:1;">
-          <div class="film-title">${displayTitle}</div>
-          <div class="film-meta">${year} · ${(d.vote_count||0).toLocaleString('es-AR')} votos · ★${(d.vote_average||0).toFixed(1)}</div>
+        <div style="min-width:0;flex:1;display:flex;flex-direction:column;">
+          <div class="film-title" style="font-size:17px;margin-bottom:4px;">${displayTitle}</div>
+          ${taglineHtml}
+          <div class="film-meta">${metaParts.join(' · ')}</div>
           <div style="font-size:12px;color:var(--text3);margin-top:4px;">${countries}</div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;">${genreBadges}</div>
           ${financeHtml}
+          ${overviewHtml}
           ${tmdbLink}
         </div>
-      </div>
-      ${overviewHtml}`;
+      </div>`;
   } catch(e) {
     document.getElementById('movie-modal-body').innerHTML = '<div style="padding:20px;color:var(--red);font-size:13px;">Error al cargar detalle.</div>';
   }
@@ -3967,7 +4051,135 @@ function clearMovieSearch() {
   document.getElementById('srch-results-info').textContent = '';
   document.getElementById('srch-tbl-wrap').style.display = 'none';
   document.getElementById('srch-pager').innerHTML = '';
+  Object.values(srchState.chartInstances).forEach(c => c && c.destroy && c.destroy());
+  srchState.chartInstances = {};
+  document.getElementById('srch-charts-section').style.display = 'none';
+  updateDecadeConstraints();
   initMoviesScreen();
+}
+
+async function loadSrchCharts() {
+  const btn     = document.getElementById('srch-charts-btn');
+  const loading = document.getElementById('srch-charts-loading');
+  if (btn) btn.disabled = true;
+  if (loading) loading.style.display = '';
+  try {
+    let allMovies;
+    if (srchState.titleMode) {
+      allMovies = srchState.lastResults;
+    } else {
+      const params   = buildSrchDiscoverParams();
+      const maxPages = Math.min(srchState.lastTotalPages, 10);
+      const fetches  = Array.from({length: maxPages}, (_, i) =>
+        fetch(`${BASE}/discover/movie?${params}&page=${i + 1}`, { headers: HEADERS }).then(r => r.json())
+      );
+      const pages = await Promise.all(fetches);
+      allMovies = pages.flatMap(d => (d.results || []).map(m => mapSrchMovie(m)));
+    }
+    renderSrchCharts(allMovies);
+  } catch(e) { /* silent */ }
+  finally {
+    if (btn) btn.disabled = false;
+    if (loading) loading.style.display = 'none';
+  }
+}
+
+function renderSrchCharts(movies) {
+  if (!movies.length) return;
+  Object.values(srchState.chartInstances).forEach(c => c && c.destroy && c.destroy());
+  srchState.chartInstances = {};
+
+  const makeSrchChart = (canvasId, labels, data, color, isHoriz, total) => {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    const indexAxis   = isHoriz ? 'y' : 'x';
+    const tooltipAxis = isHoriz ? 'x' : 'y';
+    srchState.chartInstances[canvasId] = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [{ data, backgroundColor: color + '80', borderColor: color, borderWidth: 1 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, indexAxis,
+        plugins: { legend: { display: false }, tooltip: total > 0 ? pctTooltip(total, tooltipAxis) : {} },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } },
+          y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false, maxTicksLimit: 20 } }
+        }
+      }
+    });
+  };
+
+  // Decades
+  const decMap = {};
+  movies.forEach(m => {
+    if (!m.year) return;
+    const dec = Math.floor(m.year / 10) * 10;
+    if (!decMap[dec]) decMap[dec] = { count: 0, popSum: 0 };
+    decMap[dec].count++;
+    decMap[dec].popSum += m.popularity || 0;
+  });
+  const decades   = Object.keys(decMap).map(Number).sort((a, b) => a - b);
+  const decCounts = decades.map(d => decMap[d].count);
+  const decPop    = decades.map(d => decMap[d].count > 0 ? +(decMap[d].popSum / decMap[d].count).toFixed(1) : null);
+  const decTotal  = decCounts.reduce((s, v) => s + v, 0) || 1;
+  makeSrchChart('srch-chart-decades', decades.map(d => d + 's'), decCounts, '#378ADD', false, decTotal);
+
+  const popCtx = document.getElementById('srch-chart-popularity');
+  if (popCtx) {
+    srchState.chartInstances['srch-chart-popularity'] = new Chart(popCtx, {
+      type: 'bar',
+      data: { labels: decades.map(d => d + 's'), datasets: [{ data: decPop, backgroundColor: '#EF9F2780', borderColor: '#EF9F27', borderWidth: 1 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y !== null ? c.parsed.y.toFixed(1) : 'sin datos' } } }, scales: { x: { grid: { display: false }, ticks: { color: '#5A5754', font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } } } }
+    });
+  }
+
+  // Rating buckets (1-2 … 9-10)
+  const ratingBuckets = new Array(9).fill(0);
+  movies.forEach(m => {
+    if (!m.rating) return;
+    const b = Math.min(8, Math.floor(m.rating) - 1);
+    if (b >= 0) ratingBuckets[b]++;
+  });
+  const ratingCtx = document.getElementById('srch-chart-rating');
+  if (ratingCtx) {
+    srchState.chartInstances['srch-chart-rating'] = new Chart(ratingCtx, {
+      type: 'bar',
+      data: { labels: ['9-10','8-9','7-8','6-7','5-6','4-5','3-4','2-3','1-2'], datasets: [{ data: [...ratingBuckets].reverse(), backgroundColor: '#1D9E7580', borderColor: '#1D9E75', borderWidth: 1 }] },
+      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(movies.length, 'x') }, scales: { y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }, x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } } } }
+    });
+  }
+
+  // Votes buckets
+  const voteBuckets = [0, 0, 0, 0, 0];
+  movies.forEach(m => {
+    const v = m.votes || 0;
+    if      (v >= 15000) voteBuckets[4]++;
+    else if (v >= 5000)  voteBuckets[3]++;
+    else if (v >= 2000)  voteBuckets[2]++;
+    else if (v >= 500)   voteBuckets[1]++;
+    else                 voteBuckets[0]++;
+  });
+  const votesCtx = document.getElementById('srch-chart-votes');
+  if (votesCtx) {
+    srchState.chartInstances['srch-chart-votes'] = new Chart(votesCtx, {
+      type: 'bar',
+      data: { labels: ['>15k','5k-15k','2k-5k','500-2k','<500'], datasets: [{ data: [...voteBuckets].reverse(), backgroundColor: '#EF9F2780', borderColor: '#EF9F27', borderWidth: 1 }] },
+      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(movies.length, 'x') }, scales: { x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } }, y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } } } }
+    });
+  }
+
+  // Genres top10
+  const genreCount = {};
+  movies.forEach(m => (m.genreIds || []).forEach(id => { genreCount[id] = (genreCount[id] || 0) + 1; }));
+  const genreTop10  = Object.entries(genreCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([id, n]) => [GENRE_MAP[id] || id, n]);
+  const genreTotal  = genreTop10.reduce((s, x) => s + x[1], 0) || 1;
+  makeSrchChart('srch-chart-genres', genreTop10.map(x => x[0]), genreTop10.map(x => x[1]), '#9F77DD', true, genreTotal);
+
+  // Countries top10
+  const countryCount = {};
+  movies.forEach(m => { if (m.country) countryCount[m.country] = (countryCount[m.country] || 0) + 1; });
+  const countryTop10 = Object.entries(countryCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([code, n]) => [getCountryName(code), n]);
+  const countryTotal = countryTop10.reduce((s, x) => s + x[1], 0) || 1;
+  makeSrchChart('srch-chart-countries', countryTop10.map(x => x[0]), countryTop10.map(x => x[1]), '#D85A30', true, countryTotal);
 }
 
 // ── INIT ──
