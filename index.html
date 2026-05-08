@@ -745,7 +745,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.8</span>
+    <span class="footer-txt">Genealogía del Cine v4.9</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -892,7 +892,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.8</span>
+    <span class="footer-txt">Genealogía del Cine v4.9</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1031,7 +1031,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.8</span>
+    <span class="footer-txt">Genealogía del Cine v4.9</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1338,7 +1338,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.8</span>
+    <span class="footer-txt">Genealogía del Cine v4.9</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3850,6 +3850,51 @@ function buildSrchDiscoverParams() {
   return params;
 }
 
+function buildSrchRevBaseParams() {
+  const genreId   = document.getElementById('srch-genre').value;
+  const country   = document.getElementById('srch-country').value;
+  const votesMin  = parseVotesInput('srch-votes-min');
+  const votesMax  = parseVotesInput('srch-votes-max');
+  const ratingMin = document.getElementById('srch-rating-min').value;
+  const ratingMax = document.getElementById('srch-rating-max').value;
+  const revMin    = parseRevInput('srch-rev-min');
+  const revMax    = parseRevInput('srch-rev-max');
+  const incArr    = [...srchState.incGenres];
+  const genreIds  = genreId ? [+genreId, ...incArr] : incArr;
+  let p = 'language=es&sort_by=revenue.desc';
+  if (genreIds.length)          p += `&with_genres=${genreIds.join(',')}`;
+  if (srchState.excGenres.size) p += `&without_genres=${[...srchState.excGenres].join(',')}`;
+  if (country)                  p += `&with_origin_country=${country}`;
+  if (votesMin != null)         p += `&vote_count.gte=${votesMin}`;
+  if (votesMax != null)         p += `&vote_count.lte=${votesMax}`;
+  if (ratingMin)                p += `&vote_average.gte=${ratingMin}`;
+  if (ratingMax)                p += `&vote_average.lte=${ratingMax}`;
+  if (revMin != null)           p += `&with_revenue.gte=${revMin * 1e6}`;
+  if (revMax != null)           p += `&with_revenue.lte=${revMax * 1e6}`;
+  return p;
+}
+
+async function buildSrchTopRevByDecade(decades) {
+  if (!decades.length) return {};
+  const baseParams = buildSrchRevBaseParams();
+  const entries = await Promise.all(decades.map(async dec => {
+    try {
+      const dateP = `&primary_release_date.gte=${dec}-01-01&primary_release_date.lte=${dec + 9}-12-31`;
+      const [j1, j2] = await Promise.all([
+        fetch(`${BASE}/discover/movie?${baseParams}${dateP}&page=1`, { headers: HEADERS }).then(r => r.json()),
+        fetch(`${BASE}/discover/movie?${baseParams}${dateP}&page=2`, { headers: HEADERS }).then(r => r.json()),
+      ]);
+      const ids = [...(j1.results || []), ...(j2.results || [])].slice(0, 40).map(m => m.id);
+      if (!ids.length) return [dec, null];
+      const revenues = (await Promise.all(
+        ids.map(id => fetch(`${BASE}/movie/${id}`, { headers: HEADERS }).then(r => r.json()).catch(() => null))
+      )).filter(d => d && d.revenue > 0).map(d => d.revenue);
+      return [dec, revenues.length ? Math.round(revenues.reduce((s, v) => s + v, 0) / revenues.length / 1e6) : null];
+    } catch { return [dec, null]; }
+  }));
+  return Object.fromEntries(entries);
+}
+
 async function doMovieSearch(page = 1) {
   const title = document.getElementById('srch-title').value.trim();
 
@@ -4076,7 +4121,12 @@ async function loadSrchCharts() {
         revenue: (d && d.revenue) || 0,
       };
     });
-    renderSrchCharts(allMovies, srchState.lastTotal);
+    let decRevOverride = null;
+    if (!srchState.titleMode) {
+      const decSet = new Set(allMovies.filter(m => m.year).map(m => Math.floor(m.year / 10) * 10));
+      decRevOverride = await buildSrchTopRevByDecade([...decSet].sort((a, b) => a - b));
+    }
+    renderSrchCharts(allMovies, srchState.lastTotal, decRevOverride);
   } catch(e) { /* silent */ }
   finally {
     if (btn) btn.disabled = false;
@@ -4084,7 +4134,7 @@ async function loadSrchCharts() {
   }
 }
 
-function renderSrchCharts(movies, totalResults) {
+function renderSrchCharts(movies, totalResults, decRevOverride) {
   if (!movies.length) return;
   Object.values(srchState.chartInstances).forEach(c => c && c.destroy && c.destroy());
   srchState.chartInstances = {};
@@ -4122,7 +4172,9 @@ function renderSrchCharts(movies, totalResults) {
   });
   const decades   = Object.keys(decMap).map(Number).sort((a, b) => a - b);
   const decCounts = decades.map(d => scaled(decMap[d].count));
-  const decRev    = decades.map(d => decMap[d].revCount > 0 ? Math.round(decMap[d].revSum / decMap[d].revCount / 1e6) : null);
+  const decRev    = decRevOverride
+    ? decades.map(d => decRevOverride[d] !== undefined ? decRevOverride[d] : null)
+    : decades.map(d => decMap[d].revCount > 0 ? Math.round(decMap[d].revSum / decMap[d].revCount / 1e6) : null);
   const decTotal  = decCounts.reduce((s, v) => s + v, 0) || 1;
   makeSrchChart('srch-chart-decades', decades.map(d => d + 's'), decCounts, '#378ADD', false, decTotal);
 
