@@ -3682,12 +3682,12 @@ const srchState = { incGenres: new Set(), excGenres: new Set() };
 
 function initMoviesScreen() {
   const genSel = document.getElementById('srch-genre');
-  if (genSel && genSel.options.length <= 1 && appState.allGenres.length) {
+  if (genSel && appState.allGenres.length) {
     genSel.innerHTML = '<option value="">Todos</option>' +
       appState.allGenres.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
   }
   const cntSel = document.getElementById('srch-country');
-  if (cntSel && cntSel.options.length <= 1 && allCountries.length) {
+  if (cntSel && allCountries.length) {
     cntSel.innerHTML = '<option value="">Todos los países</option>' +
       allCountries.map(c => `<option value="${c.code}">${c.name}</option>`).join('');
   }
@@ -3867,20 +3867,19 @@ function clearMovieSearch() {
   ['srch-title','srch-votes-min','srch-votes-max','srch-rating-min','srch-rating-max','srch-rev-min','srch-rev-max'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  document.getElementById('srch-genre').value = '';
-  document.getElementById('srch-country').value = '';
   srchState.incGenres.clear();
   srchState.excGenres.clear();
   document.getElementById('srch-title-note').style.display = 'none';
   document.getElementById('srch-results-info').textContent = '';
   document.getElementById('srch-tbl-wrap').style.display = 'none';
   document.getElementById('srch-pager').innerHTML = '';
-  populateSrchGenreChips();
+  initMoviesScreen();
 }
 
 // ── INIT ──
 getState().then(() => renderFieldsList());
 loadCountries();
+loadGenres();
 loadCurrentUser();
 </script>
 </body>
