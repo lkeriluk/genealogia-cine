@@ -747,7 +747,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.3</span>
+    <span class="footer-txt">Genealogía del Cine v4.4</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -792,11 +792,11 @@ input[type=number] {
     <div class="form-row form-row-2">
       <div>
         <div class="form-label">Taquilla mínima (millones USD)</div>
-        <input class="form-input" type="number" id="srch-rev-min" placeholder="0" min="0">
+        <input class="form-input" type="text" id="srch-rev-min" placeholder="$0M" onfocus="onRevFocus(this)" onblur="onRevBlur(this)">
       </div>
       <div>
         <div class="form-label">Taquilla máxima (millones USD)</div>
-        <input class="form-input" type="number" id="srch-rev-max" placeholder="—" min="0">
+        <input class="form-input" type="text" id="srch-rev-max" placeholder="—" onfocus="onRevFocus(this)" onblur="onRevBlur(this)">
       </div>
     </div>
     <div class="srch-chips-row">
@@ -819,13 +819,12 @@ input[type=number] {
       <table class="tbl" style="table-layout:fixed;">
         <thead>
           <tr>
-            <th style="width:32%;">Título</th>
-            <th style="width:7%;">Año</th>
-            <th style="width:12%;">País</th>
-            <th style="width:19%;">Géneros</th>
-            <th style="width:11%;">Votos</th>
-            <th style="width:8%;">Rating</th>
-            <th style="width:11%;">Taquilla</th>
+            <th id="srch-th-title"   style="width:36%;" onclick="srchSortBy('title')">Título</th>
+            <th id="srch-th-year"    style="width:8%;"  onclick="srchSortBy('year')">Año</th>
+            <th id="srch-th-country" style="width:14%;" onclick="srchSortBy('country')">País</th>
+            <th style="width:20%;">Géneros</th>
+            <th id="srch-th-votes"   style="width:11%;" onclick="srchSortBy('votes')">Votos</th>
+            <th id="srch-th-rating"  style="width:11%;" onclick="srchSortBy('rating')">Rating</th>
           </tr>
         </thead>
         <tbody id="srch-tbody"></tbody>
@@ -834,7 +833,7 @@ input[type=number] {
     <div id="srch-pager" style="margin-top:12px;"></div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.3</span>
+    <span class="footer-txt">Genealogía del Cine v4.4</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -973,7 +972,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.3</span>
+    <span class="footer-txt">Genealogía del Cine v4.4</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1278,7 +1277,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.3</span>
+    <span class="footer-txt">Genealogía del Cine v4.4</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3678,7 +3677,13 @@ function closeActivityModal() {
 }
 
 // ── BUSCADOR DE PELÍCULAS ──
-const srchState = { incGenres: new Set(), excGenres: new Set() };
+const srchState = {
+  incGenres: new Set(), excGenres: new Set(),
+  sortCol: 'votes', sortDir: 'desc',
+  lastResults: [], titleMode: false,
+  lastTotal: 0, lastTotalPages: 1, lastPage: 1,
+};
+const TMDB_SORT = { title: 'original_title', year: 'primary_release_date', votes: 'vote_count', rating: 'vote_average' };
 
 function initMoviesScreen() {
   const genSel = document.getElementById('srch-genre');
@@ -3719,6 +3724,18 @@ function onSrchTitleInput() {
   document.getElementById('srch-title-note').style.display = hasTitle ? '' : 'none';
 }
 
+function onRevFocus(el) {
+  el.value = el.value.replace(/[^0-9]/g, '');
+}
+function onRevBlur(el) {
+  const n = parseInt(el.value.replace(/[^0-9]/g, ''));
+  el.value = (!isNaN(n) && n > 0) ? '$' + n.toLocaleString('es-AR') + 'M' : '';
+}
+function parseRevInput(id) {
+  const n = parseInt(document.getElementById(id).value.replace(/[^0-9]/g, ''));
+  return (!isNaN(n) && n > 0) ? n : null;
+}
+
 async function doMovieSearch(page = 1) {
   const title     = document.getElementById('srch-title').value.trim();
   const genreId   = document.getElementById('srch-genre').value;
@@ -3727,8 +3744,11 @@ async function doMovieSearch(page = 1) {
   const votesMax  = document.getElementById('srch-votes-max').value;
   const ratingMin = document.getElementById('srch-rating-min').value;
   const ratingMax = document.getElementById('srch-rating-max').value;
-  const revMin    = document.getElementById('srch-rev-min').value;
-  const revMax    = document.getElementById('srch-rev-max').value;
+  const revMin    = parseRevInput('srch-rev-min');
+  const revMax    = parseRevInput('srch-rev-max');
+
+  srchState.titleMode = !!title;
+  srchState.lastPage = page;
 
   const info = document.getElementById('srch-results-info');
   info.textContent = 'Buscando...';
@@ -3745,7 +3765,9 @@ async function doMovieSearch(page = 1) {
       total = d.total_results || 0;
       totalPages = Math.min(d.total_pages || 1, 10);
     } else {
-      let params = `language=es&sort_by=vote_count.desc&page=${page}`;
+      const tmdbSort = TMDB_SORT[srchState.sortCol];
+      const sortBy = tmdbSort ? `${tmdbSort}.${srchState.sortDir}` : `vote_count.desc`;
+      let params = `language=es&sort_by=${sortBy}&page=${page}`;
       const incArr = [...srchState.incGenres];
       const genreIds = genreId ? [+genreId, ...incArr] : incArr;
       if (genreIds.length) params += `&with_genres=${genreIds.join(',')}`;
@@ -3755,8 +3777,8 @@ async function doMovieSearch(page = 1) {
       if (votesMax)  params += `&vote_count.lte=${votesMax}`;
       if (ratingMin) params += `&vote_average.gte=${ratingMin}`;
       if (ratingMax) params += `&vote_average.lte=${ratingMax}`;
-      if (revMin)    params += `&with_revenue.gte=${+revMin * 1e6}`;
-      if (revMax)    params += `&with_revenue.lte=${+revMax * 1e6}`;
+      if (revMin != null) params += `&with_revenue.gte=${revMin * 1e6}`;
+      if (revMax != null) params += `&with_revenue.lte=${revMax * 1e6}`;
       const r = await fetch(`${BASE}/discover/movie?${params}`, { headers: HEADERS });
       const d = await r.json();
       movies = (d.results || []).map(m => mapSrchMovie(m));
@@ -3764,10 +3786,42 @@ async function doMovieSearch(page = 1) {
       totalPages = Math.min(d.total_pages || 1, 10);
     }
 
+    srchState.lastResults = movies;
+    srchState.lastTotal = total;
+    srchState.lastTotalPages = totalPages;
     renderMovieResults(movies, total, page, totalPages);
   } catch(e) {
     info.textContent = 'Error al buscar. Intentá de nuevo.';
   }
+}
+
+function srchSortBy(col) {
+  if (srchState.sortCol === col) {
+    srchState.sortDir = srchState.sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    srchState.sortCol = col;
+    srchState.sortDir = (col === 'title') ? 'asc' : 'desc';
+  }
+  if (srchState.titleMode || col === 'country' || !TMDB_SORT[col]) {
+    const sorted = [...srchState.lastResults].sort((a, b) => {
+      let va = a[col] ?? '', vb = b[col] ?? '';
+      if (col === 'title') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+      if (col === 'country') { va = getCountryName(va||''); vb = getCountryName(vb||''); }
+      return srchState.sortDir === 'asc' ? (va > vb ? 1 : va < vb ? -1 : 0) : (va < vb ? 1 : va > vb ? -1 : 0);
+    });
+    renderMovieResults(sorted, srchState.lastTotal, srchState.lastPage, srchState.lastTotalPages);
+  } else {
+    doMovieSearch(1);
+  }
+}
+
+function updateSrchSortHeaders() {
+  ['title','year','country','votes','rating'].forEach(col => {
+    const th = document.getElementById(`srch-th-${col}`);
+    if (!th) return;
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (srchState.sortCol === col) th.classList.add(`sort-${srchState.sortDir}`);
+  });
 }
 
 function mapSrchMovie(m) {
@@ -3805,9 +3859,9 @@ function renderMovieResults(movies, total, page, totalPages) {
       <td class="td-mono" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${genreCell}</td>
       <td class="td-mono">${m.votes.toLocaleString('es-AR')}</td>
       <td class="td-mono">${m.rating ? m.rating.toFixed(1) : '—'}</td>
-      <td class="td-mono">—</td>
     </tr>`;
   }).join('');
+  updateSrchSortHeaders();
 
   const pagerEl = document.getElementById('srch-pager');
   if (totalPages <= 1) { pagerEl.innerHTML = ''; return; }
@@ -3831,26 +3885,28 @@ async function openMovieDetail(movieId) {
     const countries = (d.production_countries || []).map(c => c.name).join(', ') || '—';
     const genreBadges = (d.genres || []).map(g => `<span class="badge">${g.name}</span>`).join(' ');
     const posterHtml = d.poster_path
-      ? `<div class="film-poster"><img src="https://image.tmdb.org/t/p/w154${d.poster_path}" alt="${d.title}"></div>`
-      : `<div class="film-poster" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3);">sin póster</div>`;
+      ? `<img src="https://image.tmdb.org/t/p/w342${d.poster_path}" alt="${d.title}" style="width:176px;border-radius:var(--radius);display:block;flex-shrink:0;">`
+      : `<div style="width:176px;height:264px;border-radius:var(--radius);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3);flex-shrink:0;">sin póster</div>`;
     const financeHtml = (d.budget || d.revenue) ? `
-      <div style="display:flex;gap:16px;margin-top:8px;">
+      <div style="display:flex;gap:16px;margin-top:10px;">
         ${d.budget  ? `<div><div style="font-size:10px;color:var(--text3);letter-spacing:.04em;">PRESUPUESTO</div><div style="font-size:13px;font-family:'DM Mono',monospace;">${fmtRevenue(d.budget)}</div></div>` : ''}
         ${d.revenue ? `<div><div style="font-size:10px;color:var(--text3);letter-spacing:.04em;">TAQUILLA</div><div style="font-size:13px;font-family:'DM Mono',monospace;">${fmtRevenue(d.revenue)}</div></div>` : ''}
       </div>` : '';
     const overviewHtml = d.overview
-      ? `<div style="font-size:12px;color:var(--text3);line-height:1.6;margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border);">${d.overview}</div>` : '';
+      ? `<div style="font-size:12px;color:var(--text3);line-height:1.6;margin-top:16px;padding-top:16px;border-top:0.5px solid var(--border);">${d.overview}</div>` : '';
+    const tmdbLink = `<a href="https://www.themoviedb.org/movie/${d.id}" target="_blank" rel="noopener" style="font-size:11px;color:var(--blue);text-decoration:none;margin-top:12px;display:inline-block;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Ver en TMDB →</a>`;
 
     document.getElementById('movie-modal-title').textContent = d.title;
     document.getElementById('movie-modal-body').innerHTML = `
-      <div class="film-header">
+      <div style="display:flex;gap:20px;align-items:flex-start;">
         ${posterHtml}
         <div style="min-width:0;flex:1;">
           <div class="film-title">${d.title}</div>
           <div class="film-meta">${year} · ${(d.vote_count||0).toLocaleString('es-AR')} votos · ★${(d.vote_average||0).toFixed(1)}</div>
           <div style="font-size:12px;color:var(--text3);margin-top:4px;">${countries}</div>
-          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;">${genreBadges}</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;">${genreBadges}</div>
           ${financeHtml}
+          ${tmdbLink}
         </div>
       </div>
       ${overviewHtml}`;
@@ -3869,6 +3925,8 @@ function clearMovieSearch() {
   });
   srchState.incGenres.clear();
   srchState.excGenres.clear();
+  srchState.sortCol = 'votes'; srchState.sortDir = 'desc';
+  srchState.lastResults = []; srchState.titleMode = false;
   document.getElementById('srch-title-note').style.display = 'none';
   document.getElementById('srch-results-info').textContent = '';
   document.getElementById('srch-tbl-wrap').style.display = 'none';
