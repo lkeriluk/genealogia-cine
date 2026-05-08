@@ -745,7 +745,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.0</span>
+    <span class="footer-txt">Genealogía del Cine v5.1</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -773,8 +773,7 @@ input[type=number] {
       <div>
         <div class="form-label">Década desde</div>
         <select class="form-select" id="srch-dec-from" onchange="updateDecadeConstraints()">
-          <option value="">Todas</option>
-          <option>1920</option><option>1930</option><option>1940</option><option>1950</option>
+          <option selected>1920</option><option>1930</option><option>1940</option><option>1950</option>
           <option>1960</option><option>1970</option><option>1980</option><option>1990</option>
           <option>2000</option><option>2010</option><option>2020</option>
         </select>
@@ -782,10 +781,9 @@ input[type=number] {
       <div>
         <div class="form-label">Década hasta</div>
         <select class="form-select" id="srch-dec-to" onchange="updateDecadeConstraints()">
-          <option value="">Todas</option>
           <option>1920</option><option>1930</option><option>1940</option><option>1950</option>
           <option>1960</option><option>1970</option><option>1980</option><option>1990</option>
-          <option>2000</option><option>2010</option><option>2020</option>
+          <option>2000</option><option>2010</option><option selected>2020</option>
         </select>
       </div>
     </div>
@@ -862,12 +860,12 @@ input[type=number] {
       <div class="analysis-card">
         <div class="analysis-card-title">CANTIDAD DE PELÍCULAS</div>
         <div style="position:relative;height:110px;"><canvas id="srch-chart-decades"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px;">conteo directo de los resultados del universo total dentro de cada rango de años</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Conteo directo de los resultados del universo total dentro de cada rango de años</div>
       </div>
       <div class="analysis-card">
         <div class="analysis-card-title">TAQUILLA PROMEDIO (USD)</div>
         <div style="position:relative;height:110px;"><canvas id="srch-chart-revenue"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px;">promedio del revenue de las 40 películas más taquilleras de cada década sobre el universo total seleccionado</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Promedio del revenue de las 40 películas más taquilleras de cada década sobre el universo total seleccionado</div>
       </div>
     </div>
     <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución por categoría</div>
@@ -875,12 +873,12 @@ input[type=number] {
       <div class="analysis-card">
         <div class="analysis-card-title">GÉNEROS SECUNDARIOS (TOP 10)</div>
         <div style="position:relative;height:280px;"><canvas id="srch-chart-genres"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px;">frecuencia de aparición de cada género secundario sobre una muestra representativa, escalada al universo total seleccionado</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Frecuencia de aparición de cada género secundario sobre una muestra representativa, escalada al universo total seleccionado</div>
       </div>
       <div class="analysis-card">
         <div class="analysis-card-title">PAÍSES DE PRODUCCIÓN (TOP 10)</div>
         <div style="position:relative;height:280px;"><canvas id="srch-chart-countries"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px;">frecuencia de cada país como productor primario sobre una muestra representativa, escalada al universo total seleccionado</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Frecuencia de cada país como productor primario sobre una muestra representativa, escalada al universo total seleccionado</div>
       </div>
     </div>
     <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución de scores</div>
@@ -888,17 +886,17 @@ input[type=number] {
       <div class="analysis-card">
         <div class="analysis-card-title">RATING DE USUARIOS</div>
         <div style="position:relative;height:280px;"><canvas id="srch-chart-rating"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px;">distribución del resultado por franja de rating, escalada al universo total seleccionado</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Distribución del resultado por franja de rating, escalada al universo total seleccionado</div>
       </div>
       <div class="analysis-card" style="display:flex;flex-direction:column;">
         <div class="analysis-card-title">CANTIDAD DE VOTOS</div>
         <div style="flex:1;position:relative;min-height:0;"><canvas id="srch-chart-votes"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px;">distribución del resultado por franja de cantidad de votos, escalada al universo total seleccionado</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Distribución del resultado por franja de cantidad de votos, escalada al universo total seleccionado</div>
       </div>
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.0</span>
+    <span class="footer-txt">Genealogía del Cine v5.1</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1005,12 +1003,12 @@ input[type=number] {
       <div class="analysis-card">
         <div class="analysis-card-title">CANTIDAD DE PELÍCULAS</div>
         <div style="position:relative;height:110px;"><canvas id="preview-chart"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px;">conteo directo de los resultados del universo total dentro de cada rango de años</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Conteo directo de los resultados del universo total dentro de cada rango de años</div>
       </div>
       <div class="analysis-card">
         <div class="analysis-card-title">TAQUILLA PROMEDIO (USD)</div>
         <div style="position:relative;height:110px;"><canvas id="preview-revenue-chart"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px;">promedio del revenue de las 40 películas más taquilleras de cada década sobre el universo total seleccionado</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Promedio del revenue de las 40 películas más taquilleras de cada década sobre el universo total seleccionado</div>
       </div>
     </div>
     <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución por categoría</div>
@@ -1018,13 +1016,13 @@ input[type=number] {
       <div class="analysis-card">
         <div class="analysis-card-title">GÉNEROS SECUNDARIOS (TOP 10)</div>
         <div style="position:relative;height:280px;"><canvas id="preview-genres-chart"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px;">frecuencia de aparición de cada género secundario sobre una muestra representativa, escalada al universo total seleccionado</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Frecuencia de aparición de cada género secundario sobre una muestra representativa, escalada al universo total seleccionado</div>
         <div id="preview-genres-note" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
       </div>
       <div class="analysis-card">
         <div class="analysis-card-title">PAÍSES DE PRODUCCIÓN (TOP 10)</div>
         <div style="position:relative;height:280px;"><canvas id="preview-countries-chart"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px;">frecuencia de cada país como productor primario sobre una muestra representativa, escalada al universo total seleccionado</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Frecuencia de cada país como productor primario sobre una muestra representativa, escalada al universo total seleccionado</div>
         <div id="preview-countries-note" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
       </div>
     </div>
@@ -1033,17 +1031,17 @@ input[type=number] {
       <div class="analysis-card">
         <div class="analysis-card-title">RATING DE USUARIOS</div>
         <div style="position:relative;height:280px;"><canvas id="preview-rating-chart"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px;">distribución del resultado por franja de rating, escalada al universo total seleccionado</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Distribución del resultado por franja de rating, escalada al universo total seleccionado</div>
       </div>
       <div class="analysis-card">
         <div class="analysis-card-title">CANTIDAD DE VOTOS</div>
         <div style="position:relative;height:280px;"><canvas id="preview-votes-chart"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:6px;">distribución del resultado por franja de cantidad de votos, escalada al universo total seleccionado</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">Distribución del resultado por franja de cantidad de votos, escalada al universo total seleccionado</div>
       </div>
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.0</span>
+    <span class="footer-txt">Genealogía del Cine v5.1</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1086,10 +1084,12 @@ input[type=number] {
         <div class="analysis-card">
           <div class="analysis-card-title">CANTIDAD DE PELÍCULAS</div>
           <div style="position:relative;height:110px;"><canvas id="desc-chart-decades"></canvas></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;">Conteo directo de los resultados del universo total dentro de cada rango de años</div>
         </div>
         <div class="analysis-card">
           <div class="analysis-card-title">TAQUILLA PROMEDIO (USD)</div>
           <div style="position:relative;height:110px;"><canvas id="desc-chart-revenue"></canvas></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;">Promedio del revenue de las 40 películas más taquilleras de cada década sobre el universo total seleccionado</div>
         </div>
       </div>
       <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución por categoría</div>
@@ -1097,12 +1097,14 @@ input[type=number] {
         <div class="analysis-card">
           <div class="analysis-card-title">GÉNEROS SECUNDARIOS (TOP 10)</div>
           <div style="position:relative;height:280px;"><canvas id="desc-chart-genres"></canvas></div>
-          <div id="desc-genres-note" style="font-size:11px;color:var(--text3);margin-top:6px;"></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;">Frecuencia de aparición de cada género secundario sobre una muestra representativa, escalada al universo total seleccionado</div>
+          <div id="desc-genres-note" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
         </div>
         <div class="analysis-card">
           <div class="analysis-card-title">PAÍSES DE PRODUCCIÓN (TOP 10)</div>
           <div style="position:relative;height:280px;"><canvas id="desc-chart-countries"></canvas></div>
-          <div id="desc-countries-note" style="font-size:11px;color:var(--text3);margin-top:6px;"></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;">Frecuencia de cada país como productor primario sobre una muestra representativa, escalada al universo total seleccionado</div>
+          <div id="desc-countries-note" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
         </div>
       </div>
       <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución de scores</div>
@@ -1110,10 +1112,12 @@ input[type=number] {
         <div class="analysis-card">
           <div class="analysis-card-title">RATING DE USUARIOS</div>
           <div style="position:relative;height:280px;"><canvas id="desc-chart-rating"></canvas></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;">Distribución del resultado por franja de rating, escalada al universo total seleccionado</div>
         </div>
         <div class="analysis-card" style="display:flex;flex-direction:column;">
           <div class="analysis-card-title">CANTIDAD DE VOTOS</div>
           <div style="flex:1;position:relative;min-height:0;"><canvas id="desc-chart-votes"></canvas></div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;">Distribución del resultado por franja de cantidad de votos, escalada al universo total seleccionado</div>
         </div>
       </div>
       </div><!-- /desc-charts-section -->
@@ -1350,7 +1354,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.0</span>
+    <span class="footer-txt">Genealogía del Cine v5.1</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -4083,9 +4087,11 @@ function closeMovieDetail() {
 }
 
 function clearMovieSearch() {
-  ['srch-title','srch-votes-min','srch-votes-max','srch-rating-min','srch-rating-max','srch-rev-min','srch-rev-max'].concat(['srch-dec-from','srch-dec-to']).forEach(id => {
+  ['srch-title','srch-votes-min','srch-votes-max','srch-rating-min','srch-rating-max','srch-rev-min','srch-rev-max'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  document.getElementById('srch-dec-from').value = '1920';
+  document.getElementById('srch-dec-to').value = '2020';
   srchState.incGenres.clear();
   srchState.excGenres.clear();
   srchState.sortCol = 'votes'; srchState.sortDir = 'desc';
@@ -4134,11 +4140,30 @@ async function loadSrchCharts() {
       };
     });
     let decRevOverride = null;
+    let decCountOverride = null;
     if (!srchState.titleMode) {
-      const decSet = new Set(allMovies.filter(m => m.year).map(m => Math.floor(m.year / 10) * 10));
-      decRevOverride = await buildSrchTopRevByDecade([...decSet].sort((a, b) => a - b));
+      const decFrom = document.getElementById('srch-dec-from').value;
+      const decTo   = document.getElementById('srch-dec-to').value;
+      if (decFrom && decTo) {
+        const decRange = [];
+        for (let d = +decFrom; d <= +decTo; d += 10) decRange.push(d);
+        const baseP = buildSrchRevBaseParams();
+        [decRevOverride, decCountOverride] = await Promise.all([
+          buildSrchTopRevByDecade(decRange),
+          Promise.all(decRange.map(async dec => {
+            try {
+              const dateP = `&primary_release_date.gte=${dec}-01-01&primary_release_date.lte=${dec + 9}-12-31`;
+              const j = await fetch(`${BASE}/discover/movie?${baseP}${dateP}&page=1`, { headers: HEADERS }).then(r => r.json());
+              return [dec, j.total_results || 0];
+            } catch { return [dec, 0]; }
+          })).then(Object.fromEntries),
+        ]);
+      } else {
+        const decSet = new Set(allMovies.filter(m => m.year).map(m => Math.floor(m.year / 10) * 10));
+        decRevOverride = await buildSrchTopRevByDecade([...decSet].sort((a, b) => a - b));
+      }
     }
-    renderSrchCharts(allMovies, srchState.lastTotal, decRevOverride);
+    renderSrchCharts(allMovies, srchState.lastTotal, decRevOverride, decCountOverride);
   } catch(e) { /* silent */ }
   finally {
     if (btn) btn.disabled = false;
@@ -4146,7 +4171,7 @@ async function loadSrchCharts() {
   }
 }
 
-function renderSrchCharts(movies, totalResults, decRevOverride) {
+function renderSrchCharts(movies, totalResults, decRevOverride, decCountOverride) {
   if (!movies.length) return;
   Object.values(srchState.chartInstances).forEach(c => c && c.destroy && c.destroy());
   srchState.chartInstances = {};
@@ -4182,11 +4207,15 @@ function renderSrchCharts(movies, totalResults, decRevOverride) {
     decMap[dec].count++;
     if (m.revenue > 0) { decMap[dec].revSum += m.revenue; decMap[dec].revCount++; }
   });
-  const decades   = Object.keys(decMap).map(Number).sort((a, b) => a - b);
-  const decCounts = decades.map(d => scaled(decMap[d].count));
+  const decades   = decCountOverride
+    ? Object.keys(decCountOverride).map(Number).sort((a, b) => a - b)
+    : Object.keys(decMap).map(Number).sort((a, b) => a - b);
+  const decCounts = decCountOverride
+    ? decades.map(d => decCountOverride[d] || 0)
+    : decades.map(d => scaled(decMap[d]?.count || 0));
   const decRev    = decRevOverride
     ? decades.map(d => decRevOverride[d] !== undefined ? decRevOverride[d] : null)
-    : decades.map(d => decMap[d].revCount > 0 ? Math.round(decMap[d].revSum / decMap[d].revCount / 1e6) : null);
+    : decades.map(d => decMap[d]?.revCount > 0 ? Math.round(decMap[d].revSum / decMap[d].revCount / 1e6) : null);
   const decTotal  = decCounts.reduce((s, v) => s + v, 0) || 1;
   makeSrchChart('srch-chart-decades', decades.map(d => d + 's'), decCounts, '#378ADD', false, decTotal);
 
