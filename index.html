@@ -745,7 +745,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.9</span>
+    <span class="footer-txt">Genealogía del Cine v5.0</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -862,10 +862,12 @@ input[type=number] {
       <div class="analysis-card">
         <div class="analysis-card-title">CANTIDAD DE PELÍCULAS</div>
         <div style="position:relative;height:110px;"><canvas id="srch-chart-decades"></canvas></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">conteo directo de los resultados del universo total dentro de cada rango de años</div>
       </div>
       <div class="analysis-card">
         <div class="analysis-card-title">TAQUILLA PROMEDIO (USD)</div>
         <div style="position:relative;height:110px;"><canvas id="srch-chart-revenue"></canvas></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">promedio del revenue de las 40 películas más taquilleras de cada década sobre el universo total seleccionado</div>
       </div>
     </div>
     <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución por categoría</div>
@@ -873,10 +875,12 @@ input[type=number] {
       <div class="analysis-card">
         <div class="analysis-card-title">GÉNEROS SECUNDARIOS (TOP 10)</div>
         <div style="position:relative;height:280px;"><canvas id="srch-chart-genres"></canvas></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">frecuencia de aparición de cada género secundario sobre una muestra representativa, escalada al universo total seleccionado</div>
       </div>
       <div class="analysis-card">
         <div class="analysis-card-title">PAÍSES DE PRODUCCIÓN (TOP 10)</div>
         <div style="position:relative;height:280px;"><canvas id="srch-chart-countries"></canvas></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">frecuencia de cada país como productor primario sobre una muestra representativa, escalada al universo total seleccionado</div>
       </div>
     </div>
     <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución de scores</div>
@@ -884,15 +888,17 @@ input[type=number] {
       <div class="analysis-card">
         <div class="analysis-card-title">RATING DE USUARIOS</div>
         <div style="position:relative;height:280px;"><canvas id="srch-chart-rating"></canvas></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">distribución del resultado por franja de rating, escalada al universo total seleccionado</div>
       </div>
       <div class="analysis-card" style="display:flex;flex-direction:column;">
         <div class="analysis-card-title">CANTIDAD DE VOTOS</div>
         <div style="flex:1;position:relative;min-height:0;"><canvas id="srch-chart-votes"></canvas></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">distribución del resultado por franja de cantidad de votos, escalada al universo total seleccionado</div>
       </div>
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.9</span>
+    <span class="footer-txt">Genealogía del Cine v5.0</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -999,10 +1005,12 @@ input[type=number] {
       <div class="analysis-card">
         <div class="analysis-card-title">CANTIDAD DE PELÍCULAS</div>
         <div style="position:relative;height:110px;"><canvas id="preview-chart"></canvas></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">conteo directo de los resultados del universo total dentro de cada rango de años</div>
       </div>
       <div class="analysis-card">
         <div class="analysis-card-title">TAQUILLA PROMEDIO (USD)</div>
         <div style="position:relative;height:110px;"><canvas id="preview-revenue-chart"></canvas></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">promedio del revenue de las 40 películas más taquilleras de cada década sobre el universo total seleccionado</div>
       </div>
     </div>
     <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución por categoría</div>
@@ -1010,12 +1018,14 @@ input[type=number] {
       <div class="analysis-card">
         <div class="analysis-card-title">GÉNEROS SECUNDARIOS (TOP 10)</div>
         <div style="position:relative;height:280px;"><canvas id="preview-genres-chart"></canvas></div>
-        <div id="preview-genres-note" style="font-size:11px;color:var(--text3);margin-top:6px;"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">frecuencia de aparición de cada género secundario sobre una muestra representativa, escalada al universo total seleccionado</div>
+        <div id="preview-genres-note" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
       </div>
       <div class="analysis-card">
         <div class="analysis-card-title">PAÍSES DE PRODUCCIÓN (TOP 10)</div>
         <div style="position:relative;height:280px;"><canvas id="preview-countries-chart"></canvas></div>
-        <div id="preview-countries-note" style="font-size:11px;color:var(--text3);margin-top:6px;"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">frecuencia de cada país como productor primario sobre una muestra representativa, escalada al universo total seleccionado</div>
+        <div id="preview-countries-note" style="font-size:11px;color:var(--text3);margin-top:4px;"></div>
       </div>
     </div>
     <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;margin-top:4px;">Distribución de scores</div>
@@ -1023,15 +1033,17 @@ input[type=number] {
       <div class="analysis-card">
         <div class="analysis-card-title">RATING DE USUARIOS</div>
         <div style="position:relative;height:280px;"><canvas id="preview-rating-chart"></canvas></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">distribución del resultado por franja de rating, escalada al universo total seleccionado</div>
       </div>
       <div class="analysis-card">
         <div class="analysis-card-title">CANTIDAD DE VOTOS</div>
         <div style="position:relative;height:280px;"><canvas id="preview-votes-chart"></canvas></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px;">distribución del resultado por franja de cantidad de votos, escalada al universo total seleccionado</div>
       </div>
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.9</span>
+    <span class="footer-txt">Genealogía del Cine v5.0</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1338,7 +1350,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.9</span>
+    <span class="footer-txt">Genealogía del Cine v5.0</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
