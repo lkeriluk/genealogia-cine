@@ -745,7 +745,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.5</span>
+    <span class="footer-txt">Genealogía del Cine v5.6</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -846,12 +846,11 @@ input[type=number] {
       <table class="tbl" style="table-layout:fixed;">
         <thead>
           <tr>
-            <th id="srch-th-title"   style="width:36%;" onclick="srchSortBy('title')">Título</th>
+            <th id="srch-th-title"   style="width:42%;" onclick="srchSortBy('title')">Título</th>
             <th id="srch-th-year"    style="width:8%;"  onclick="srchSortBy('year')">Año</th>
-            <th id="srch-th-country" style="width:14%;" onclick="srchSortBy('country')">País</th>
-            <th style="width:20%;">Géneros</th>
-            <th id="srch-th-votes"   style="width:11%;" onclick="srchSortBy('votes')">Votos</th>
-            <th id="srch-th-rating"  style="width:11%;" onclick="srchSortBy('rating')">Rating</th>
+            <th style="width:23%;">Géneros</th>
+            <th id="srch-th-votes"   style="width:13%;" onclick="srchSortBy('votes')">Votos</th>
+            <th id="srch-th-rating"  style="width:14%;" onclick="srchSortBy('rating')">Rating</th>
           </tr>
         </thead>
         <tbody id="srch-tbody"></tbody>
@@ -909,7 +908,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.5</span>
+    <span class="footer-txt">Genealogía del Cine v5.6</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1054,7 +1053,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.5</span>
+    <span class="footer-txt">Genealogía del Cine v5.6</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1367,7 +1366,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.5</span>
+    <span class="footer-txt">Genealogía del Cine v5.6</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -2276,8 +2275,9 @@ async function generateSample(f) {
       + `${excludedParam}${countryParam}&sort_by=original_title.asc`;
     const numPages = Math.min(Math.ceil(n / 2), totalPages, 20);
     const moviesPerPage = Math.ceil(n / numPages);
-    for (let i = 0; i < numPages; i++) {
-      const page = numPages === 1 ? 1 : 1 + Math.round(i * (totalPages - 1) / (numPages - 1));
+    const pageSet = new Set();
+    while (pageSet.size < numPages) pageSet.add(1 + Math.floor(Math.random() * totalPages));
+    for (const page of [...pageSet].sort((a, b) => a - b)) {
       try {
         const r = await fetch(url + `&page=${page}`, { headers: HEADERS });
         const d = await r.json();
@@ -4069,11 +4069,9 @@ function renderMovieResults(movies, total, page, totalPages) {
     const genreCell = genres.length
       ? genres.slice(0, 3).join(', ') + (genres.length > 3 ? ` +${genres.length - 3}` : '')
       : '—';
-    const countryDisplay = m.country ? getCountryName(m.country) : '—';
     return `<tr style="cursor:pointer;" onclick="openMovieDetail(${m.id})" title="Ver detalle">
       <td class="td-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.title}</td>
       <td class="td-mono">${m.year || '—'}</td>
-      <td class="td-mono" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${countryDisplay}</td>
       <td class="td-mono" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${genreCell}</td>
       <td class="td-mono">${m.votes.toLocaleString('es-AR')}</td>
       <td class="td-mono">${m.rating ? m.rating.toFixed(1) : '—'}</td>
