@@ -747,7 +747,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.4</span>
+    <span class="footer-txt">Genealogía del Cine v4.5</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -769,6 +769,26 @@ input[type=number] {
       <div>
         <div class="form-label">País</div>
         <select class="form-select" id="srch-country"><option value="">Todos los países</option></select>
+      </div>
+    </div>
+    <div class="form-row form-row-2">
+      <div>
+        <div class="form-label">Década desde</div>
+        <select class="form-select" id="srch-dec-from">
+          <option value="">Todas</option>
+          <option>1920</option><option>1930</option><option>1940</option><option>1950</option>
+          <option>1960</option><option>1970</option><option>1980</option><option>1990</option>
+          <option>2000</option><option>2010</option><option>2020</option>
+        </select>
+      </div>
+      <div>
+        <div class="form-label">Década hasta</div>
+        <select class="form-select" id="srch-dec-to">
+          <option value="">Todas</option>
+          <option>1920</option><option>1930</option><option>1940</option><option>1950</option>
+          <option>1960</option><option>1970</option><option>1980</option><option>1990</option>
+          <option>2000</option><option>2010</option><option>2020</option>
+        </select>
       </div>
     </div>
     <div class="form-row form-row-4">
@@ -833,7 +853,7 @@ input[type=number] {
     <div id="srch-pager" style="margin-top:12px;"></div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.4</span>
+    <span class="footer-txt">Genealogía del Cine v4.5</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -972,7 +992,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.4</span>
+    <span class="footer-txt">Genealogía del Cine v4.5</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1081,7 +1101,8 @@ input[type=number] {
             <col style="width:90px;">
             <col style="width:60px;">
             <col style="width:104px;">
-            <col style="width:28px;">
+            <col style="width:36px;">
+            <col style="width:52px;">
           </colgroup>
           <thead>
             <tr>
@@ -1092,6 +1113,7 @@ input[type=number] {
               <th onclick="sortSampleTable('votes')">Votos</th>
               <th onclick="sortSampleTable('rating')">Rating</th>
               <th onclick="sortSampleTable('revenue')">Taquilla</th>
+              <th title="Estado de calificación"></th>
               <th></th>
             </tr>
           </thead>
@@ -1277,7 +1299,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v4.4</span>
+    <span class="footer-txt">Genealogía del Cine v4.5</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -2395,6 +2417,12 @@ function renderSampleTable(f) {
     const genreCell = secGenreNames.length > 0
       ? `<span title="${secGenreAll}" style="cursor:default;">${secGenreShort || '—'}</span>`
       : '—';
+    const calStatus = calClassify(m, f.differentials.length);
+    const statusCell = calStatus === 'done'
+      ? `<span style="color:var(--green);font-size:13px;" title="Calificada">✓</span>`
+      : calStatus === 'inProgress'
+      ? `<span style="color:var(--amber);font-size:11px;" title="En proceso">◐</span>`
+      : `<span style="color:var(--text3);font-size:11px;" title="Pendiente">○</span>`;
     return `<tr>
       <td class="td-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.title}</td>
       <td class="td-mono">${m.year}</td>
@@ -2403,7 +2431,10 @@ function renderSampleTable(f) {
       <td class="td-mono">${m.votes.toLocaleString('es-AR')}</td>
       <td class="td-mono">${m.rating}</td>
       <td class="td-mono">${revDisplay}</td>
-      <td class="td-action" onclick="removeFromSample(${m.id})">✕</td>
+      <td style="text-align:center;">${statusCell}</td>
+      <td class="td-action" style="white-space:nowrap;">
+        <span onclick="openMovieDetail(${m.id})" title="Ver detalle" style="margin-right:8px;">↗</span><span onclick="removeFromSample(${m.id})">✕</span>
+      </td>
     </tr>`;
   }).join('');
 
@@ -3772,6 +3803,10 @@ async function doMovieSearch(page = 1) {
       const genreIds = genreId ? [+genreId, ...incArr] : incArr;
       if (genreIds.length) params += `&with_genres=${genreIds.join(',')}`;
       if (srchState.excGenres.size) params += `&without_genres=${[...srchState.excGenres].join(',')}`;
+      const decFrom = document.getElementById('srch-dec-from').value;
+      const decTo   = document.getElementById('srch-dec-to').value;
+      if (decFrom) params += `&primary_release_date.gte=${decFrom}-01-01`;
+      if (decTo)   params += `&primary_release_date.lte=${+decTo + 9}-12-31`;
       if (country)   params += `&with_origin_country=${country}`;
       if (votesMin)  params += `&vote_count.gte=${votesMin}`;
       if (votesMax)  params += `&vote_count.lte=${votesMax}`;
@@ -3827,7 +3862,7 @@ function updateSrchSortHeaders() {
 function mapSrchMovie(m) {
   return {
     id: m.id,
-    title: m.title,
+    title: m.original_title || m.title,
     year: +(m.release_date || '0000').slice(0, 4) || null,
     votes: m.vote_count || 0,
     rating: m.vote_average || 0,
@@ -3896,12 +3931,13 @@ async function openMovieDetail(movieId) {
       ? `<div style="font-size:12px;color:var(--text3);line-height:1.6;margin-top:16px;padding-top:16px;border-top:0.5px solid var(--border);">${d.overview}</div>` : '';
     const tmdbLink = `<a href="https://www.themoviedb.org/movie/${d.id}" target="_blank" rel="noopener" style="font-size:11px;color:var(--blue);text-decoration:none;margin-top:12px;display:inline-block;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Ver en TMDB →</a>`;
 
-    document.getElementById('movie-modal-title').textContent = d.title;
+    const displayTitle = d.original_title || d.title;
+    document.getElementById('movie-modal-title').textContent = displayTitle;
     document.getElementById('movie-modal-body').innerHTML = `
       <div style="display:flex;gap:20px;align-items:flex-start;">
         ${posterHtml}
         <div style="min-width:0;flex:1;">
-          <div class="film-title">${d.title}</div>
+          <div class="film-title">${displayTitle}</div>
           <div class="film-meta">${year} · ${(d.vote_count||0).toLocaleString('es-AR')} votos · ★${(d.vote_average||0).toFixed(1)}</div>
           <div style="font-size:12px;color:var(--text3);margin-top:4px;">${countries}</div>
           <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;">${genreBadges}</div>
@@ -3920,7 +3956,7 @@ function closeMovieDetail() {
 }
 
 function clearMovieSearch() {
-  ['srch-title','srch-votes-min','srch-votes-max','srch-rating-min','srch-rating-max','srch-rev-min','srch-rev-max'].forEach(id => {
+  ['srch-title','srch-votes-min','srch-votes-max','srch-rating-min','srch-rating-max','srch-rev-min','srch-rev-max'].concat(['srch-dec-from','srch-dec-to']).forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   srchState.incGenres.clear();
