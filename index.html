@@ -745,7 +745,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.3</span>
+    <span class="footer-txt">Genealogía del Cine v5.4</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -898,7 +898,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.3</span>
+    <span class="footer-txt">Genealogía del Cine v5.4</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1043,7 +1043,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.3</span>
+    <span class="footer-txt">Genealogía del Cine v5.4</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1356,7 +1356,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.3</span>
+    <span class="footer-txt">Genealogía del Cine v5.4</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -2028,8 +2028,9 @@ async function createField() {
 
   let universeTotal = 0;
   try {
-    const countryParamCreate = countries.length ? '&with_origin_country=' + countries[0] : '';
-    const r = await fetch(`${BASE}/discover/movie?with_genres=${genreId}&vote_count.gte=${votes}&primary_release_date.gte=${decFrom}-01-01&primary_release_date.lte=${decTo+9}-12-31${countryParamCreate}&page=1`, {headers:HEADERS});
+    const countryParamCreate  = countries.length ? '&with_origin_country=' + countries[0] : '';
+    const excludedParamCreate = excluded.length ? '&without_genres=' + excluded.join(',') : '';
+    const r = await fetch(`${BASE}/discover/movie?with_genres=${genreId}&vote_count.gte=${votes}&primary_release_date.gte=${decFrom}-01-01&primary_release_date.lte=${decTo+9}-12-31${countryParamCreate}${excludedParamCreate}&page=1`, {headers:HEADERS});
     const d = await r.json();
     universeTotal = d.total_results;
   } catch(e) {}
@@ -4278,9 +4279,10 @@ function renderSrchCharts(movies, totalResults, decRevOverride, decCountOverride
     });
   }
 
-  // Genres top10
+  // Genres top10 (exclude primary genre)
+  const primaryGenreId = +document.getElementById('srch-genre').value || null;
   const genreCount = {};
-  movies.forEach(m => (m.genreIds || []).forEach(id => { genreCount[id] = (genreCount[id] || 0) + 1; }));
+  movies.forEach(m => (m.genreIds || []).filter(id => id !== primaryGenreId).forEach(id => { genreCount[id] = (genreCount[id] || 0) + 1; }));
   const allGenreEntries = Object.entries(genreCount).sort((a, b) => b[1] - a[1]);
   const genreTop10  = allGenreEntries.slice(0, 10).map(([id, n]) => [GENRE_MAP[id] || id, scaled(n)]);
   const genreTotal  = genreTop10.reduce((s, x) => s + x[1], 0) || 1;
@@ -4294,18 +4296,24 @@ function renderSrchCharts(movies, totalResults, decRevOverride, decCountOverride
   }
 
   // Countries top10
-  const countryCount = {};
-  movies.forEach(m => { if (m.country) countryCount[m.country] = (countryCount[m.country] || 0) + 1; });
-  const allCountryEntries = Object.entries(countryCount).sort((a, b) => b[1] - a[1]);
-  const countryTop10 = allCountryEntries.slice(0, 10).map(([code, n]) => [getCountryName(code), scaled(n)]);
-  const countryTotal = countryTop10.reduce((s, x) => s + x[1], 0) || 1;
-  makeSrchChart('srch-chart-countries', countryTop10.map(x => x[0]), countryTop10.map(x => x[1]), '#D85A30', true, countryTotal);
+  const activeCountry = document.getElementById('srch-country').value;
   const cNote = document.getElementById('srch-countries-note');
-  if (cNote && allCountryEntries.length) {
-    const top10CRawSum = allCountryEntries.slice(0, 10).reduce((s, x) => s + x[1], 0);
-    const allCRawSum   = allCountryEntries.reduce((s, x) => s + x[1], 0);
-    const pctC = allCRawSum > 0 ? Math.round(top10CRawSum / allCRawSum * 100) : 0;
-    cNote.textContent = `Se muestran los ${countryTop10.length} países con más participación de los ${allCountryEntries.length} totales, representando un ${pctC}% del total de películas.`;
+  if (activeCountry) {
+    makeSrchChart('srch-chart-countries', [getCountryName(activeCountry)], [totalResults || scaled(movies.length)], '#D85A30', true, totalResults || 1);
+    if (cNote) cNote.textContent = 'El universo está filtrado por un único país de producción.';
+  } else {
+    const countryCount = {};
+    movies.forEach(m => { if (m.country) countryCount[m.country] = (countryCount[m.country] || 0) + 1; });
+    const allCountryEntries = Object.entries(countryCount).sort((a, b) => b[1] - a[1]);
+    const countryTop10 = allCountryEntries.slice(0, 10).map(([code, n]) => [getCountryName(code), scaled(n)]);
+    const countryTotal = countryTop10.reduce((s, x) => s + x[1], 0) || 1;
+    makeSrchChart('srch-chart-countries', countryTop10.map(x => x[0]), countryTop10.map(x => x[1]), '#D85A30', true, countryTotal);
+    if (cNote && allCountryEntries.length) {
+      const top10CRawSum = allCountryEntries.slice(0, 10).reduce((s, x) => s + x[1], 0);
+      const allCRawSum   = allCountryEntries.reduce((s, x) => s + x[1], 0);
+      const pctC = allCRawSum > 0 ? Math.round(top10CRawSum / allCRawSum * 100) : 0;
+      cNote.textContent = `Se muestran los ${countryTop10.length} países con más participación de los ${allCountryEntries.length} totales, representando un ${pctC}% del total de películas.`;
+    }
   }
 }
 
