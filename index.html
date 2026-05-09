@@ -6,6 +6,7 @@
 <title>Genealogía del Cine</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="/lib/logic.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
 
@@ -745,7 +746,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.6</span>
+    <span class="footer-txt">Genealogía del Cine v5.7</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -908,7 +909,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.6</span>
+    <span class="footer-txt">Genealogía del Cine v5.7</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1053,7 +1054,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.6</span>
+    <span class="footer-txt">Genealogía del Cine v5.7</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1366,7 +1367,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.6</span>
+    <span class="footer-txt">Genealogía del Cine v5.7</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -2332,40 +2333,6 @@ async function generateSample(f) {
   markSampleDirty(false);
 }
 
-function minSampleForTarget(univCounts, target) {
-  const total = univCounts.reduce((s, v) => s + v, 0);
-  if (!total) return 1;
-  const props = univCounts.map(v => v / total);
-  for (let N = 5; N <= 2000; N++) {
-    const sampleCounts = props.map(p => Math.round(p * N));
-    const sampleTotal = sampleCounts.reduce((s, v) => s + v, 0) || 1;
-    const overlap = props.reduce((s, p, i) => s + Math.min(p, sampleCounts[i] / sampleTotal), 0);
-    if (overlap >= target) return N;
-  }
-  return 2000;
-}
-
-function calculateMinSample(f) {
-  if (!f.cache) return 30;
-  const target = 0.95;
-  const candidates = [];
-  if (f.cache.decadesCounts && f.cache.decadesCounts.length)
-    candidates.push(minSampleForTarget(f.cache.decadesCounts, target));
-  if (f.cache.ratingBuckets && f.cache.ratingBuckets.length)
-    candidates.push(minSampleForTarget(f.cache.ratingBuckets, target));
-  if (f.cache.voteBuckets && f.cache.voteBuckets.length)
-    candidates.push(minSampleForTarget(f.cache.voteBuckets, target));
-  if (f.cache.genreTop10 && f.cache.genreTop10.length)
-    candidates.push(minSampleForTarget(f.cache.genreTop10.map(x => x[1]), target));
-  if ((!f.countries || !f.countries.length) && f.cache.countryTop10 && f.cache.countryTop10.length)
-    candidates.push(minSampleForTarget(f.cache.countryTop10.map(x => x[1]), target));
-  // Each active decade needs at least 10 movies so fetchDecade uses ≥5 spread pages.
-  const activeDecades = (f.cache.decadesCounts || []).filter(c => c > 0).length || 1;
-  const decadeFloor = activeDecades * 10;
-  const raw = candidates.length ? Math.max(...candidates) : 30;
-  return Math.min(Math.max(raw, decadeFloor), Math.round((f.universeTotal || raw) * 0.8));
-}
-
 function renderSampleStats(f) {
   const total = f.sample ? f.sample.length : 0;
   const unrated = f.sample ? f.sample.filter(m => !m.ratings || Object.keys(m.ratings).length < (f.differentials||[]).length).length : total;
@@ -2449,12 +2416,6 @@ function buildTop40Ids(f) {
       .forEach(m => ids.add(m.id))
   );
   return ids;
-}
-
-function fmtRevenue(r) {
-  if (!r) return '—';
-  if (r >= 1e9) return '$' + (r / 1e9).toFixed(1) + 'B';
-  return '$' + Math.round(r / 1e6) + 'M';
 }
 
 function exportSampleToExcel() {
@@ -2975,33 +2936,6 @@ async function renderDistribution(f) {
   document.getElementById('rep-index-bar-rev').textContent = '/ ' + (globalRepRev * 100).toFixed(0) + '% con taquilla';
 }
 
-function l1Overlap(a, b) {
-  const sumA = a.reduce((s, v) => s + v, 0);
-  const sumB = b.reduce((s, v) => s + v, 0);
-  if (sumA === 0 || sumB === 0) return 0;
-  return a.reduce((s, v, i) => s + Math.min(v / sumA, b[i] / sumB), 0);
-}
-
-function cosineSimilarity(a, b) {
-  if (!a.length || a.length !== b.length) return 0;
-  const dot  = a.reduce((s, v, i) => s + v * b[i], 0);
-  const magA = Math.sqrt(a.reduce((s, v) => s + v * v, 0));
-  const magB = Math.sqrt(b.reduce((s, v) => s + v * v, 0));
-  if (magA === 0 || magB === 0) return 0;
-  return Math.max(0, Math.min(1, dot / (magA * magB)));
-}
-
-function calculateRepIndex(f) {
-  if (!f.sample || !f.sample.length) return 0;
-  const decades = [];
-  for (let d = f.decFrom; d <= f.decTo; d += 10) decades.push(d);
-  const decCounts = decades.map(d => f.sample.filter(m => Math.floor(m.year/10)*10 === d).length);
-  const total = f.sample.length;
-  const expected = total / decades.length;
-  const variance = decCounts.reduce((s, c) => s + Math.abs(c - expected), 0) / (total || 1);
-  return Math.max(0, Math.min(1, 1 - variance / 2)).toFixed ? +Math.max(0, Math.min(1, 1 - variance / 2)).toFixed(2) : 0.85;
-}
-
 function recalcDistribution() {
   const f = currentField();
   if (f) renderDistribution(f);
@@ -3303,13 +3237,6 @@ function importDiffs() {
 }
 
 // ── TAB: CALIFICACIÓN ──
-function calClassify(m, totalDiffs) {
-  const rated = Object.keys(m.ratings || {}).length;
-  if (totalDiffs === 0 || rated === 0) return 'pending';
-  if (rated >= totalDiffs) return 'done';
-  return 'inProgress';
-}
-
 function renderCalSidebar(f) {
   const diffs = f.differentials || [];
   const totalDiffs = diffs.length;
@@ -3503,18 +3430,6 @@ function updateSlider(input, filmId, diffId, negMax, posMax) {
   const met = calcMet(film, f.differentials||[]);
   const metEl = document.getElementById('met-display');
   if (metEl) { metEl.textContent = met !== null ? met.toFixed(2) : '—'; }
-}
-
-function calcMet(film, diffs) {
-  if (!diffs.length || !film.ratings) return null;
-  const normalized = diffs.map(d => {
-    const val = film.ratings[d.id];
-    if (val === undefined) return undefined;
-    const maxForDir = val >= 0 ? (d.posMax || 3) : (d.negMax || 3);
-    return Math.abs(val) / maxForDir;
-  }).filter(v => v !== undefined);
-  if (!normalized.length) return null;
-  return +(normalized.reduce((s, v) => s + v, 0) / normalized.length * 3).toFixed(2);
 }
 
 function backToCalList() {
