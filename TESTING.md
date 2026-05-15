@@ -19,12 +19,12 @@ Ejecutar antes de cada release importante. Completar la columna **Estado** con �
 
 | # | Escenario | Pasos | Resultado esperado | Estado |
 |---|-----------|-------|--------------------|--------|
-| L1 | Estado vacío | Ingresar con una cuenta sin campos | Se muestra un estado vacío (sin tabla) | — |
 | L2 | Visualización de campos | Tener al menos un campo creado | La tabla muestra nombre, género, universo, diferenciales, calificación y estado | — |
 | L3 | Badge de estado | Revisar los badges de campos en distintas etapas | "Sin muestra", "Sin calificar", "En proceso" y "Completo" aparecen según corresponda | — |
 | L4 | Abrir un campo | Hacer clic en una fila de la tabla | Abre la pantalla del campo en el tab Descripción | — |
 | L5 | Exportar campos | Hacer clic en Exportar con al menos un campo | Se descarga un archivo JSON con los datos | — |
 | L6 | Importar campo | Hacer clic en Importar → seleccionar un JSON exportado previamente | El campo aparece en el listado | — |
+| L7 | Eliminar campo | Hacer clic en el botón eliminar de un campo → confirmar | El campo desaparece del listado | — |
 
 ---
 
@@ -34,10 +34,11 @@ Ejecutar antes de cada release importante. Completar la columna **Estado** con �
 |---|-----------|-------|--------------------|--------|
 | C1 | Formulario completo | Completar todos los campos → hacer clic en Crear | El campo aparece en el listado de campos | — |
 | C2 | Cargar vista previa | Completar género, décadas y votos mínimos → hacer clic en "Cargar datos" | Se muestra el total del universo y los cinco gráficos de preview | — |
-| C3 | Filtro de países | Seleccionar un país en el formulario → cargar vista previa | El total del universo refleja solo películas del país seleccionado | — |
+| C3 | Filtro de países | Seleccionar un país en el formulario → cargar vista previa | El total del universo refleja solo películas cuyo país primario de producción es el seleccionado | — |
 | C4 | Excluir géneros | Seleccionar géneros a excluir → cargar vista previa | El total del universo es menor que sin exclusiones | — |
 | C5 | Nombre vacío | Intentar crear un campo sin nombre | No se crea el campo; se indica el error | — |
 | C6 | Universo bloqueado | Crear un campo → volver a abrirlo | Los parámetros de género, décadas y votos no son editables | — |
+| C7 | Cancelar creación | Completar parte del formulario → hacer clic en Cancelar o Cerrar | Se vuelve al listado sin crear el campo | — |
 
 ---
 
@@ -48,6 +49,7 @@ Ejecutar antes de cada release importante. Completar la columna **Estado** con �
 | D1 | Stat cards | Abrir un campo con datos | Se muestran las 6 stat cards con valores correctos (género, total, rating promedio, votos mínimos, décadas, países) | — |
 | D2 | Gráficos de distribución | Verificar los seis gráficos | Se renderizan sin errores: décadas, taquilla, géneros secundarios, países, rating y votos | — |
 | D3 | Renombrar campo | Hacer clic en el botón Renombrar → escribir un nombre nuevo → confirmar | El nombre se actualiza en el header y en el listado | — |
+| D4 | Eliminar campo | Hacer clic en el botón eliminar → confirmar | El campo se elimina y la app vuelve al listado | — |
 
 ---
 
@@ -60,11 +62,13 @@ Ejecutar antes de cada release importante. Completar la columna **Estado** con �
 | M3 | Índice de representatividad | Generar una muestra | Se muestra el índice global y los gráficos comparativos campo/muestra | — |
 | M4 | Agregar película manualmente | Hacer clic en "+" → buscar una película → agregarla | La película aparece en la tabla con el badge "manual" | — |
 | M5 | Buscar en la tabla | Escribir en el buscador de la tabla | La tabla filtra los resultados en tiempo real | — |
-| M6 | Ordenar por columna | Hacer clic en los encabezados de la tabla | La tabla se ordena correctamente por cada columna | — |
+| M6 | Ordenar por columna | Hacer clic en los encabezados Título, Año, Géneros, Votos, Rating | La tabla se ordena correctamente por cada columna; la columna Géneros muestra los géneros secundarios principales | — |
 | M7 | Regenerar con opciones | Hacer clic en Generar con películas ya calificadas → marcar "Mantener calificadas" | Las películas calificadas se conservan en la nueva muestra | — |
 | M8 | Quitar película | Hacer clic en ✕ de una película | La película se elimina de la muestra | — |
 | M9 | Ver detalle desde muestra | Hacer clic en ↗ de una película | Se abre el modal de detalle de la película | — |
 | M10 | Estado de calificación | Tener películas en distintos estados | La columna muestra ✓, ◐ y ○ según corresponda | — |
+| M11 | Generar manteniendo manuales | Regenerar con películas agregadas manualmente → marcar "Mantener manuales" | Las películas agregadas manualmente se conservan en la nueva muestra | — |
+| M12 | Grupo Calificadas completo | Completar todos los diferenciales de todas las películas de la muestra | Todas las películas aparecen en el grupo "Calificadas" con ✓; el contador Sin calificar llega a 0 | — |
 
 ---
 
@@ -110,12 +114,11 @@ Ejecutar antes de cada release importante. Completar la columna **Estado** con �
 | P3 | Filtros combinados | Combinar género, país y rango de décadas → Buscar | Los resultados respetan todos los filtros simultáneamente | — |
 | P4 | Décadas condicionadas | Seleccionar "Desde: 1990" → verificar el select "Hasta" | Las opciones anteriores a 1990 aparecen deshabilitadas en "Hasta" | — |
 | P5 | Máscara de votos | Escribir 1500 en votos mínimos → hacer clic fuera | El campo muestra "1.500" | — |
-| P6 | Ordenar resultados | Hacer clic en los encabezados Título, Año, País, Votos, Rating | La tabla se ordena correctamente por cada columna | — |
-| P7 | Paginación | Obtener resultados con más de una página → navegar | Los resultados cambian al pasar de página | — |
-| P8 | Detalle de película | Hacer clic en una fila | Se abre el modal con póster, título original, datos y sinopsis | — |
-| P9 | Link a TMDB | Abrir el detalle de una película → hacer clic en "Ver en TMDB →" | Se abre la página de la película en TMDB en una pestaña nueva | — |
-| P10 | Cargar gráficos | Hacer una búsqueda con resultados → hacer clic en "Cargar gráficos" | Se renderizan los seis gráficos con valores escalados al total de resultados | — |
-| P11 | Limpiar búsqueda | Hacer una búsqueda → hacer clic en Limpiar | Se vacían todos los filtros, desaparece la tabla y los gráficos | — |
+| P6 | Ordenar resultados | Hacer clic en los encabezados Título, Año, Géneros, Votos, Rating | La tabla se ordena correctamente por cada columna; la columna Géneros muestra los géneros secundarios principales | — |
+| P7 | Detalle de película | Hacer clic en una fila | Se abre el modal con póster, título original, datos y sinopsis | — |
+| P8 | Link a TMDB | Abrir el detalle de una película → hacer clic en "Ver en TMDB →" | Se abre la página de la película en TMDB en una pestaña nueva | — |
+| P9 | Cargar gráficos | Hacer una búsqueda con resultados → hacer clic en "Cargar gráficos" | Se renderizan los seis gráficos con valores escalados al total de resultados | — |
+| P10 | Limpiar búsqueda | Hacer una búsqueda → hacer clic en Limpiar | Se vacían todos los filtros, desaparece la tabla y los gráficos | — |
 
 ---
 
