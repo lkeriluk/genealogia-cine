@@ -19,12 +19,12 @@ Ejecutar antes de cada release importante. Completar la columna **Estado** con �
 
 | # | Escenario | Pasos | Resultado esperado | Estado |
 |---|-----------|-------|--------------------|--------|
-| L2 | Visualización de campos | Tener al menos un campo creado | La tabla muestra nombre, género, universo, diferenciales, calificación y estado | — |
-| L3 | Badge de estado | Revisar los badges de campos en distintas etapas | "Sin muestra", "Sin calificar", "En proceso" y "Completo" aparecen según corresponda | — |
-| L4 | Abrir un campo | Hacer clic en una fila de la tabla | Abre la pantalla del campo en el tab Descripción | — |
-| L5 | Exportar campos | Hacer clic en Exportar con al menos un campo | Se descarga un archivo JSON con los datos | — |
-| L6 | Importar campo | Hacer clic en Importar → seleccionar un JSON exportado previamente | El campo aparece en el listado | — |
-| L7 | Eliminar campo | Hacer clic en el botón eliminar de un campo → confirmar | El campo desaparece del listado | — |
+| L1 | Visualización de campos | Tener al menos un campo creado | La tabla muestra nombre, género, universo, diferenciales, calificación y estado | — |
+| L2 | Badge de estado | Revisar los badges de campos en distintas etapas | "Sin muestra", "Sin calificar", "En proceso" y "Completo" aparecen según corresponda | — |
+| L3 | Abrir un campo | Hacer clic en una fila de la tabla | Abre la pantalla del campo en el tab Descripción | — |
+| L4 | Exportar campos | Hacer clic en Exportar con al menos un campo | Se descarga un archivo JSON con los datos | — |
+| L5 | Importar campo | Hacer clic en Importar → seleccionar un JSON exportado previamente | El campo aparece en el listado | — |
+| L6 | Eliminar campo | Hacer clic en el botón eliminar de un campo → confirmar | El campo desaparece del listado | — |
 
 ---
 
@@ -62,13 +62,12 @@ Ejecutar antes de cada release importante. Completar la columna **Estado** con �
 | M3 | Índice de representatividad | Generar una muestra | Se muestra el índice global y los gráficos comparativos campo/muestra | — |
 | M4 | Agregar película manualmente | Hacer clic en "+" → buscar una película → agregarla | La película aparece en la tabla con el badge "manual" | — |
 | M5 | Buscar en la tabla | Escribir en el buscador de la tabla | La tabla filtra los resultados en tiempo real | — |
-| M6 | Ordenar por columna | Hacer clic en los encabezados Título, Año, Géneros, Votos, Rating | La tabla se ordena correctamente por cada columna; la columna Géneros muestra los géneros secundarios principales | — |
+| M6 | Ordenar por columna | Hacer clic en los encabezados Título, Año, Votos, Rating | La tabla se ordena correctamente; hacer clic en el encabezado Géneros no produce ordenamiento | — |
 | M7 | Regenerar con opciones | Hacer clic en Generar con películas ya calificadas → marcar "Mantener calificadas" | Las películas calificadas se conservan en la nueva muestra | — |
 | M8 | Quitar película | Hacer clic en ✕ de una película | La película se elimina de la muestra | — |
 | M9 | Ver detalle desde muestra | Hacer clic en ↗ de una película | Se abre el modal de detalle de la película | — |
 | M10 | Estado de calificación | Tener películas en distintos estados | La columna muestra ✓, ◐ y ○ según corresponda | — |
 | M11 | Generar manteniendo manuales | Regenerar con películas agregadas manualmente → marcar "Mantener manuales" | Las películas agregadas manualmente se conservan en la nueva muestra | — |
-| M12 | Grupo Calificadas completo | Completar todos los diferenciales de todas las películas de la muestra | Todas las películas aparecen en el grupo "Calificadas" con ✓; el contador Sin calificar llega a 0 | — |
 
 ---
 
@@ -91,6 +90,7 @@ Ejecutar antes de cada release importante. Completar la columna **Estado** con �
 | CA2 | Metaestabilidad en tiempo real | Mover un slider durante la calificación | El valor de metaestabilidad se actualiza mientras se mueve el slider | — |
 | CA3 | Navegación anterior/siguiente | Calificar una película → hacer clic en siguiente | Avanza a la próxima película pendiente | — |
 | CA4 | Película en proceso | Guardar con solo algunos diferenciales completados | La película aparece en el grupo "En proceso" con el ícono ◐ en la muestra | — |
+| CA5 | Grupo Calificadas | Completar todos los diferenciales de una película → guardar | La película pasa al grupo "Calificadas" en la sidebar | — |
 
 ---
 
@@ -114,7 +114,7 @@ Ejecutar antes de cada release importante. Completar la columna **Estado** con �
 | P3 | Filtros combinados | Combinar género, país y rango de décadas → Buscar | Los resultados respetan todos los filtros simultáneamente | — |
 | P4 | Décadas condicionadas | Seleccionar "Desde: 1990" → verificar el select "Hasta" | Las opciones anteriores a 1990 aparecen deshabilitadas en "Hasta" | — |
 | P5 | Máscara de votos | Escribir 1500 en votos mínimos → hacer clic fuera | El campo muestra "1.500" | — |
-| P6 | Ordenar resultados | Hacer clic en los encabezados Título, Año, Géneros, Votos, Rating | La tabla se ordena correctamente por cada columna; la columna Géneros muestra los géneros secundarios principales | — |
+| P6 | Ordenar resultados | Hacer clic en los encabezados Título, Año, Votos, Rating | La tabla se ordena correctamente; hacer clic en el encabezado Géneros no produce ordenamiento | — |
 | P7 | Detalle de película | Hacer clic en una fila | Se abre el modal con póster, título original, datos y sinopsis | — |
 | P8 | Link a TMDB | Abrir el detalle de una película → hacer clic en "Ver en TMDB →" | Se abre la página de la película en TMDB en una pestaña nueva | — |
 | P9 | Cargar gráficos | Hacer una búsqueda con resultados → hacer clic en "Cargar gráficos" | Se renderizan los seis gráficos con valores escalados al total de resultados | — |
