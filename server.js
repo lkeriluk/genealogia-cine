@@ -46,28 +46,23 @@ async function initDB() {
   `);
   await pool.query(`CREATE INDEX IF NOT EXISTS activity_log_user_idx ON activity_log(user_id, created_at DESC)`);
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS app_state (
-      user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    CREATE TABLE IF NOT EXISTS shared_state (
+      id INTEGER PRIMARY KEY DEFAULT 1,
       data JSONB NOT NULL DEFAULT '{"fields":[]}'::jsonb,
-      updated_at TIMESTAMP DEFAULT NOW()
+      updated_at TIMESTAMP DEFAULT NOW(),
+      CONSTRAINT single_row CHECK (id = 1)
     )
   `);
-  // Migración: si la tabla existe sin la columna user_id, recrearla
+  // Migración: fusionar todos los campos de app_state en shared_state (una sola vez)
   await pool.query(`
-    DO $$
-    BEGIN
-      IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns
-        WHERE table_name = 'app_state' AND column_name = 'user_id'
-      ) THEN
-        DROP TABLE IF EXISTS app_state;
-        CREATE TABLE app_state (
-          user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-          data JSONB NOT NULL DEFAULT '{"fields":[]}'::jsonb,
-          updated_at TIMESTAMP DEFAULT NOW()
-        );
-      END IF;
-    END $$;
+    INSERT INTO shared_state (id, data)
+    SELECT 1,
+      jsonb_build_object('fields', COALESCE(
+        (SELECT jsonb_agg(f)
+         FROM (SELECT jsonb_array_elements(data->'fields') AS f FROM app_state) sub),
+        '[]'::jsonb
+      ))
+    ON CONFLICT (id) DO NOTHING
   `);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS session (
@@ -195,7 +190,7 @@ function requireAuth(req, res, next) {
 // ── API DE ESTADO (por usuario) ──
 app.get('/api/state', requireAuth, async (req, res) => {
   try {
-    const r = await pool.query('SELECT data FROM app_state WHERE user_id = $1', [req.user.id]);
+    const r = await pool.query('SELECT data FROM shared_state WHERE id = 1');
     res.json(r.rows[0]?.data || { fields: [] });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -205,9 +200,9 @@ app.get('/api/state', requireAuth, async (req, res) => {
 app.put('/api/state', requireAuth, async (req, res) => {
   try {
     await pool.query(
-      `INSERT INTO app_state (user_id, data) VALUES ($1, $2)
-       ON CONFLICT (user_id) DO UPDATE SET data = $2, updated_at = NOW()`,
-      [req.user.id, req.body]
+      `INSERT INTO shared_state (id, data) VALUES (1, $1)
+       ON CONFLICT (id) DO UPDATE SET data = $1, updated_at = NOW()`,
+      [req.body]
     );
     res.json({ ok: true });
   } catch (e) {
