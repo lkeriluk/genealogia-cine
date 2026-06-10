@@ -575,6 +575,21 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <p>Por ejemplo: si los índices individuales son décadas 89%, rating 94%, votos 91%, géneros 87% y países 96%, el índice global es (89 + 94 + 91 + 87 + 96) / 5 = <strong>91%</strong>.</p>
       <p>La taquilla se muestra como índice separado pero no se incluye en el global: al trabajar con una muestra pequeña, el "top 40 por taquilla" pierde representatividad respecto al universo y distorsionaría el índice general.</p>
 
+      <h3>Cálculo de cada índice parcial</h3>
+      <p>Cada índice parcial se calcula con el método de solapamiento L1: para cada categoría de la variable (ej. cada década), se toma el menor de los dos porcentajes — el del universo y el de la muestra — y se suman todos. El resultado es la proporción del universo que la muestra "cubre" en esa variable.</p>
+      <p>Por ejemplo, con la variable décadas:</p>
+      <table>
+        <thead><tr><th>Década</th><th>Universo</th><th>Muestra</th><th>Mínimo</th></tr></thead>
+        <tbody>
+          <tr><td>1960s</td><td>25%</td><td>20%</td><td>20%</td></tr>
+          <tr><td>1970s</td><td>40%</td><td>45%</td><td>40%</td></tr>
+          <tr><td>1980s</td><td>20%</td><td>25%</td><td>20%</td></tr>
+          <tr><td>1990s</td><td>15%</td><td>10%</td><td>10%</td></tr>
+        </tbody>
+      </table>
+      <p>Índice de décadas = 20 + 40 + 20 + 10 = <strong>90%</strong></p>
+      <p>Una muestra perfectamente proporcional al universo daría 100%. Una muestra con una sola película en un universo de 11 décadas daría como máximo ~9% (1/11), independientemente de qué tan grande sea el universo.</p>
+
       <hr>
 
       <h2>Gráficos comparativos muestra / universo</h2>
@@ -594,6 +609,11 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
     <div id="art-release-notes" class="article">
       <div class="article-title">Release Notes</div>
       <div class="article-meta">Más</div>
+
+      <h2>v5.9 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Junio 2026</span></h2>
+      <ul>
+        <li>Índice de representatividad del stat card corregido: ahora usa solapamiento L1 contra la distribución real del universo. Con una sola película en un universo de 11 décadas el índice da ~9% en lugar del 39% incorrecto que daba antes.</li>
+      </ul>
 
       <h2>v5.8 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Junio 2026</span></h2>
       <ul>

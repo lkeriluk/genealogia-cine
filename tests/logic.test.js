@@ -156,8 +156,8 @@ describe('calculateRepIndex', () => {
     expect(calculateRepIndex({ decFrom: 1980, decTo: 2020 })).toBe(0);
   });
 
-  test('perfectly uniform sample → high index', () => {
-    // 5 decades (1980–2020), 2 films per decade = perfectly uniform
+  test('muestra uniforme sobre universo uniforme → 1', () => {
+    // 5 décadas, 2 películas por década, universo uniforme
     const sample = [
       { year: 1982 }, { year: 1985 },
       { year: 1993 }, { year: 1997 },
@@ -165,17 +165,28 @@ describe('calculateRepIndex', () => {
       { year: 2012 }, { year: 2015 },
       { year: 2021 }, { year: 2024 },
     ];
-    const v = calculateRepIndex({ sample, decFrom: 1980, decTo: 2020 });
-    expect(v).toBeGreaterThan(0.9);
+    const cache = { decadesCounts: [100, 100, 100, 100, 100] };
+    const v = calculateRepIndex({ sample, decFrom: 1980, decTo: 2020, cache });
+    expect(v).toBeCloseTo(1);
   });
 
-  test('all films from single decade → low index', () => {
-    const sample = Array.from({ length: 10 }, () => ({ year: 1995 }));
-    const v = calculateRepIndex({ sample, decFrom: 1980, decTo: 2020 });
-    expect(v).toBeLessThan(0.7);
+  test('1 película en 1 de 11 décadas → ≤ 1/11', () => {
+    const sample = [{ year: 1975 }];
+    const cache = { decadesCounts: Array(11).fill(100) };
+    const v = calculateRepIndex({ sample, decFrom: 1920, decTo: 2020, cache });
+    expect(v).toBeLessThanOrEqual(1 / 11 + 0.01);
   });
 
-  test('returns a number clamped to [0, 1]', () => {
+  test('toda la muestra en la década dominante del universo → índice razonable', () => {
+    // universo: 90% en 2000s, 10% distribuido; muestra solo en 2000s
+    const sample = Array.from({ length: 10 }, () => ({ year: 2015 }));
+    const cache = { decadesCounts: [10, 10, 10, 10, 10, 10, 10, 10, 10, 900, 10] };
+    const v = calculateRepIndex({ sample, decFrom: 1920, decTo: 2020, cache });
+    // cubre la década más grande del universo → debe superar la cobertura uniforme (1/11 ≈ 9%)
+    expect(v).toBeGreaterThan(1 / 11);
+  });
+
+  test('sin cache usa distribución uniforme como fallback', () => {
     const sample = [{ year: 2000 }];
     const v = calculateRepIndex({ sample, decFrom: 2000, decTo: 2000 });
     expect(v).toBeGreaterThanOrEqual(0);
