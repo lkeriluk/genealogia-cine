@@ -746,7 +746,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.1</span>
+    <span class="footer-txt">Genealogía del Cine v6.2</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -909,7 +909,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.1</span>
+    <span class="footer-txt">Genealogía del Cine v6.2</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1054,7 +1054,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.1</span>
+    <span class="footer-txt">Genealogía del Cine v6.2</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1367,7 +1367,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.1</span>
+    <span class="footer-txt">Genealogía del Cine v6.2</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -2266,8 +2266,23 @@ async function generateSample(f) {
   const seen = new Set(protected_.map(m => m.id));
   const toFetch = Math.max(0, f.sampleSize - protected_.length);
 
-  // Proportional allocation across decades for new movies to fetch
-  const allocs = activeDecades.map(x => Math.round(x.count / totalCount * toFetch));
+  // Proportional allocation across decades, discounting locked films already in each decade.
+  // Target per decade = proportion × total sample size. Remaining = max(0, target - locked).
+  // This prevents over-representation of decades where locked films already fill the quota.
+  const lockedPerDecade = new Map(activeDecades.map(x => [x.dec, 0]));
+  protected_.forEach(m => {
+    const dec = Math.floor(m.year / 10) * 10;
+    if (lockedPerDecade.has(dec)) lockedPerDecade.set(dec, lockedPerDecade.get(dec) + 1);
+  });
+  const rawAllocs = activeDecades.map(x => {
+    const target = x.count / totalCount * f.sampleSize;
+    return Math.max(0, Math.round(target - (lockedPerDecade.get(x.dec) || 0)));
+  });
+  const rawSum = rawAllocs.reduce((s, v) => s + v, 0);
+  // Scale allocs to exactly toFetch, preserving proportions
+  const allocs = rawSum > 0
+    ? rawAllocs.map(v => Math.round(v / rawSum * toFetch))
+    : activeDecades.map((_, i) => i === 0 ? toFetch : 0);
   const allocSum = allocs.reduce((s, v) => s + v, 0);
   if (allocSum !== toFetch && allocs.length > 0) {
     const maxIdx = allocs.indexOf(Math.max(...allocs));
