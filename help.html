@@ -589,6 +589,7 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       </table>
       <p>Índice de décadas = 20 + 40 + 20 + 10 = <strong>90%</strong></p>
       <p>Una muestra perfectamente proporcional al universo daría 100%. Una muestra con una sola película en un universo de 11 décadas daría como máximo ~9% (1/11), independientemente de qué tan grande sea el universo.</p>
+      <p>Adicionalmente, el índice se penaliza cuando la muestra es más chica que el mínimo sugerido: se multiplica por <strong>min(1, n / mínimo sugerido)</strong>. Esto evita que una muestra con pocas películas que "aciertan" la categoría dominante obtenga un índice artificialmente alto. Una muestra igual o mayor al mínimo sugerido no recibe penalización.</p>
 
       <hr>
 
@@ -609,6 +610,11 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
     <div id="art-release-notes" class="article">
       <div class="article-title">Release Notes</div>
       <div class="article-meta">Más</div>
+
+      <h2>v6.0 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Junio 2026</span></h2>
+      <ul>
+        <li>Índice de representatividad: ahora penaliza muestras por debajo del mínimo sugerido multiplicando por min(1, n / mínimo sugerido). Evita que pocas películas en categorías dominantes inflen artificialmente el índice.</li>
+      </ul>
 
       <h2>v5.9 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Junio 2026</span></h2>
       <ul>

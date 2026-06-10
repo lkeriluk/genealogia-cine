@@ -156,8 +156,8 @@ describe('calculateRepIndex', () => {
     expect(calculateRepIndex({ decFrom: 1980, decTo: 2020 })).toBe(0);
   });
 
-  test('muestra uniforme sobre universo uniforme → 1', () => {
-    // 5 décadas, 2 películas por década, universo uniforme
+  test('muestra al mínimo sugerido, distribución perfecta → 1', () => {
+    // n = minSuggested → sizeFactor = 1, l1Overlap = 1 → resultado = 1
     const sample = [
       { year: 1982 }, { year: 1985 },
       { year: 1993 }, { year: 1997 },
@@ -166,29 +166,29 @@ describe('calculateRepIndex', () => {
       { year: 2021 }, { year: 2024 },
     ];
     const cache = { decadesCounts: [100, 100, 100, 100, 100] };
-    const v = calculateRepIndex({ sample, decFrom: 1980, decTo: 2020, cache });
+    const v = calculateRepIndex({ sample, decFrom: 1980, decTo: 2020, cache, minSuggested: 10 });
     expect(v).toBeCloseTo(1);
   });
 
-  test('1 película en 1 de 11 décadas → ≤ 1/11', () => {
-    const sample = [{ year: 1975 }];
+  test('1 película, minSuggested = 50 → índice muy bajo', () => {
+    const sample = [{ year: 2015 }];
     const cache = { decadesCounts: Array(11).fill(100) };
-    const v = calculateRepIndex({ sample, decFrom: 1920, decTo: 2020, cache });
-    expect(v).toBeLessThanOrEqual(1 / 11 + 0.01);
+    // l1Overlap ≈ 1/11, sizeFactor = 1/50 → resultado ≈ 0.002
+    const v = calculateRepIndex({ sample, decFrom: 1920, decTo: 2020, cache, minSuggested: 50 });
+    expect(v).toBeLessThan(0.05);
   });
 
-  test('toda la muestra en la década dominante del universo → índice razonable', () => {
-    // universo: 90% en 2000s, 10% distribuido; muestra solo en 2000s
-    const sample = Array.from({ length: 10 }, () => ({ year: 2015 }));
-    const cache = { decadesCounts: [10, 10, 10, 10, 10, 10, 10, 10, 10, 900, 10] };
-    const v = calculateRepIndex({ sample, decFrom: 1920, decTo: 2020, cache });
-    // cubre la década más grande del universo → debe superar la cobertura uniforme (1/11 ≈ 9%)
-    expect(v).toBeGreaterThan(1 / 11);
+  test('muestra sobre el mínimo sugerido no tiene penalización extra', () => {
+    // n = 20, minSuggested = 10 → sizeFactor = min(1, 2) = 1
+    const sample = Array.from({ length: 20 }, (_, i) => ({ year: 1980 + i }));
+    const cache = { decadesCounts: [100, 100] };
+    const v = calculateRepIndex({ sample, decFrom: 1980, decTo: 1990, cache, minSuggested: 10 });
+    expect(v).toBeCloseTo(1);
   });
 
   test('sin cache usa distribución uniforme como fallback', () => {
     const sample = [{ year: 2000 }];
-    const v = calculateRepIndex({ sample, decFrom: 2000, decTo: 2000 });
+    const v = calculateRepIndex({ sample, decFrom: 2000, decTo: 2000, minSuggested: 1 });
     expect(v).toBeGreaterThanOrEqual(0);
     expect(v).toBeLessThanOrEqual(1);
   });

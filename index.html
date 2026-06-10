@@ -746,7 +746,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.9</span>
+    <span class="footer-txt">Genealogía del Cine v6.0</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -909,7 +909,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.9</span>
+    <span class="footer-txt">Genealogía del Cine v6.0</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1054,7 +1054,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.9</span>
+    <span class="footer-txt">Genealogía del Cine v6.0</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1367,7 +1367,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v5.9</span>
+    <span class="footer-txt">Genealogía del Cine v6.0</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -2616,7 +2616,6 @@ async function renderDistribution(f) {
   }
   const repDecades = l1Overlap(univCounts.length ? univCounts : decades.map(() => 0), decCounts);
   const repDecEl = document.getElementById('sample-decades-rep');
-  if (repDecEl) repDecEl.textContent = 'Representatividad por décadas: ' + Math.round(repDecades * 100) + '%';
 
   // 2. Rating distribution (synchronous)
   const ratingBuckets = Array(9).fill(0);
@@ -2658,7 +2657,6 @@ async function renderDistribution(f) {
   }
   const repRating = l1Overlap(univRatingBuckets, ratingBuckets);
   const repRatingEl = document.getElementById('sample-rating-rep');
-  if (repRatingEl) repRatingEl.textContent = 'Representatividad rating: ' + Math.round(repRating * 100) + '%';
 
   // 3. Secondary genres (synchronous)
   const genreCount = {};
@@ -2718,7 +2716,6 @@ async function renderDistribution(f) {
   const allUnionNames = [...new Set([...Object.keys(univGenreMap), ...Object.keys(genreCount)])];
   const repGenres = l1Overlap(allUnionNames.map(n => univGenreMap[n] || 0), allUnionNames.map(n => genreCount[n] || 0));
   const repGenresEl = document.getElementById('sample-genres-rep');
-  if (repGenresEl) repGenresEl.textContent = 'Representatividad géneros: ' + Math.round(repGenres * 100) + '%';
 
   const gNote = document.getElementById('sample-genres-note');
   if (gNote && allUnionGenres.length > chartGenres.length) {
@@ -2772,7 +2769,6 @@ async function renderDistribution(f) {
   }
   const repVotes = l1Overlap(univVoteBuckets, voteBuckets);
   const repVotesEl = document.getElementById('sample-votes-rep');
-  if (repVotesEl) repVotesEl.textContent = 'Representatividad votos: ' + Math.round(repVotes * 100) + '%';
 
   let repRev = 0, repCountries = 0;
 
@@ -2826,7 +2822,6 @@ async function renderDistribution(f) {
       const revUnivNum = revUniv.map(v => v === null ? 0 : v);
       const revSampleNum = revSample.map(v => v === null ? 0 : v);
       repRev = l1Overlap(revUnivNum, revSampleNum);
-      revRepEl.textContent = 'Representatividad taquilla: ' + Math.round(repRev * 100) + '%';
     }
 
     // Countries
@@ -2859,8 +2854,6 @@ async function renderDistribution(f) {
         });
       }
       repCountries = 1;
-      const repCountriesEl = document.getElementById('sample-countries-rep');
-      if (repCountriesEl) repCountriesEl.textContent = 'Representatividad países: 100%';
       const cNote = document.getElementById('sample-countries-note');
       if (cNote) cNote.textContent = '';
     } else {
@@ -2915,8 +2908,6 @@ async function renderDistribution(f) {
 
       const allUnionCountryNames = [...new Set([...Object.keys(univCountryMap), ...Object.keys(countryCounts)])];
       repCountries = l1Overlap(allUnionCountryNames.map(n => univCountryMap[n] || 0), allUnionCountryNames.map(n => countryCounts[n] || 0));
-      const repCountriesEl = document.getElementById('sample-countries-rep');
-      if (repCountriesEl) repCountriesEl.textContent = 'Representatividad países: ' + Math.round(repCountries * 100) + '%';
 
       const cNote = document.getElementById('sample-countries-note');
       if (cNote && allUnionCountries.length > chartCountries.length) {
@@ -2927,9 +2918,27 @@ async function renderDistribution(f) {
     }
   } catch(e) {}
 
-  // Global rep index: average of all individual L1 overlaps
-  const indices    = [repDecades, repRating, repVotes, repGenres, repCountries].filter(v => !isNaN(v));
-  const indicesRev = [repDecades, repRating, repVotes, repGenres, repCountries, repRev].filter(v => !isNaN(v));
+  // Size penalty: scale down proportionally when sample is below the minimum suggested
+  const sizeFactor = Math.min(1, sampleTotal / (f.minSuggested || 1));
+  const repDecadesP  = repDecades  * sizeFactor;
+  const repRatingP   = repRating   * sizeFactor;
+  const repVotesP    = repVotes    * sizeFactor;
+  const repGenresP   = repGenres   * sizeFactor;
+  const repCountriesP = repCountries * sizeFactor;
+  const repRevP      = repRev      * sizeFactor;
+
+  if (repDecEl)    repDecEl.textContent    = 'Representatividad por décadas: '  + Math.round(repDecadesP   * 100) + '%';
+  if (repRatingEl) repRatingEl.textContent = 'Representatividad rating: '       + Math.round(repRatingP    * 100) + '%';
+  if (repGenresEl) repGenresEl.textContent = 'Representatividad géneros: '      + Math.round(repGenresP    * 100) + '%';
+  if (repVotesEl)  repVotesEl.textContent  = 'Representatividad votos: '        + Math.round(repVotesP     * 100) + '%';
+  const revRepElFinal = document.getElementById('sample-revenue-rep');
+  if (revRepElFinal) revRepElFinal.textContent = 'Representatividad taquilla: ' + Math.round(repRevP * 100) + '%';
+  const repCountriesEl2 = document.getElementById('sample-countries-rep');
+  if (repCountriesEl2) repCountriesEl2.textContent = 'Representatividad países: ' + Math.round(repCountriesP * 100) + '%';
+
+  // Global rep index: average of penalized individual L1 overlaps
+  const indices    = [repDecadesP, repRatingP, repVotesP, repGenresP, repCountriesP].filter(v => !isNaN(v));
+  const indicesRev = [repDecadesP, repRatingP, repVotesP, repGenresP, repCountriesP, repRevP].filter(v => !isNaN(v));
   const globalRep    = indices.length    ? indices.reduce((s, v)    => s + v, 0) / indices.length    : 0;
   const globalRepRev = indicesRev.length ? indicesRev.reduce((s, v) => s + v, 0) / indicesRev.length : 0;
   document.getElementById('rep-index-bar').textContent     = 'Índice: ' + (globalRep * 100).toFixed(0) + '%';
