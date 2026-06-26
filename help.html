@@ -402,8 +402,18 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       </ul>
 
       <h2>Calificar una película</h2>
-      <p>Para cada película activa, la sección Diferenciales muestra un slider por cada diferencial definido que permite asignar un valor. Al mover los sliders, la <strong>metaestabilidad</strong> se actualiza en tiempo real en la parte inferior de la pantalla.</p>
-      <p>La metaestabilidad se calcula como el promedio de los valores absolutos de todas las calificaciones, dividido por el valor máximo del rango. Una metaestabilidad alta indica que la película tensiona fuertemente los diferenciales del género; una baja indica que los reproduce de forma estable.</p>
+      <p>Para cada película activa, la sección Diferenciales muestra un slider por cada diferencial definido. Al mover los sliders, la <strong>metaestabilidad</strong> se actualiza en tiempo real en la parte inferior de la pantalla.</p>
+      <p>La metaestabilidad se calcula como el promedio de los valores absolutos de las calificaciones <strong>activas</strong>, dividido por el valor máximo del rango. Una metaestabilidad alta indica que la película tensiona fuertemente los diferenciales del género; una baja indica que los reproduce de forma estable.</p>
+
+      <h2>Activación de diferenciales</h2>
+      <p>Cada diferencial tiene un toggle <strong>●</strong> a su izquierda que indica si está activo (ámbar) o inactivo (gris). Solo los diferenciales activos contribuyen a la metaestabilidad y aparecen en el mapa de calor y la comparación de películas en la sección Análisis.</p>
+      <ul>
+        <li><strong>Activación automática:</strong> mover un slider activa ese diferencial automáticamente.</li>
+        <li><strong>Activación manual:</strong> hacer clic en el toggle activa el diferencial y le asigna el valor 0 si todavía no tenía ninguno.</li>
+        <li><strong>Desactivación:</strong> hacer clic en el toggle de un diferencial activo lo desactiva. El valor queda guardado pero no se incluye en los cálculos hasta que se reactive.</li>
+      </ul>
+      <p>El header de la sección Diferenciales muestra el conteo de activos en formato <strong>x/y · %</strong>, donde x es la cantidad de diferenciales activos para esa película e y es el total. El mismo indicador aparece en el sidebar junto al nombre de cada película.</p>
+      <div class="callout">Un diferencial inactivo no se pierde: al reactivarlo, recupera el valor que tenía antes.</div>
 
       <figure>
         <img src="/help-img/image16.png" alt="Sección Calificación: película activa y sliders">
@@ -411,7 +421,7 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       </figure>
       <h2>Navegación y guardado</h2>
       <p>Los botones <strong>Anterior</strong> y <strong>Siguiente</strong> permiten moverse entre películas sin volver al sidebar. El botón <strong>Guardar</strong> registra los valores asignados.</p>
-      <p>Las películas con al menos un diferencial calificado pasan al grupo <strong>En proceso</strong>; cuando todos los diferenciales tienen valor asignado, pasan a <strong>Calificadas</strong>.</p>
+      <p>Las películas con al menos un diferencial calificado pasan al grupo <strong>En proceso</strong>; cuando todos los diferenciales tienen valor asignado (o han sido explícitamente activados), pasan a <strong>Calificadas</strong>.</p>
     </div>
 
     <!-- BUSCADOR AVANZADO -->
