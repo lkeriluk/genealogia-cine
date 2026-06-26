@@ -19,8 +19,8 @@
   --border2:  rgba(255,255,255,0.12);
   --border3:  rgba(255,255,255,0.18);
   --text:     #F0EDE8;
-  --text2:    #9A9690;
-  --text3:    #5A5754;
+  --text2:    #B8B3AD;
+  --text3:    #888480;
   --green:    #1D9E75;
   --green-bg: rgba(29,158,117,0.1);
   --blue:     #378ADD;
@@ -257,7 +257,7 @@ body {
 .stats-6 { grid-template-columns: repeat(6, 1fr); }
 .stat-card { background: var(--bg3); border-radius: var(--radius); padding: 10px 14px; }
 .stat-label { font-size: 10px; color: var(--text3); margin-bottom: 3px; letter-spacing: .04em; }
-.stat-value { font-size: 22px; font-weight: 300; color: var(--text); letter-spacing: -0.02em; }
+.stat-value { font-size: 22px; font-weight: 400; color: var(--text); letter-spacing: -0.02em; }
 .stat-sub { font-size: 10px; color: var(--text3); margin-top: 1px; }
 
 /* ── TABLE ── */
@@ -348,7 +348,7 @@ table.tbl tr:hover td { background: var(--bg3); }
 .slider-name { font-size: 12px; color: var(--text2); width: 140px; flex-shrink: 0; }
 .slider-track { flex: 1; height: 4px; background: var(--bg4); border-radius: 2px; position: relative; }
 .slider-fill { height: 100%; border-radius: 2px; position: absolute; top: 0; }
-.slider-fill-pos { background: var(--green); left: 50%; }
+.slider-fill-pos { background: var(--amber); left: 50%; }
 .slider-fill-neg { background: var(--red); right: 50%; }
 .slider-center { position: absolute; left: 50%; top: -4px; width: 1px; height: 12px; background: var(--border2); }
 .slider-thumb {
@@ -746,7 +746,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.2</span>
+    <span class="footer-txt">Genealogía del Cine v6.3</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -909,7 +909,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.2</span>
+    <span class="footer-txt">Genealogía del Cine v6.3</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1054,7 +1054,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.2</span>
+    <span class="footer-txt">Genealogía del Cine v6.3</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1367,7 +1367,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.2</span>
+    <span class="footer-txt">Genealogía del Cine v6.3</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1914,8 +1914,8 @@ async function buildPreviewDecadesChart(genreId, votes, decFrom, decTo, excluded
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false }, tooltip: pctTooltip(decTotal, 'y') },
       scales: {
-        x: { grid: { display: false }, ticks: { color: '#5A5754', font: { size: 10 } } },
-        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } }
+        x: { grid: { display: false }, ticks: { color: '#888480', font: { size: 10 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 } } }
       }
     }
   });
@@ -1967,13 +1967,13 @@ async function buildPreviewDecadesChart(genreId, votes, decFrom, decTo, excluded
     var scaledBucketsPrev = buckets.map(function(v){return Math.round(v*ratingScalePrev);});
     var ctx2 = document.getElementById('preview-rating-chart');
     if(ctx2){if(appState.previewRatingChart)appState.previewRatingChart.destroy();
-      appState.previewRatingChart=new Chart(ctx2,{type:'bar',data:{labels:['9-10','8-9','7-8','6-7','5-6','4-5','3-4','2-3','1-2'],datasets:[{data:scaledBucketsPrev.slice().reverse(),backgroundColor:'rgba(29,158,117,0.5)',borderColor:'#1D9E75',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(previewUniverseTotal,'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#9A9690',font:{size:9}}}}}});}
+      appState.previewRatingChart=new Chart(ctx2,{type:'bar',data:{labels:['9-10','8-9','7-8','6-7','5-6','4-5','3-4','2-3','1-2'],datasets:[{data:scaledBucketsPrev.slice().reverse(),backgroundColor:'rgba(29,158,117,0.5)',borderColor:'#1D9E75',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(previewUniverseTotal,'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#888480',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#B8B3AD',font:{size:9}}}}}});}
 
     // Votes chart
     var scaledVBuckets = vBuckets.map(function(v){return Math.round(v*ratingScalePrev);});
     var ctx2v = document.getElementById('preview-votes-chart');
     if(ctx2v){if(appState.previewVotesChart)appState.previewVotesChart.destroy();
-      appState.previewVotesChart=new Chart(ctx2v,{type:'bar',data:{labels:['>15k','5k-15k','2k-5k','500-2k','<500'],datasets:[{data:scaledVBuckets.slice().reverse(),backgroundColor:'rgba(239,159,39,0.5)',borderColor:'#EF9F27',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(previewUniverseTotal,'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#9A9690',font:{size:9},autoSkip:false}}}}});}
+      appState.previewVotesChart=new Chart(ctx2v,{type:'bar',data:{labels:['>15k','5k-15k','2k-5k','500-2k','<500'],datasets:[{data:scaledVBuckets.slice().reverse(),backgroundColor:'rgba(239,159,39,0.5)',borderColor:'#EF9F27',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(previewUniverseTotal,'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#888480',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#B8B3AD',font:{size:9},autoSkip:false}}}}});}
 
     // Genres chart scaled to universe
     var previewTotal = previewUniverseTotal;
@@ -1984,7 +1984,7 @@ async function buildPreviewDecadesChart(genreId, votes, decFrom, decTo, excluded
     var top10gSum = allGenreEntries.slice(0,10).reduce(function(s,x){return s+x[1];},0);
     var ctx3 = document.getElementById('preview-genres-chart');
     if(ctx3&&top10g.length){if(appState.previewGenresChart)appState.previewGenresChart.destroy();
-      appState.previewGenresChart=new Chart(ctx3,{type:'bar',data:{labels:top10g.map(function(x){return x[0];}),datasets:[{data:top10g.map(function(x){return x[1];}),backgroundColor:'rgba(159,119,221,0.5)',borderColor:'#9F77DD',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(Math.round(totalGenreSum*scaleFactor),'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#9A9690',font:{size:9}}}}}});}
+      appState.previewGenresChart=new Chart(ctx3,{type:'bar',data:{labels:top10g.map(function(x){return x[0];}),datasets:[{data:top10g.map(function(x){return x[1];}),backgroundColor:'rgba(159,119,221,0.5)',borderColor:'#9F77DD',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(Math.round(totalGenreSum*scaleFactor),'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#888480',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#B8B3AD',font:{size:9}}}}}});}
     var gnote = document.getElementById('preview-genres-note');
     if(gnote && allGenreEntries.length) {
       var shown = top10g.length; var totalG = allGenreEntries.length;
@@ -2028,7 +2028,7 @@ async function buildPreviewDecadesChart(genreId, votes, decFrom, decTo, excluded
     var ctx4 = document.getElementById('preview-revenue-chart');
     if(ctx4){if(appState.previewRevenueChart)appState.previewRevenueChart.destroy();
       var revTotal=revAvgs.reduce(function(s,v){return v!==null?s+v:s;},0);
-      appState.previewRevenueChart=new Chart(ctx4,{type:'bar',data:{labels:decades.map(function(d){return d+'s';}),datasets:[{data:revAvgs,backgroundColor:'rgba(239,159,39,0.5)',borderColor:'#EF9F27',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){if(c.parsed.y===null)return 'sin datos';var pct=revTotal>0?(c.parsed.y/revTotal*100).toFixed(1):'0';return '$'+c.parsed.y+'M ('+pct+'%)';}}}},scales:{x:{grid:{display:false},ticks:{color:'#5A5754',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:9},callback:function(v){return '$'+v+'M';}}}}}});}
+      appState.previewRevenueChart=new Chart(ctx4,{type:'bar',data:{labels:decades.map(function(d){return d+'s';}),datasets:[{data:revAvgs,backgroundColor:'rgba(239,159,39,0.5)',borderColor:'#EF9F27',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){if(c.parsed.y===null)return 'sin datos';var pct=revTotal>0?(c.parsed.y/revTotal*100).toFixed(1):'0';return '$'+c.parsed.y+'M ('+pct+'%)';}}}},scales:{x:{grid:{display:false},ticks:{color:'#888480',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#888480',font:{size:9},callback:function(v){return '$'+v+'M';}}}}}});}
     if(appState.previewCache) { appState.previewCache.decadesRevenue = revAvgs; appState.previewCache.decadesRevMin = revMins; }
   } catch(e) {}
 
@@ -2039,7 +2039,7 @@ async function buildPreviewDecadesChart(genreId, votes, decFrom, decTo, excluded
     var cnote = document.getElementById('preview-countries-note');
     if (selectedCountry) {
       if(ctx5){if(appState.previewCountriesChart)appState.previewCountriesChart.destroy();
-        appState.previewCountriesChart=new Chart(ctx5,{type:'bar',data:{labels:[getCountryName(selectedCountry)],datasets:[{data:[universeTotal2],backgroundColor:'rgba(216,90,48,0.5)',borderColor:'#D85A30',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(universeTotal2,'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#9A9690',font:{size:9}}}}}});}
+        appState.previewCountriesChart=new Chart(ctx5,{type:'bar',data:{labels:[getCountryName(selectedCountry)],datasets:[{data:[universeTotal2],backgroundColor:'rgba(216,90,48,0.5)',borderColor:'#D85A30',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(universeTotal2,'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#888480',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#B8B3AD',font:{size:9}}}}}});}
       if(cnote) cnote.textContent = 'El universo está filtrado por un único país de producción.';
       if(appState.previewCache) { appState.previewCache.countryTop10 = [[getCountryName(selectedCountry), universeTotal2]]; appState.previewCache.countryNoteText = 'El universo está filtrado por un único país de producción.'; appState.previewCache.countryTotalScaled = universeTotal2; }
     } else {
@@ -2064,7 +2064,7 @@ async function buildPreviewDecadesChart(genreId, votes, decFrom, decTo, excluded
       var top10c = allCEntries.slice(0,10).map(function(x){return [x[0],Math.round(x[1]*sfC)];});
       var top10cSum = allCEntries.slice(0,10).reduce(function(s,x){return s+x[1];},0);
       if(ctx5&&top10c.length){if(appState.previewCountriesChart)appState.previewCountriesChart.destroy();
-        appState.previewCountriesChart=new Chart(ctx5,{type:'bar',data:{labels:top10c.map(function(x){return x[0];}),datasets:[{data:top10c.map(function(x){return x[1];}),backgroundColor:'rgba(216,90,48,0.5)',borderColor:'#D85A30',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(universeTotal2,'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#9A9690',font:{size:9}}}}}});}
+        appState.previewCountriesChart=new Chart(ctx5,{type:'bar',data:{labels:top10c.map(function(x){return x[0];}),datasets:[{data:top10c.map(function(x){return x[1];}),backgroundColor:'rgba(216,90,48,0.5)',borderColor:'#D85A30',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:pctTooltip(universeTotal2,'x')},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#888480',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#B8B3AD',font:{size:9}}}}}});}
       if(cnote && allCEntries.length) {
         var shownC = top10c.length; var totalC = allCEntries.length;
         var top10cScaled = top10c.reduce(function(s,x){return s+x[1];},0);
@@ -2166,8 +2166,8 @@ function buildDescCharts(f) {
         responsive: true, maintainAspectRatio: false, indexAxis,
         plugins: { legend: { display: false }, tooltip: total > 0 ? pctTooltip(total, tooltipAxis) : {} },
         scales: {
-          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } },
-          y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false, maxTicksLimit: 20 } }
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 } } },
+          y: { grid: { display: false }, ticks: { color: '#B8B3AD', font: { size: 10 }, autoSkip: false, maxTicksLimit: 20 } }
         }
       }
     });
@@ -2192,7 +2192,7 @@ function buildDescCharts(f) {
       appState.descCharts['desc-chart-revenue'] = new Chart(ctx2, {
         type: 'bar',
         data: { labels: decades.map(d => d + 's'), datasets: [{ data: revData, backgroundColor: '#EF9F2780', borderColor: '#EF9F27', borderWidth: 1 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { if (c.parsed.y === null) return 'sin datos'; var pct = revTotalDesc > 0 ? (c.parsed.y / revTotalDesc * 100).toFixed(1) : '0'; return '$' + c.parsed.y + 'M (' + pct + '%)'; } } } }, scales: { x: { grid: { display: false }, ticks: { color: '#5A5754', font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: function(v) { return '$' + v + 'M'; } } } } }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { if (c.parsed.y === null) return 'sin datos'; var pct = revTotalDesc > 0 ? (c.parsed.y / revTotalDesc * 100).toFixed(1) : '0'; return '$' + c.parsed.y + 'M (' + pct + '%)'; } } } }, scales: { x: { grid: { display: false }, ticks: { color: '#888480', font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 }, callback: function(v) { return '$' + v + 'M'; } } } } }
       });
     }
   }
@@ -2204,7 +2204,7 @@ function buildDescCharts(f) {
       appState.descCharts['desc-chart-rating'] = new Chart(ratingCtx, {
         type: 'bar',
         data: { labels: ['9-10', '8-9', '7-8', '6-7', '5-6', '4-5', '3-4', '2-3', '1-2'], datasets: [{ data: [...cache.ratingBuckets].reverse(), backgroundColor: '#1D9E7580', borderColor: '#1D9E75', borderWidth: 1 }] },
-        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(cache.universeTotal || 1, 'x') }, scales: { y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }, x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } } } }
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(cache.universeTotal || 1, 'x') }, scales: { y: { grid: { display: false }, ticks: { color: '#B8B3AD', font: { size: 10 }, autoSkip: false } }, x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 } } } } }
       });
     }
   }
@@ -2228,7 +2228,7 @@ function buildDescCharts(f) {
       appState.descCharts['desc-chart-votes'] = new Chart(votesCtx, {
         type: 'bar',
         data: { labels: ['>15k', '5k-15k', '2k-5k', '500-2k', '<500'], datasets: [{ data: [...cache.voteBuckets].reverse(), backgroundColor: '#EF9F2780', borderColor: '#EF9F27', borderWidth: 1 }] },
-        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(cache.universeTotal || 1, 'x') }, scales: { x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } }, y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } } } }
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(cache.universeTotal || 1, 'x') }, scales: { x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 } } }, y: { grid: { display: false }, ticks: { color: '#B8B3AD', font: { size: 10 }, autoSkip: false } } } }
       });
     }
   }
@@ -2591,8 +2591,8 @@ async function renderDistribution(f) {
         responsive: true, maintainAspectRatio: false, indexAxis,
         plugins: { legend: { display: false }, tooltip: total > 0 ? pctTooltip(total, tooltipAxis) : {} },
         scales: {
-          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } },
-          y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false, maxTicksLimit: 20 } }
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 } } },
+          y: { grid: { display: false }, ticks: { color: '#B8B3AD', font: { size: 10 }, autoSkip: false, maxTicksLimit: 20 } }
         }
       }
     });
@@ -2632,8 +2632,8 @@ async function renderDistribution(f) {
           }}}
         },
         scales: {
-          x: { grid: { display: false }, ticks: { color: '#5A5754', font: { size: 9 } } },
-          y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 9 }, callback: v => v + '%' } }
+          x: { grid: { display: false }, ticks: { color: '#888480', font: { size: 9 } } },
+          y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 9 }, callback: v => v + '%' } }
         }
       }
     });
@@ -2673,8 +2673,8 @@ async function renderDistribution(f) {
           }}}
         },
         scales: {
-          y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } },
-          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: v => v + '%' } }
+          y: { grid: { display: false }, ticks: { color: '#B8B3AD', font: { size: 10 }, autoSkip: false } },
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 }, callback: v => v + '%' } }
         }
       }
     });
@@ -2729,8 +2729,8 @@ async function renderDistribution(f) {
           }}}
         },
         scales: {
-          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: v => v + '%' } },
-          y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 }, callback: v => v + '%' } },
+          y: { grid: { display: false }, ticks: { color: '#B8B3AD', font: { size: 10 }, autoSkip: false } }
         }
       }
     });
@@ -2785,8 +2785,8 @@ async function renderDistribution(f) {
           }}}
         },
         scales: {
-          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: v => v + '%' } },
-          y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 }, callback: v => v + '%' } },
+          y: { grid: { display: false }, ticks: { color: '#B8B3AD', font: { size: 10 }, autoSkip: false } }
         }
       }
     });
@@ -2835,8 +2835,8 @@ async function renderDistribution(f) {
             }}}
           },
           scales: {
-            x: { grid: { display: false }, ticks: { color: '#5A5754', font: { size: 9 } } },
-            y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 9 }, callback: v => '$' + v + 'M' } }
+            x: { grid: { display: false }, ticks: { color: '#888480', font: { size: 9 } } },
+            y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 9 }, callback: v => '$' + v + 'M' } }
           }
         }
       });
@@ -2871,8 +2871,8 @@ async function renderDistribution(f) {
               tooltip: { callbacks: { label: c => c.dataset.label + ': 100%' } }
             },
             scales: {
-              x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: v => v + '%' } },
-              y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }
+              x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 }, callback: v => v + '%' } },
+              y: { grid: { display: false }, ticks: { color: '#B8B3AD', font: { size: 10 }, autoSkip: false } }
             }
           }
         });
@@ -2923,8 +2923,8 @@ async function renderDistribution(f) {
               }}}
             },
             scales: {
-              x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: v => v + '%' } },
-              y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }
+              x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 }, callback: v => v + '%' } },
+              y: { grid: { display: false }, ticks: { color: '#B8B3AD', font: { size: 10 }, autoSkip: false } }
             }
           }
         });
@@ -3514,8 +3514,8 @@ function renderAnalysis(f) {
       indexAxis:'y', responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{display:false} },
       scales:{
-        x:{min:0,max:3,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:10}}},
-        y:{grid:{display:false},ticks:{color:'#9A9690',font:{size:10}}}
+        x:{min:0,max:3,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#888480',font:{size:10}}},
+        y:{grid:{display:false},ticks:{color:'#B8B3AD',font:{size:10}}}
       }
     }
   });
@@ -3539,8 +3539,8 @@ function renderAnalysis(f) {
       responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false}},
       scales:{
-        x:{grid:{display:false},ticks:{color:'#5A5754',font:{size:10}}},
-        y:{min:0,max:3,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#5A5754',font:{size:10}}}
+        x:{grid:{display:false},ticks:{color:'#888480',font:{size:10}}},
+        y:{min:0,max:3,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#888480',font:{size:10}}}
       }
     }
   });
@@ -3577,8 +3577,8 @@ function updateRadar() {
     data:{ labels: diffs.map(d=>d.name.split('/')[0].trim().slice(0,8)), datasets },
     options:{
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ display:true, labels:{color:'#9A9690',font:{size:10},boxWidth:10} } },
-      scales:{ r:{ min:-3,max:3, ticks:{stepSize:1,color:'#5A5754',font:{size:9},backdropColor:'transparent'}, grid:{color:'rgba(255,255,255,0.08)'}, pointLabels:{color:'#9A9690',font:{size:9}} } }
+      plugins:{ legend:{ display:true, labels:{color:'#B8B3AD',font:{size:10},boxWidth:10} } },
+      scales:{ r:{ min:-3,max:3, ticks:{stepSize:1,color:'#888480',font:{size:9},backdropColor:'transparent'}, grid:{color:'rgba(255,255,255,0.08)'}, pointLabels:{color:'#B8B3AD',font:{size:9}} } }
     }
   });
 }
@@ -3591,19 +3591,31 @@ function renderHeatmap(f, diffs, decades, rated) {
     return +(films.reduce((s,m)=>s+((m.ratings&&m.ratings[d.id])||0),0)/films.length).toFixed(1);
   }));
 
+  // Warm gradient: dark bg → amber → orange-red → deep crimson
+  function warmCell(intensity) {
+    if (intensity <= 0) return 'var(--bg4)';
+    const stops = [[0,[34,34,38]],[0.33,[212,130,32]],[0.65,[190,60,18]],[1,[122,14,8]]];
+    let lo = stops[0], hi = stops[stops.length-1];
+    for (let i = 0; i < stops.length-1; i++) {
+      if (intensity >= stops[i][0] && intensity <= stops[i+1][0]) { lo=stops[i]; hi=stops[i+1]; break; }
+    }
+    const t = hi[0]===lo[0] ? 1 : (intensity-lo[0])/(hi[0]-lo[0]);
+    return `rgb(${Math.round(lo[1][0]+(hi[1][0]-lo[1][0])*t)},${Math.round(lo[1][1]+(hi[1][1]-lo[1][1])*t)},${Math.round(lo[1][2]+(hi[1][2]-lo[1][2])*t)})`;
+  }
+
   const container = document.getElementById('analysis-heatmap');
   const cellW = Math.max(30, Math.floor((container.offsetWidth - 100) / decades.length));
-  const cellH = 18;
   let html = `<div style="display:grid;grid-template-columns:90px repeat(${decades.length},${cellW}px);gap:1px;font-size:9px;font-family:'DM Mono',monospace;">`;
   html += `<div></div>` + decades.map(d=>`<div style="color:var(--text3);text-align:center;padding:2px 0;">${d}s</div>`).join('');
   diffs.forEach((d,di) => {
-    html += `<div style="color:var(--text3);padding:2px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${d.name.split('/')[0].trim()}</div>`;
+    html += `<div style="color:var(--text2);padding:2px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${d.name.split('/')[0].trim()}</div>`;
     decades.forEach((dec,deci) => {
       const val = data[di][deci];
       if (val === null) { html += `<div style="background:var(--bg3);border-radius:2px;"></div>`; return; }
       const intensity = Math.abs(val) / 3;
-      const color = val > 0 ? `rgba(29,158,117,${intensity*0.8+0.1})` : val < 0 ? `rgba(216,90,48,${intensity*0.8+0.1})` : 'var(--bg4)';
-      html += `<div style="background:${color};border-radius:2px;text-align:center;padding:2px 0;color:${Math.abs(val)>1.5?'#fff':'var(--text3)'};">${val>0?'+'+val:val}</div>`;
+      const bg = warmCell(intensity);
+      const textColor = intensity < 0.18 ? '#888480' : '#F0EDE8';
+      html += `<div style="background:${bg};border-radius:2px;text-align:center;padding:2px 0;color:${textColor};">${val>0?'+'+val:val}</div>`;
     });
   });
   html += '</div>';
@@ -4210,8 +4222,8 @@ function renderSrchCharts(movies, totalResults, decRevOverride, decCountOverride
         responsive: true, maintainAspectRatio: false, indexAxis,
         plugins: { legend: { display: false }, tooltip: total > 0 ? pctTooltip(total, tooltipAxis) : {} },
         scales: {
-          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } },
-          y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false, maxTicksLimit: 20 } }
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 } } },
+          y: { grid: { display: false }, ticks: { color: '#B8B3AD', font: { size: 10 }, autoSkip: false, maxTicksLimit: 20 } }
         }
       }
     });
@@ -4243,7 +4255,7 @@ function renderSrchCharts(movies, totalResults, decRevOverride, decCountOverride
     srchState.chartInstances['srch-chart-revenue'] = new Chart(revCtx, {
       type: 'bar',
       data: { labels: decades.map(d => d + 's'), datasets: [{ data: decRev, backgroundColor: '#EF9F2780', borderColor: '#EF9F27', borderWidth: 1 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y !== null ? '$' + c.parsed.y + 'M' : 'sin datos' } } }, scales: { x: { grid: { display: false }, ticks: { color: '#5A5754', font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 }, callback: v => '$' + v + 'M' } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.parsed.y !== null ? '$' + c.parsed.y + 'M' : 'sin datos' } } }, scales: { x: { grid: { display: false }, ticks: { color: '#888480', font: { size: 10 } } }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 }, callback: v => '$' + v + 'M' } } } }
     });
   }
 
@@ -4261,7 +4273,7 @@ function renderSrchCharts(movies, totalResults, decRevOverride, decCountOverride
     srchState.chartInstances['srch-chart-rating'] = new Chart(ratingCtx, {
       type: 'bar',
       data: { labels: ['9-10','8-9','7-8','6-7','5-6','4-5','3-4','2-3','1-2'], datasets: [{ data: [...scaledRating].reverse(), backgroundColor: '#1D9E7580', borderColor: '#1D9E75', borderWidth: 1 }] },
-      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(ratingTotal, 'x') }, scales: { y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } }, x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } } } }
+      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(ratingTotal, 'x') }, scales: { y: { grid: { display: false }, ticks: { color: '#B8B3AD', font: { size: 10 }, autoSkip: false } }, x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 } } } } }
     });
   }
 
@@ -4282,7 +4294,7 @@ function renderSrchCharts(movies, totalResults, decRevOverride, decCountOverride
     srchState.chartInstances['srch-chart-votes'] = new Chart(votesCtx, {
       type: 'bar',
       data: { labels: ['>15k','5k-15k','2k-5k','500-2k','<500'], datasets: [{ data: [...scaledVotes].reverse(), backgroundColor: '#EF9F2780', borderColor: '#EF9F27', borderWidth: 1 }] },
-      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(votesTotal, 'x') }, scales: { x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5A5754', font: { size: 10 } } }, y: { grid: { display: false }, ticks: { color: '#9A9690', font: { size: 10 }, autoSkip: false } } } }
+      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false }, tooltip: pctTooltip(votesTotal, 'x') }, scales: { x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#888480', font: { size: 10 } } }, y: { grid: { display: false }, ticks: { color: '#B8B3AD', font: { size: 10 }, autoSkip: false } } } }
     });
   }
 
