@@ -489,6 +489,14 @@ table.tbl tr:hover td { background: var(--bg3); }
 .cal-item.done { color: var(--text3); }
 .cal-item.done::after { content: ' ✓'; color: var(--green); font-size: 10px; }
 .cal-item.inprogress::after { content: ' ●'; color: var(--amber); font-size: 9px; }
+.cal-item-badge { font-size: 9px; color: var(--text3); margin-left: 4px; font-family: 'DM Mono', monospace; }
+.diff-toggle {
+  width: 16px; height: 16px; flex-shrink: 0;
+  background: none; border: none; cursor: pointer;
+  font-size: 13px; padding: 0; line-height: 1;
+  color: var(--text3); transition: color .15s;
+}
+.diff-toggle.active { color: var(--amber); }
 
 /* ── PELÍCULA HEADER ── */
 .film-header { display: flex; gap: 16px; margin-bottom: 16px; align-items: flex-start; }
@@ -746,7 +754,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.3</span>
+    <span class="footer-txt">Genealogía del Cine v6.4</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -909,7 +917,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.3</span>
+    <span class="footer-txt">Genealogía del Cine v6.4</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1054,7 +1062,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.3</span>
+    <span class="footer-txt">Genealogía del Cine v6.4</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1367,7 +1375,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.3</span>
+    <span class="footer-txt">Genealogía del Cine v6.4</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3270,6 +3278,11 @@ function importDiffs() {
 }
 
 // ── TAB: CALIFICACIÓN ──
+function activeCountForFilm(film, diffs) {
+  if (!film.activeRatings) return Object.keys(film.ratings || {}).length;
+  return diffs.filter(d => film.activeRatings[d.id] === true).length;
+}
+
 function renderCalSidebar(f) {
   const diffs = f.differentials || [];
   const totalDiffs = diffs.length;
@@ -3282,7 +3295,12 @@ function renderCalSidebar(f) {
   const renderGroup = (key, label, items, extraClass) => {
     const collapsed = appState.calCollapsed[key];
     const itemHtml = collapsed ? '' : (items.length
-      ? items.map(m => `<div class="cal-item ${extraClass} ${appState.currentCalFilm===m.id?'active':''}" onclick="selectCalFilm(${m.id})">${m.title}</div>`).join('')
+      ? items.map(m => {
+          const ac = activeCountForFilm(m, diffs);
+          const pct = totalDiffs ? Math.round(ac / totalDiffs * 100) : 0;
+          const badge = totalDiffs > 0 ? `<span class="cal-item-badge">${ac}/${totalDiffs} · ${pct}%</span>` : '';
+          return `<div class="cal-item ${extraClass} ${appState.currentCalFilm===m.id?'active':''}" onclick="selectCalFilm(${m.id})">${m.title}${badge}</div>`;
+        }).join('')
       : `<div style="font-size:11px;color:var(--text3);padding:3px 14px 6px;">${filter ? 'Sin resultados' : 'Ninguna'}</div>`);
     return `<div class="cal-sidebar-section">
       <div class="cal-group-header" onclick="toggleCalGroup('${key}')">
@@ -3336,6 +3354,10 @@ async function selectCalFilm(filmId) {
 
   const diffs = f.differentials || [];
   if (!film.ratings) film.ratings = {};
+  if (!film.activeRatings) {
+    film.activeRatings = {};
+    Object.keys(film.ratings).forEach(id => { film.activeRatings[id] = true; });
+  }
 
   let posterHtml = `<div class="film-poster">sin póster</div>`;
   let overview = '';
@@ -3401,6 +3423,8 @@ async function selectCalFilm(filmId) {
       </div>
     </div>`;
 
+  const activeCount = diffs.filter(d => film.activeRatings[d.id] === true).length;
+  const activePct = diffs.length ? Math.round(activeCount / diffs.length * 100) : 0;
   const diffsHtml = diffs.length ? diffs.map(d => {
     const negMax = d.negMax || 3;
     const posMax = d.posMax || 3;
@@ -3411,7 +3435,9 @@ async function selectCalFilm(filmId) {
     const fillPct = val >= 0 ? (val / posMax * 50) : (Math.abs(val) / negMax * 50);
     const fillStyle = val >= 0 ? `left:50%;width:${fillPct}%` : `right:50%;width:${fillPct}%`;
     const fillClass = val >= 0 ? 'slider-fill-pos' : 'slider-fill-neg';
-    return `<div class="slider-row">
+    const isActive = film.activeRatings[d.id] === true;
+    return `<div class="slider-row" id="row-${d.id}" style="${isActive ? '' : 'opacity:0.45;'}">
+      <button class="diff-toggle${isActive ? ' active' : ''}" id="toggle-${d.id}" onclick="toggleDiffActive('${film.id}', '${d.id}')" title="${isActive ? 'Desactivar diferencial' : 'Activar diferencial'}">●</button>
       <span class="slider-name" title="${d.desc||''}">${d.name}</span>
       <div class="slider-track-wrap">
         <div class="slider-track" style="flex:1;">
@@ -3429,12 +3455,15 @@ async function selectCalFilm(filmId) {
 
   document.getElementById('cal-main').innerHTML += `
     <div class="divider"></div>
-    <div style="font-size:12px;font-weight:500;margin-bottom:12px;">Diferenciales</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;">
+      <span style="font-size:12px;font-weight:500;">Diferenciales</span>
+      <span id="active-count-display" style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);">${activeCount}/${diffs.length} · ${activePct}%</span>
+    </div>
     ${diffsHtml}
     <div class="divider"></div>
     <div style="display:flex;align-items:center;gap:12px;">
       <span style="font-size:12px;color:var(--text2);">Metaestabilidad</span>
-      <span style="font-size:22px;font-weight:300;color:var(--green);letter-spacing:-0.02em;" id="met-display">${met !== null ? met.toFixed(2) : '—'}</span>
+      <span style="font-size:22px;font-weight:400;color:var(--green);letter-spacing:-0.02em;" id="met-display">${met !== null ? met.toFixed(2) : '—'}</span>
       <span style="font-size:11px;color:var(--text3);">actualizada en tiempo real</span>
     </div>`;
 }
@@ -3448,6 +3477,15 @@ function updateSlider(input, filmId, diffId, negMax, posMax) {
   if (!film) return;
   if (!film.ratings) film.ratings = {};
   film.ratings[diffId] = val;
+  if (!film.activeRatings) film.activeRatings = {};
+  if (film.activeRatings[diffId] !== true) {
+    film.activeRatings[diffId] = true;
+    const toggleBtn = document.getElementById('toggle-' + diffId);
+    if (toggleBtn) toggleBtn.classList.add('active');
+    const row = document.getElementById('row-' + diffId);
+    if (row) row.style.opacity = '1';
+    updateActiveCount(film, f.differentials || []);
+  }
   const totalRange = negMax + posMax;
   const pct = (val + negMax) / totalRange * 100;
   const fillPct = val >= 0 ? (val / posMax * 50) : (Math.abs(val) / negMax * 50);
@@ -3463,6 +3501,35 @@ function updateSlider(input, filmId, diffId, negMax, posMax) {
   const met = calcMet(film, f.differentials||[]);
   const metEl = document.getElementById('met-display');
   if (metEl) { metEl.textContent = met !== null ? met.toFixed(2) : '—'; }
+}
+
+function toggleDiffActive(filmId, diffId) {
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  if (!film.activeRatings) film.activeRatings = {};
+  if (!film.ratings) film.ratings = {};
+  const wasActive = film.activeRatings[diffId] === true;
+  film.activeRatings[diffId] = !wasActive;
+  if (!wasActive && film.ratings[diffId] === undefined) film.ratings[diffId] = 0;
+
+  const btn = document.getElementById('toggle-' + diffId);
+  if (btn) btn.classList.toggle('active', !wasActive);
+  const row = document.getElementById('row-' + diffId);
+  if (row) row.style.opacity = !wasActive ? '1' : '0.45';
+
+  const met = calcMet(film, f.differentials || []);
+  const metEl = document.getElementById('met-display');
+  if (metEl) metEl.textContent = met !== null ? met.toFixed(2) : '—';
+  updateActiveCount(film, f.differentials || []);
+}
+
+function updateActiveCount(film, diffs) {
+  const active = diffs.filter(d => film.activeRatings && film.activeRatings[d.id] === true).length;
+  const total = diffs.length;
+  const pct = total ? Math.round(active / total * 100) : 0;
+  const el = document.getElementById('active-count-display');
+  if (el) el.textContent = `${active}/${total} · ${pct}%`;
 }
 
 function backToCalList() {
@@ -3569,8 +3636,8 @@ function updateRadar() {
   const r = document.getElementById('analysis-radar');
   if (appState.analysisCharts['radar']) appState.analysisCharts['radar'].destroy();
   const datasets = [];
-  if (m1) datasets.push({ label: m1.title.slice(0,18), data: diffs.map(d=>(m1.ratings&&m1.ratings[d.id])||0), borderColor:'#378ADD', backgroundColor:'rgba(55,138,221,0.15)', borderWidth:2, pointRadius:3 });
-  if (m2 && m2!==m1) datasets.push({ label: m2.title.slice(0,18), data: diffs.map(d=>(m2.ratings&&m2.ratings[d.id])||0), borderColor:'#1D9E75', backgroundColor:'rgba(29,158,117,0.15)', borderWidth:2, pointRadius:3 });
+  if (m1) datasets.push({ label: m1.title.slice(0,18), data: diffs.map(d => (m1.activeRatings && m1.activeRatings[d.id] !== true) ? 0 : ((m1.ratings&&m1.ratings[d.id])||0)), borderColor:'#378ADD', backgroundColor:'rgba(55,138,221,0.15)', borderWidth:2, pointRadius:3 });
+  if (m2 && m2!==m1) datasets.push({ label: m2.title.slice(0,18), data: diffs.map(d => (m2.activeRatings && m2.activeRatings[d.id] !== true) ? 0 : ((m2.ratings&&m2.ratings[d.id])||0)), borderColor:'#1D9E75', backgroundColor:'rgba(29,158,117,0.15)', borderWidth:2, pointRadius:3 });
 
   appState.analysisCharts['radar'] = new Chart(r, {
     type:'radar',
@@ -3588,7 +3655,9 @@ function renderHeatmap(f, diffs, decades, rated) {
   const data = diffs.map(d => decades.map(dec => {
     const films = rated.filter(m => Math.floor(m.year/10)*10===dec);
     if (!films.length) return null;
-    return +(films.reduce((s,m)=>s+((m.ratings&&m.ratings[d.id])||0),0)/films.length).toFixed(1);
+    const activeFilms = films.filter(m => !m.activeRatings || m.activeRatings[d.id] === true);
+    if (!activeFilms.length) return null;
+    return +(activeFilms.reduce((s,m)=>s+((m.ratings&&m.ratings[d.id])||0),0)/activeFilms.length).toFixed(1);
   }));
 
   // Warm gradient: dark bg → amber → orange-red → deep crimson

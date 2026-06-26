@@ -232,6 +232,24 @@ describe('calcMet', () => {
     // val = -2, negMax = 2 → |−2|/2 = 1 → * 3 = 3.00
     expect(calcMet({ ratings: { dn: -2 } }, [dNeg])).toBe(3.00);
   });
+
+  test('activeRatings: only active diffs count toward average', () => {
+    // d1=3 active, d2=3 inactive → only d1 → 3.00
+    expect(calcMet({ ratings: { d1: 3, d2: 3 }, activeRatings: { d1: true, d2: false } }, [d1, d2])).toBe(3.00);
+  });
+
+  test('activeRatings: all diffs deactivated → null', () => {
+    expect(calcMet({ ratings: { d1: 3 }, activeRatings: { d1: false } }, [d1])).toBeNull();
+  });
+
+  test('activeRatings: zero value when active counts as 0.00', () => {
+    expect(calcMet({ ratings: { d1: 0 }, activeRatings: { d1: true } }, [d1])).toBe(0.00);
+  });
+
+  test('activeRatings absent → legacy: all rated diffs count', () => {
+    // no activeRatings key → same as before
+    expect(calcMet({ ratings: { d1: 3, d2: 0 } }, [d1, d2])).toBe(1.50);
+  });
 });
 
 // ── calClassify ─────────────────────────────────────────────────────────────
