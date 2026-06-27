@@ -540,7 +540,11 @@ table.tbl tr:hover td { background: var(--bg3); }
 .det-pole-lbl { font-size: 10px; color: var(--text3); }
 .det-period-rows { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
 .det-p-row { display: flex; align-items: center; gap: 7px; }
-.det-p-time { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; width: 78px; flex-shrink: 0; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: 4px; padding: 2px 6px; text-align: center; }
+.det-p-time { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; min-width: 90px; flex-shrink: 0; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: 4px; padding: 2px 5px; display: flex; align-items: center; gap: 2px; }
+.det-p-bound { width: 28px; background: transparent; border: none; border-bottom: 0.5px solid transparent; color: inherit; font-family: 'DM Mono', monospace; font-size: 10px; text-align: center; padding: 0; -moz-appearance: textfield; }
+.det-p-bound::-webkit-inner-spin-button, .det-p-bound::-webkit-outer-spin-button { -webkit-appearance: none; }
+.det-p-bound:hover { border-bottom-color: var(--border2); }
+.det-p-bound:focus { outline: none; border-bottom-color: var(--text3); }
 .det-p-dur { font-size: 10px; color: var(--text3); width: 38px; flex-shrink: 0; text-align: center; }
 .det-p-track-wrap { flex: 1; position: relative; height: 16px; display: flex; align-items: center; }
 .det-p-track { flex: 1; height: 3px; background: var(--bg4); border-radius: 2px; position: relative; }
@@ -839,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.7</span>
+    <span class="footer-txt">Genealogía del Cine v6.8</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1002,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.7</span>
+    <span class="footer-txt">Genealogía del Cine v6.8</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1147,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.7</span>
+    <span class="footer-txt">Genealogía del Cine v6.8</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1473,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.7</span>
+    <span class="footer-txt">Genealogía del Cine v6.8</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1481,6 +1485,18 @@ input[type=number] {
 <!-- MODAL: MAPA DE CALOR DETALLADO -->
 <div style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;align-items:center;justify-content:center;" id="modal-detail-heatmap" onclick="if(event.target===this)closeDetailHeatmap()">
   <div class="det-hm-modal" id="det-hm-content"></div>
+</div>
+
+<!-- MODAL: EDITAR RANGO DE PERÍODO -->
+<div class="modal-overlay" id="modal-edit-bound">
+  <div class="modal" style="max-width:400px;width:90vw;">
+    <div class="modal-title">Superposición de períodos</div>
+    <div class="modal-sub" id="edit-bound-modal-msg"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="cancelEditBound()">Cancelar</button>
+      <button class="btn" style="background:rgba(29,158,117,0.12);border-color:rgba(29,158,117,0.3);color:var(--green);" onclick="confirmEditBound()">Ajustar</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL: ELIMINAR PERÍODO DETALLADO -->
@@ -3674,6 +3690,7 @@ function saveCalFilm(filmId) {
 
 let _detailChronoInterval = null;
 let _detailSaveTimeout = null;
+let _pendingBoundEdit = null;
 
 function _detailAutoSave() {
   clearTimeout(_detailSaveTimeout);
@@ -3973,8 +3990,12 @@ function renderPeriodRowHTML(p, d, filmId) {
     <span class="det-p-val" id="det-pval-${p.id}">${val > 0 ? '+'+val : val}</span>`;
   }
   return `<div class="det-p-row" id="det-p-row-${p.id}">
-    <div class="det-p-time" style="${timeStyle}">${p.from}' – ${p.to}'</div>
-    <div class="det-p-dur">${dur} min</div>
+    <div class="det-p-time" style="${timeStyle}">
+      <input type="number" class="det-p-bound" id="det-pb-from-${p.id}" value="${p.from}" min="0"
+        onchange="editDetailPeriodBound('${filmId}','${d.id}','${p.id}','from',this)" />'<span style="padding:0 1px;">–</span><input type="number" class="det-p-bound" id="det-pb-to-${p.id}" value="${p.to}" min="0"
+        onchange="editDetailPeriodBound('${filmId}','${d.id}','${p.id}','to',this)" />'
+    </div>
+    <div class="det-p-dur" id="det-pdur-${p.id}">${dur} min</div>
     ${sliderHtml}
     <button class="det-p-del" onclick="deleteDetailPeriod('${filmId}','${d.id}','${p.id}')" title="Eliminar">✕</button>
   </div>`;
@@ -4237,6 +4258,82 @@ function updateDetailPeriodSlider(input, filmId, diffId, periodId) {
   if (valEl) valEl.textContent = val > 0 ? '+'+val : String(val);
   recalcDiffDetail(film, diffId, film.runtime || 0);
   _updateDetailDiffHeader(film, diffId, f);
+  updateDetailMetDisplay(film, f.differentials || []);
+  _detailAutoSave();
+}
+
+function editDetailPeriodBound(filmId, diffId, periodId, bound, input) {
+  const newVal = parseInt(input.value, 10);
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film || !film.detailedRatings || !film.detailedRatings[diffId]) return;
+  const periods = film.detailedRatings[diffId].periods;
+  const idx = periods.findIndex(p => p.id === periodId);
+  if (idx === -1) return;
+  const period = periods[idx];
+  const runtime = film.runtime || 0;
+  const oldVal = period[bound];
+
+  // Basic validation
+  if (isNaN(newVal) || newVal < 0 || (runtime && newVal > runtime)) { input.value = oldVal; return; }
+  if (bound === 'from' && newVal >= period.to) { input.value = oldVal; return; }
+  if (bound === 'to' && newVal <= period.from) { input.value = oldVal; return; }
+
+  const prev = idx > 0 ? periods[idx - 1] : null;
+  const next = idx < periods.length - 1 ? periods[idx + 1] : null;
+
+  if (bound === 'from' && prev && newVal < prev.to) {
+    _showEditBoundModal(filmId, diffId, periodId, bound, newVal, oldVal,
+      `El período anterior termina en ${prev.to}'. ¿Ajustarlo a ${newVal}' para que no se superpongan?`,
+      idx - 1, 'to', newVal);
+    return;
+  }
+  if (bound === 'to' && next && newVal > next.from) {
+    _showEditBoundModal(filmId, diffId, periodId, bound, newVal, oldVal,
+      `El período siguiente empieza en ${next.from}'. ¿Ajustarlo a ${newVal}' para que no se superpongan?`,
+      idx + 1, 'from', newVal);
+    return;
+  }
+
+  period[bound] = newVal;
+  _syncPeriodRowAfterBoundEdit(film, diffId, f);
+}
+
+function _showEditBoundModal(filmId, diffId, periodId, bound, newVal, oldVal, msg, adjIdx, adjBound, adjVal) {
+  _pendingBoundEdit = { filmId, diffId, periodId, bound, newVal, oldVal, adjIdx, adjBound, adjVal };
+  document.getElementById('edit-bound-modal-msg').textContent = msg;
+  document.getElementById('modal-edit-bound').classList.add('open');
+}
+
+function confirmEditBound() {
+  closeModal('modal-edit-bound');
+  if (!_pendingBoundEdit) return;
+  const { filmId, diffId, periodId, bound, newVal, adjIdx, adjBound, adjVal } = _pendingBoundEdit;
+  _pendingBoundEdit = null;
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  const periods = film.detailedRatings[diffId].periods;
+  const idx = periods.findIndex(p => p.id === periodId);
+  if (idx === -1) return;
+  periods[idx][bound] = newVal;
+  periods[adjIdx][adjBound] = adjVal;
+  _syncPeriodRowAfterBoundEdit(film, diffId, f);
+}
+
+function cancelEditBound() {
+  closeModal('modal-edit-bound');
+  if (!_pendingBoundEdit) return;
+  const { periodId, bound, oldVal } = _pendingBoundEdit;
+  _pendingBoundEdit = null;
+  const input = document.getElementById(`det-pb-${bound}-${periodId}`);
+  if (input) input.value = oldVal;
+}
+
+function _syncPeriodRowAfterBoundEdit(film, diffId, f) {
+  recalcDiffDetail(film, diffId, film.runtime || 0);
+  _updateDetailDiffItemHTML(film, diffId, f);
+  renderDetailSidebar(f);
   updateDetailMetDisplay(film, f.differentials || []);
   _detailAutoSave();
 }
