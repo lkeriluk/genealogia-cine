@@ -843,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.12</span>
+    <span class="footer-txt">Genealogía del Cine v6.13</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.12</span>
+    <span class="footer-txt">Genealogía del Cine v6.13</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.12</span>
+    <span class="footer-txt">Genealogía del Cine v6.13</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.12</span>
+    <span class="footer-txt">Genealogía del Cine v6.13</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3876,7 +3876,8 @@ function renderDetailMain(film, f) {
           <div class="det-chrono-display ${isRunning ? 'det-chrono-running' : 'det-chrono-paused'}" id="det-chrono-display">${formatDetailTime(chronoTime)}</div>
         </div>
         <div style="display:flex;gap:6px;" id="det-chrono-btns">${chronoBtns}</div>
-        <div style="margin-left:auto;">
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          <button class="btn" style="font-size:11px;" onclick="closeAllDiffs(${film.id})">Cerrar diferenciales</button>
           <button class="btn" style="font-size:11px;" onclick="showDetailHeatmap(${film.id})">⊞ Ver mapa de calor</button>
         </div>
       </div>
@@ -3933,11 +3934,19 @@ function renderDetailDiffItemHTML(film, d, runtime, f) {
     </div>`;
   }
 
+  const lastTo = periods.length ? Math.max(...periods.map(p => p.to)) : 0;
+  const canClose = runtime > 0 && periods.length > 0 && lastTo < runtime;
+  const closeBtn = canClose
+    ? `<button class="btn" style="font-size:10px;padding:2px 8px;flex-shrink:0;" onclick="event.stopPropagation();closeDiffDetail('${film.id}','${d.id}')">Cerrar diferencial</button>`
+    : '';
+
   return `<div class="det-diff-item${expanded ? ' expanded' : ''}" id="det-diff-item-${d.id}">
     <div class="det-diff-header" onclick="toggleDetailDiff('${film.id}','${d.id}')">
       <span class="det-diff-chevron${expanded ? ' open' : ''}">▶</span>
       <span class="det-diff-name">${d.name}</span>
       <span class="det-diff-status ${statusClass}">${statusText}</span>
+      <span style="flex:1;"></span>
+      ${closeBtn}
       <span class="det-diff-val ${valClass}">${valText}</span>
     </div>
     ${bodyHtml}
@@ -4336,6 +4345,44 @@ function cancelEditBound() {
   _pendingBoundEdit = null;
   const input = document.getElementById(`det-pb-${bound}-${periodId}`);
   if (input) input.value = oldVal;
+}
+
+function closeDiffDetail(filmId, diffId) {
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film || !film.runtime) return;
+  const dr = (film.detailedRatings || {})[diffId];
+  if (!dr || !dr.periods.length) return;
+  const last = dr.periods.reduce((a, b) => a.to >= b.to ? a : b);
+  if (last.to >= film.runtime) return;
+  last.to = film.runtime;
+  recalcDiffDetail(film, diffId, film.runtime);
+  _updateDetailDiffItemHTML(film, diffId, f);
+  renderDetailSidebar(f);
+  updateDetailMetDisplay(film, f.differentials || []);
+  saveState();
+}
+
+function closeAllDiffs(filmId) {
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film || !film.runtime) return;
+  let changed = false;
+  for (const d of (f.differentials || [])) {
+    const dr = (film.detailedRatings || {})[d.id];
+    if (!dr || !dr.periods.length) continue;
+    const last = dr.periods.reduce((a, b) => a.to >= b.to ? a : b);
+    if (last.to >= film.runtime) continue;
+    last.to = film.runtime;
+    recalcDiffDetail(film, d.id, film.runtime);
+    changed = true;
+  }
+  if (!changed) return;
+  const diffsListEl = document.getElementById('det-diffs-list');
+  if (diffsListEl) diffsListEl.innerHTML = renderDetailDiffsHTML(film, f);
+  renderDetailSidebar(f);
+  updateDetailMetDisplay(film, f.differentials || []);
+  saveState();
 }
 
 function _syncPeriodRowAfterBoundEdit(film, diffId, f) {
