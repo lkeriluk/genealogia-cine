@@ -843,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.11</span>
+    <span class="footer-txt">Genealogía del Cine v6.12</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.11</span>
+    <span class="footer-txt">Genealogía del Cine v6.12</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.11</span>
+    <span class="footer-txt">Genealogía del Cine v6.12</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.11</span>
+    <span class="footer-txt">Genealogía del Cine v6.12</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -4007,9 +4007,10 @@ function renderCreatePeriodPanelHTML(film, d, runtime) {
   const periods = ((film.detailedRatings || {})[d.id] || {}).periods || [];
   const fromMin = periods.length ? Math.max(...periods.map(p => p.to)) : 0;
   const toMin = Math.floor((film.chronoTime || 0) / 60);
-  if (fromMin === toMin) {
+  if (fromMin >= toMin) {
     // No range available: explain why
     if (toMin === 0) return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:2px;">Presioná ▶ para iniciar el cronómetro, mirá la película, y pausalo cuando quieras registrar un corte.</div>`;
+    if (fromMin > toMin) return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:2px;">El cronómetro está en el minuto ${toMin}, que ya está cubierto por un período existente. Avanzá el cronómetro para crear un período nuevo.</div>`;
     return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:2px;">El cronómetro no avanzó desde el último período de este diferencial.</div>`;
   }
   const dur = toMin - fromMin;
