@@ -10,7 +10,7 @@ Contexto completo del proyecto para Claude Code. Leé este archivo antes de hace
 
 El método: el investigador selecciona una muestra representativa de películas de un género, define **diferenciales** (tensiones narrativas binarias, ej: Cuerpo/Máquina), asigna a cada película un valor de −3 a +3 en cada diferencial, y calcula la **metaestabilidad** (promedio de |valores| / 3, escala 0–3). Las películas con metaestabilidad alta son "transformadoras" del género; las de baja son "estables".
 
-La versión actual es **v6.2**.
+La versión actual es **v6.5**.
 
 ---
 
@@ -122,7 +122,7 @@ La app tiene **3 pantallas** (`screen-home`, `screen-new-field`, `screen-field`)
 
 ### Pantalla 3 — Campo (`screen-field`)
 - Header2: nombre del campo + botón Renombrar + botón Cerrar
-- 5 tabs: Descripción, Muestra, Diferenciales, Calificación, Análisis
+- 6 tabs: Descripción, Muestra, Diferenciales, Calificación, Calificación detallada, Análisis
 
 #### Tab Descripción
 - 6 stat cards: Género, Total películas, Rating promedio, Votos mínimos, Décadas, Países
@@ -220,7 +220,18 @@ appState = {
       revenue: number,
       country: string,
       genreIds: [],
-      ratings: {},        // { diffId: value }
+      ratings: {},        // { diffId: value } — populated by Calificación; overwritten by detailedRatings when complete
+      activeRatings: {},  // { diffId: boolean } — which diffs count toward metaestability; absent = legacy (all rated diffs count)
+      detailedRatings: {  // populated by Calificación detallada
+        // key: diffId
+        'd_xxx': {
+          periods: [{ id: 'p_'+Date.now(), from: 0, to: 50, value: null }], // from/to in minutes
+          weightedValue: null,  // Σ(value×(to-from))/runtime rounded to 1 decimal; null if incomplete
+          complete: false,      // true when all periods have values and cover runtime
+        }
+      },
+      chronoTime: 0,      // seconds accumulated for this film's chronometer in Calificación detallada
+      runtime: null,      // minutes, from TMDB GET /movie/{id} → runtime; settable manually
       manual: boolean,
       manualReason: string,
     }
@@ -379,3 +390,4 @@ Los cambios en autenticación, sesiones o infraestructura de servidor van solo e
 3. Iterar gráfico de votos en tab Descripción
 4. Drag & drop para reordenar diferenciales
 5. Perfiles de usuario para segmentar qué ve cada investigador (actualmente todos ven el mismo workspace)
+6. Calificación detallada: adaptación responsive para mobile (actualmente sin soporte mobile, el tab se oculta en mobile como el resto de tabs)

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(head -n 2052 \"/Users/leonelkeriluk/Documents/App Cine y Géneros/cine_generos.html\")",
+      "Bash(echo '</script>')",
+      "Bash(echo '</body>')",
+      "Bash(echo '</html>')",
+      "Read(//tmp/**)",
+      "Bash(node --check \"/Users/leonelkeriluk/Documents/App Cine y Géneros/cine_generos.html\")",
+      "Bash(sed -n '855,2052p' \"/Users/leonelkeriluk/Documents/App Cine y Géneros/cine_generos.html\")",
+      "Bash(node --input-type=module)",
+      "Bash(python3 *)",
+      "Bash(node *)"
+    ]
+  }
+}

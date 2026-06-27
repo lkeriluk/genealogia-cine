@@ -422,6 +422,32 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <h2>Navegación y guardado</h2>
       <p>Los botones <strong>Anterior</strong> y <strong>Siguiente</strong> permiten moverse entre películas sin volver al sidebar. El botón <strong>Guardar</strong> registra los valores asignados.</p>
       <p>Las películas con al menos un diferencial calificado pasan al grupo <strong>En proceso</strong>; cuando todos los diferenciales tienen valor asignado (o han sido explícitamente activados), pasan a <strong>Calificadas</strong>.</p>
+
+      <h2>Calificación detallada</h2>
+      <p>La pestaña <strong>Calificación detallada</strong> extiende el flujo anterior con un cronómetro por película que permite registrar cómo varía cada diferencial a lo largo de la duración de la película.</p>
+      <h3>Cronómetro</h3>
+      <p>Cada película tiene su propio cronómetro, independiente del resto. El tiempo acumulado se guarda junto con la película. Los controles disponibles son:</p>
+      <ul>
+        <li><strong>▶ Reanudar / ⏸ Pausar:</strong> inicia o detiene el conteo.</li>
+        <li><strong>↺ Reiniciar:</strong> vuelve el cronómetro a 00:00:00 sin borrar los períodos ya creados.</li>
+      </ul>
+      <p>Mientras el cronómetro está corriendo, los paneles de creación de períodos no están disponibles. Al pausarlo, se habilitan para todos los diferenciales expandidos.</p>
+      <h3>Períodos</h3>
+      <p>Un período es un segmento temporal de la película (de X' a Y' minutos) con un valor de diferencial asignado. Para crear un período:</p>
+      <ol>
+        <li>Mirá la película y pausá el cronómetro en el momento en que querés hacer un corte.</li>
+        <li>Expandí el diferencial que querés calificar — aparece automáticamente el panel de creación.</li>
+        <li>Ajustá el slider al valor (−3 a +3) que represente ese segmento y presioná <strong>Confirmar período</strong>.</li>
+      </ol>
+      <p>Cada período creado aparece como una fila con su rango de minutos, duración, slider de valor y un botón de eliminación. Los períodos sin valor aparecen marcados en ámbar.</p>
+      <h3>Valor ponderado y propagación</h3>
+      <p>Cuando todos los períodos de un diferencial tienen valor asignado y la suma de sus duraciones cubre el runtime completo de la película, se calcula automáticamente el <strong>valor ponderado</strong>:</p>
+      <p style="font-family:'DM Mono',monospace;background:var(--bg3);padding:8px 12px;border-radius:var(--radius);font-size:12px;">Valor = Σ(valor × duración) / runtime total</p>
+      <p>Este valor se propaga a la calificación general de la película (tab Calificación) reemplazando el valor anterior. Si el diferencial no está completo, se muestra un valor parcial con asterisco (*) que no se propaga.</p>
+      <h3>Mini timeline y mapa de calor</h3>
+      <p>Cada diferencial expandido muestra una barra de color horizontal (mini timeline) con los segmentos coloreados según su valor: verde para positivos, rojo para negativos. Los segmentos sin calificar y las zonas no cubiertas se muestran punteados.</p>
+      <p>El botón <strong>⊞ Ver mapa de calor</strong> abre un modal con todos los diferenciales en el eje vertical y el tiempo de la película en el eje horizontal. Una línea ámbar vertical marca la posición actual del cronómetro.</p>
+      <div class="callout">El runtime de la película se obtiene automáticamente de TMDB al abrir la película. Si no está disponible, podés ingresarlo manualmente en el campo que aparece junto al título.</div>
     </div>
 
     <!-- BUSCADOR AVANZADO -->
@@ -620,6 +646,16 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
     <div id="art-release-notes" class="article">
       <div class="article-title">Release Notes</div>
       <div class="article-meta">Más</div>
+
+      <h2>v6.5 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Junio 2026</span></h2>
+      <ul>
+        <li>Nueva pestaña <strong>Calificación detallada</strong>: permite calificar cada diferencial por segmentos temporales de la película usando un cronómetro integrado.</li>
+        <li>Cronómetro por película: se pausa y reanuda de forma independiente; el tiempo acumulado se guarda junto con la película.</li>
+        <li>Períodos: al pausar el cronómetro, cada diferencial expandido muestra un panel para crear un período con rango de minutos y valor (−3 a +3). El valor se define antes de confirmar.</li>
+        <li>Valor ponderado: se calcula automáticamente cuando todos los períodos tienen valor y cubren el runtime completo (Σ valor × duración / runtime). Se propaga a la calificación general de la película.</li>
+        <li>Mapa de calor por película: visualización de todos los diferenciales como barras de color en el eje de tiempo, con línea ámbar indicando la posición actual del cronómetro.</li>
+        <li>Runtime: se obtiene de TMDB al abrir la película; si no está disponible, se puede ingresar manualmente.</li>
+      </ul>
 
       <h2>v6.4 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Junio 2026</span></h2>
       <ul>

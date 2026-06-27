@@ -498,6 +498,91 @@ table.tbl tr:hover td { background: var(--bg3); }
 }
 .diff-toggle.active { color: var(--amber); }
 
+/* ── CALIFICACIÓN DETALLADA ── */
+.det-layout { display: flex; min-height: calc(100vh - 200px); }
+.det-sidebar { width: 190px; flex-shrink: 0; border-right: 0.5px solid var(--border); overflow-y: auto; max-height: calc(100vh - 160px); }
+.det-sidebar-item { font-size: 12px; color: var(--text3); padding: 5px 14px; cursor: pointer; transition: background .1s; line-height: 1.4; }
+.det-sidebar-item:hover { background: var(--bg3); color: var(--text2); }
+.det-sidebar-item.active { background: var(--bg3); color: var(--text); font-weight: 500; border-left: 2px solid var(--text); padding-left: 12px; }
+.det-sidebar-item.done::after { content: ' ✓'; color: var(--green); font-size: 10px; }
+.det-main { flex: 1; display: flex; flex-direction: column; }
+.det-film-strip { padding: 10px 16px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 12px; flex-shrink: 0; background: var(--bg2); }
+.det-film-strip .film-poster { width: 40px; height: 58px; font-size: 9px; }
+.det-film-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+.det-film-meta { font-size: 11px; color: var(--text3); }
+.det-runtime-input { font-family: 'DM Mono', monospace; font-size: 12px; width: 52px; text-align: center; background: var(--bg3); border: 0.5px solid rgba(239,159,39,.4); border-radius: 4px; padding: 2px 6px; color: var(--amber); outline: none; }
+.det-chrono-zone { padding: 12px 16px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+.det-chrono-row { display: flex; align-items: center; gap: 14px; }
+.det-chrono-label { font-size: 10px; color: var(--text3); letter-spacing: .04em; margin-bottom: 3px; }
+.det-chrono-display { font-size: 26px; font-weight: 300; font-family: 'DM Mono', monospace; letter-spacing: .04em; }
+.det-chrono-running { color: var(--green); }
+.det-chrono-paused { color: var(--amber); }
+.det-chrono-hint { font-size: 11px; color: var(--text3); margin-top: 6px; line-height: 1.6; }
+.det-diffs-zone { flex: 1; padding: 12px 16px; }
+.det-diffs-label { font-size: 10px; color: var(--text3); letter-spacing: .04em; margin-bottom: 8px; }
+.det-diff-item { border: 0.5px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 6px; overflow: hidden; }
+.det-diff-item.expanded { border-color: var(--amber); }
+.det-diff-header { display: flex; align-items: center; gap: 8px; padding: 9px 12px; cursor: pointer; background: var(--bg2); user-select: none; }
+.det-diff-header:hover { background: var(--bg3); }
+.det-diff-chevron { font-size: 10px; color: var(--text3); width: 10px; flex-shrink: 0; transition: color .15s; }
+.det-diff-chevron.open { color: var(--amber); }
+.det-diff-name { font-size: 12px; font-weight: 500; flex: 1; }
+.det-diff-status { font-size: 10px; color: var(--text3); white-space: nowrap; }
+.det-diff-status.complete { color: var(--green); }
+.det-diff-status.partial { color: var(--amber); }
+.det-diff-val { font-size: 13px; font-weight: 300; font-family: 'DM Mono', monospace; width: 40px; text-align: right; color: var(--text3); }
+.det-diff-val.complete { color: var(--green); }
+.det-diff-val.partial { color: var(--amber); }
+.det-diff-body { padding: 10px 12px; border-top: 0.5px solid var(--border); }
+.det-mini-timeline { height: 22px; background: var(--bg4); border-radius: 5px; position: relative; overflow: hidden; margin-bottom: 6px; }
+.det-mt-seg { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; font-family: 'DM Mono', monospace; border-right: 1px solid var(--bg); }
+.det-poles-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.det-pole-lbl { font-size: 10px; color: var(--text3); }
+.det-period-rows { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+.det-p-row { display: flex; align-items: center; gap: 7px; }
+.det-p-time { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; width: 78px; flex-shrink: 0; background: var(--bg3); border: 0.5px solid var(--border2); border-radius: 4px; padding: 2px 6px; text-align: center; }
+.det-p-dur { font-size: 10px; color: var(--text3); width: 38px; flex-shrink: 0; text-align: center; }
+.det-p-track-wrap { flex: 1; position: relative; height: 16px; display: flex; align-items: center; }
+.det-p-track { flex: 1; height: 3px; background: var(--bg4); border-radius: 2px; position: relative; }
+.det-p-center { position: absolute; left: 50%; top: -3px; width: 1px; height: 9px; background: var(--border2); }
+.det-p-fill-pos { position: absolute; left: 50%; height: 100%; border-radius: 2px; background: var(--green); }
+.det-p-fill-neg { position: absolute; right: 50%; height: 100%; border-radius: 2px; background: var(--red); }
+.det-p-thumb { width: 10px; height: 10px; border-radius: 50%; background: var(--text); border: 1.5px solid var(--bg); position: absolute; top: -3.5px; transform: translateX(-50%); pointer-events: none; }
+.det-p-val { font-size: 10px; color: var(--text); width: 20px; text-align: right; font-family: 'DM Mono', monospace; }
+.det-p-del { font-size: 10px; color: var(--text3); cursor: pointer; width: 14px; flex-shrink: 0; background: none; border: none; padding: 0; line-height: 1; font-family: inherit; }
+.det-p-del:hover { color: var(--red); }
+.det-p-unrated { flex: 1; font-size: 10px; color: var(--text3); font-style: italic; }
+.det-cpp { background: rgba(239,159,39,0.07); border: 0.5px solid rgba(239,159,39,0.3); border-radius: var(--radius); padding: 9px 11px; margin-top: 4px; }
+.det-cpp-title { font-size: 11px; color: var(--amber); margin-bottom: 6px; }
+.det-cpp-range { font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; margin-bottom: 8px; }
+.det-cpp-poles { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.det-cpp-pole { font-size: 10px; color: var(--text3); }
+.det-cpp-track-wrap { position: relative; height: 20px; display: flex; align-items: center; margin-bottom: 4px; }
+.det-cpp-track { flex: 1; height: 4px; background: var(--bg4); border-radius: 2px; position: relative; }
+.det-cpp-center { position: absolute; left: 50%; top: -4px; width: 1px; height: 12px; background: var(--border2); }
+.det-cpp-fill-pos { position: absolute; left: 50%; height: 100%; border-radius: 2px; background: var(--green); width: 0%; }
+.det-cpp-fill-neg { position: absolute; right: 50%; height: 100%; border-radius: 2px; background: var(--red); width: 0%; }
+.det-cpp-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--text); border: 2px solid var(--bg); position: absolute; top: -4px; left: 50%; transform: translateX(-50%); pointer-events: none; }
+.det-cpp-val { font-size: 14px; font-weight: 500; font-family: 'DM Mono', monospace; text-align: center; margin-bottom: 8px; color: var(--text3); }
+.det-cpp-actions { display: flex; gap: 6px; justify-content: flex-end; }
+.det-met-footer { padding: 10px 16px; border-top: 0.5px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: var(--bg2); }
+.det-met-lbl { font-size: 12px; color: var(--text2); }
+.det-met-val { font-size: 20px; font-weight: 300; font-family: 'DM Mono', monospace; }
+.det-met-val.partial { color: var(--amber); }
+.det-met-note { font-size: 11px; color: var(--text3); }
+.det-hm-wrap { display: flex; flex-direction: column; gap: 3px; }
+.det-hm-row { display: flex; align-items: center; gap: 8px; }
+.det-hm-label { font-size: 10px; color: var(--text3); width: 110px; flex-shrink: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-family: 'DM Mono', monospace; }
+.det-hm-bar { flex: 1; height: 20px; position: relative; background: var(--bg4); border-radius: 3px; overflow: hidden; }
+.det-hm-seg { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; font-family: 'DM Mono', monospace; border-right: 1px solid var(--bg); }
+.det-hm-time-row { display: flex; margin-left: 118px; margin-bottom: 4px; }
+.det-hm-tick { flex: 1; font-size: 9px; color: var(--text3); font-family: 'DM Mono', monospace; }
+.det-hm-legend { display: flex; gap: 10px; margin-top: 12px; justify-content: center; flex-wrap: wrap; }
+.det-hm-leg-item { display: flex; align-items: center; gap: 4px; font-size: 9px; color: var(--text3); }
+.det-hm-leg-dot { width: 10px; height: 10px; border-radius: 2px; }
+/* Heatmap modal */
+.det-hm-modal { background: var(--bg2); border: 0.5px solid var(--border2); border-radius: var(--radius-lg); width: 700px; max-width: 96vw; overflow: hidden; }
+
 /* ── PELÍCULA HEADER ── */
 .film-header { display: flex; gap: 16px; margin-bottom: 16px; align-items: flex-start; }
 .film-poster {
@@ -754,7 +839,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.4</span>
+    <span class="footer-txt">Genealogía del Cine v6.5</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -917,7 +1002,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.4</span>
+    <span class="footer-txt">Genealogía del Cine v6.5</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1062,7 +1147,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.4</span>
+    <span class="footer-txt">Genealogía del Cine v6.5</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1084,6 +1169,7 @@ input[type=number] {
     <span class="ftab" onclick="showTab('sample')">Muestra</span>
     <span class="ftab" onclick="showTab('diffs')">Diferenciales</span>
     <span class="ftab" onclick="showTab('rating')">Calificación</span>
+    <span class="ftab" onclick="showTab('detail')">Calificación detallada</span>
     <span class="ftab" onclick="showTab('analysis')">Análisis</span>
   </div>
 
@@ -1374,10 +1460,27 @@ input[type=number] {
     </div>
   </div>
 
+  <!-- TAB: CALIFICACIÓN DETALLADA -->
+  <div id="tab-detail" class="tab-content" style="display:none;">
+    <div class="det-layout">
+      <div class="det-sidebar" id="det-sidebar">
+        <div id="det-groups"></div>
+      </div>
+      <div class="det-main" id="det-main">
+        <div class="empty-state"><div>Seleccioná una película del panel izquierdo</div></div>
+      </div>
+    </div>
+  </div>
+
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.4</span>
+    <span class="footer-txt">Genealogía del Cine v6.5</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
+</div>
+
+<!-- MODAL: MAPA DE CALOR DETALLADO -->
+<div style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;align-items:center;justify-content:center;" id="modal-detail-heatmap" onclick="if(event.target===this)closeDetailHeatmap()">
+  <div class="det-hm-modal" id="det-hm-content"></div>
 </div>
 
 <!-- MODAL: ELIMINAR CAMPO -->
@@ -1465,6 +1568,9 @@ let appState = {
   calCollapsed: { pending: false, inProgress: false, done: false },
   addFilmTimeout: null,
   previewCache: null,
+  currentDetailFilm: null,
+  detailExpanded: {},
+  detailChronoFilmId: null,
 };
 
 async function getState() {
@@ -1561,6 +1667,7 @@ function currentField() {
 
 // ── NAVIGATION ──
 function showScreen(id) {
+  pauseDetailChrono();
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.getElementById('nav-campos').classList.toggle('active', id === 'screen-home');
@@ -1572,7 +1679,7 @@ function showScreen(id) {
 
 function showTab(name) {
   document.querySelectorAll('.ftab').forEach((t,i) => {
-    t.classList.toggle('active', ['desc','sample','diffs','rating','analysis'][i] === name);
+    t.classList.toggle('active', ['desc','sample','diffs','rating','detail','analysis'][i] === name);
   });
   document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
   document.getElementById('tab-' + name).style.display = '';
@@ -1582,6 +1689,7 @@ function showTab(name) {
   if (name === 'sample')   renderSample(f);
   if (name === 'diffs')    renderDiffs(f);
   if (name === 'rating')   renderRatingTab(f);
+  if (name === 'detail')   renderDetailTab(f);
   if (name === 'analysis') renderAnalysis(f);
 }
 
@@ -1591,6 +1699,8 @@ function openField(id) {
   appState.sampleFilter = '';
   appState.sampleGenreFilter = '';
   appState.currentCalFilm = null;
+  appState.currentDetailFilm = null;
+  appState.detailExpanded = {};
   const f = currentField();
   document.getElementById('field-title').textContent = f.name;
   showScreen('screen-field');
@@ -3546,6 +3656,633 @@ function saveCalFilm(filmId) {
   }
   saveState();
   renderCalSidebar(f);
+}
+
+// ── TAB: CALIFICACIÓN DETALLADA ──
+
+let _detailChronoInterval = null;
+
+function formatDetailTime(sec) {
+  const s = Math.floor(sec || 0);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const ss = s % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+}
+
+function detailPeriodBg(val) {
+  if (val === null || val === undefined) return null;
+  const map = { 3:'rgba(29,158,117,0.85)', 2:'rgba(29,158,117,0.55)', 1:'rgba(29,158,117,0.28)',
+    0:'var(--bg4)', '-1':'rgba(216,90,48,0.28)', '-2':'rgba(216,90,48,0.55)', '-3':'rgba(216,90,48,0.85)' };
+  return map[String(val)] || 'var(--bg4)';
+}
+function detailPeriodFg(val) {
+  return (val !== null && Math.abs(val) >= 2) ? '#fff' : 'var(--text2)';
+}
+
+function calcDetailWeighted(periods, runtime) {
+  if (!periods || !periods.length || !runtime) return null;
+  if (periods.some(p => p.value === null || p.value === undefined)) return null;
+  if (periods.reduce((s,p) => s + (p.to - p.from), 0) < runtime) return null;
+  return +(periods.reduce((s,p) => s + p.value * (p.to - p.from), 0) / runtime).toFixed(1);
+}
+
+function calcDetailPartialWeighted(periods, runtime) {
+  if (!periods || !runtime) return null;
+  const rated = periods.filter(p => p.value !== null && p.value !== undefined);
+  if (!rated.length) return null;
+  const totalMin = rated.reduce((s,p) => s + (p.to - p.from), 0);
+  if (!totalMin) return null;
+  return +(rated.reduce((s,p) => s + p.value * (p.to - p.from), 0) / totalMin).toFixed(1);
+}
+
+function recalcDiffDetail(film, diffId, runtime) {
+  if (!film.detailedRatings) film.detailedRatings = {};
+  const dr = film.detailedRatings[diffId];
+  if (!dr) return;
+  const periods = dr.periods || [];
+  const allRated = periods.length > 0 && periods.every(p => p.value !== null && p.value !== undefined);
+  const covered = periods.reduce((s,p) => s + (p.to - p.from), 0);
+  dr.complete = !!(allRated && runtime && covered >= runtime);
+  if (dr.complete) {
+    dr.weightedValue = calcDetailWeighted(periods, runtime);
+    if (!film.ratings) film.ratings = {};
+    film.ratings[diffId] = dr.weightedValue;
+  } else {
+    dr.weightedValue = null;
+  }
+}
+
+function isDetailDone(film, diffs) {
+  if (!film.detailedRatings || !diffs.length) return false;
+  return diffs.every(d => film.detailedRatings[d.id] && film.detailedRatings[d.id].complete);
+}
+
+function calcDetailMet(film, diffs) {
+  if (!diffs.length) return { value: null, partial: false, incomplete: 0 };
+  const dr = film.detailedRatings || {};
+  const withVal = diffs.filter(d => dr[d.id] && dr[d.id].weightedValue !== null && dr[d.id].weightedValue !== undefined);
+  const completeDiffs = diffs.filter(d => dr[d.id] && dr[d.id].complete);
+  if (!withVal.length) return { value: null, partial: false, incomplete: diffs.length };
+  const avg = withVal.reduce((s,d) => s + Math.abs(dr[d.id].weightedValue), 0) / withVal.length;
+  return { value: +avg.toFixed(2), partial: completeDiffs.length < diffs.length, incomplete: diffs.length - completeDiffs.length };
+}
+
+function renderDetailTab(f) {
+  const sample = f.sample || [];
+  if (!sample.length) {
+    document.getElementById('det-main').innerHTML = '<div class="empty-state"><div>Sin películas en la muestra</div></div>';
+    document.getElementById('det-groups').innerHTML = '';
+    return;
+  }
+  renderDetailSidebar(f);
+  if (!appState.currentDetailFilm) {
+    const first = sample.find(m => !isDetailDone(m, f.differentials || [])) || sample[0];
+    if (first) selectDetailFilm(first.id);
+  } else {
+    const film = sample.find(m => m.id === appState.currentDetailFilm);
+    if (film) { _ensureDetailFilmData(film); renderDetailMain(film, f); }
+    else selectDetailFilm(sample[0].id);
+  }
+}
+
+function renderDetailSidebar(f) {
+  const diffs = f.differentials || [];
+  const sample = f.sample || [];
+  const pending = sample.filter(m => !isDetailDone(m, diffs));
+  const done = sample.filter(m => isDetailDone(m, diffs));
+  document.getElementById('det-groups').innerHTML = `
+    <div style="padding:4px 0;">
+      <div style="font-size:10px;color:var(--text3);padding:8px 14px 4px;letter-spacing:.04em;">PENDIENTES (${pending.length})</div>
+      ${pending.map(m => `<div class="det-sidebar-item${appState.currentDetailFilm===m.id?' active':''}" onclick="selectDetailFilm(${m.id})">${m.title}</div>`).join('')}
+    </div>
+    <div style="margin-top:4px;border-top:0.5px solid var(--border);padding:4px 0;">
+      <div style="font-size:10px;color:var(--text3);padding:8px 14px 4px;letter-spacing:.04em;">CALIFICADAS (${done.length})</div>
+      ${done.map(m => `<div class="det-sidebar-item done${appState.currentDetailFilm===m.id?' active':''}" onclick="selectDetailFilm(${m.id})">${m.title}</div>`).join('')}
+    </div>`;
+}
+
+function _ensureDetailFilmData(film) {
+  if (!film.detailedRatings) film.detailedRatings = {};
+  if (film.chronoTime === undefined) film.chronoTime = 0;
+}
+
+async function selectDetailFilm(filmId) {
+  // Pause chrono if a different film's chrono was running
+  if (_detailChronoInterval && appState.detailChronoFilmId !== +filmId) pauseDetailChrono();
+  appState.currentDetailFilm = +filmId;
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  _ensureDetailFilmData(film);
+  renderDetailSidebar(f);
+  // Fetch runtime from TMDB if missing, also grab poster
+  if (!film.runtime || !film._detailPosterPath) {
+    try {
+      const r = await fetch(`${BASE}/movie/${film.id}?language=es`, {headers:HEADERS});
+      const d = await r.json();
+      if (d.runtime && !film.runtime) film.runtime = d.runtime;
+      film._detailPosterPath = d.poster_path || '';
+    } catch(e) {}
+  }
+  renderDetailMain(film, f);
+}
+
+function renderDetailMain(film, f) {
+  const diffs = f.differentials || [];
+  const runtime = film.runtime || 0;
+  const filmIdx = f.sample.indexOf(film);
+  const prevId = filmIdx > 0 ? f.sample[filmIdx-1].id : null;
+  const nextId = filmIdx < f.sample.length-1 ? f.sample[filmIdx+1].id : null;
+  const isRunning = appState.detailChronoFilmId === film.id && !!_detailChronoInterval;
+  const chronoTime = film.chronoTime || 0;
+
+  const posterHtml = film._detailPosterPath
+    ? `<img src="https://image.tmdb.org/t/p/w154${film._detailPosterPath}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);" />`
+    : 'sin póster';
+
+  const runtimeHtml = runtime
+    ? `<strong style="color:var(--text2);">${runtime} min</strong>`
+    : `<span style="color:var(--amber);">runtime: <input type="number" class="det-runtime-input" placeholder="min" min="1" max="999" onchange="setDetailRuntime(${film.id},this.value)" /></span>`;
+
+  const chronoBtns = isRunning
+    ? `<button class="btn" style="border-color:rgba(239,159,39,.4);color:var(--amber);background:rgba(239,159,39,.1);" onclick="pauseDetailChrono()">⏸ Pausar</button>
+       <button class="btn-danger" style="font-size:11px;" onclick="resetDetailChrono(${film.id})">↺ Reiniciar</button>`
+    : `<button class="btn" style="border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);" onclick="startDetailChrono(${film.id})">▶ Reanudar</button>
+       <button class="btn-danger" style="font-size:11px;" onclick="resetDetailChrono(${film.id})">↺ Reiniciar</button>`;
+
+  const chronoHint = isRunning
+    ? `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras registrar un corte, luego expandí el diferencial que querés calificar.`
+    : `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(chronoTime)}.</strong> Expandí el diferencial que querés calificar — aparecerá el panel para crear un período hasta este momento.`;
+
+  const diffsLabel = isRunning ? 'DIFERENCIALES — pausá el cronómetro para crear períodos' : 'DIFERENCIALES';
+
+  const metInfo = calcDetailMet(film, diffs);
+  const metVal = metInfo.value !== null ? metInfo.value.toFixed(2) : '—';
+  const metClass = metInfo.partial ? ' partial' : '';
+  const metNote = metInfo.partial ? `* parcial — ${metInfo.incomplete} de ${diffs.length} sin completar` : '';
+
+  document.getElementById('det-main').innerHTML = `
+    <div class="det-film-strip">
+      <div class="film-poster">${posterHtml}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="det-film-title">${film.title}</div>
+        <div class="det-film-meta">${film.year} · ★${film.rating} · ${runtimeHtml}</div>
+      </div>
+      ${prevId ? `<button class="btn" onclick="selectDetailFilm(${prevId})">← Anterior</button>` : ''}
+      ${nextId ? `<button class="btn" onclick="selectDetailFilm(${nextId})">Siguiente →</button>` : ''}
+      <button class="btn-primary" onclick="saveDetailFilm(${film.id})">Guardar</button>
+    </div>
+    <div class="det-chrono-zone">
+      <div class="det-chrono-row">
+        <div>
+          <div class="det-chrono-label" id="det-chrono-label">${isRunning ? 'CRONÓMETRO' : 'CRONÓMETRO — PAUSADO'}</div>
+          <div class="det-chrono-display ${isRunning ? 'det-chrono-running' : 'det-chrono-paused'}" id="det-chrono-display">${formatDetailTime(chronoTime)}</div>
+        </div>
+        <div style="display:flex;gap:6px;" id="det-chrono-btns">${chronoBtns}</div>
+        <div style="margin-left:auto;">
+          <button class="btn" style="font-size:11px;" onclick="showDetailHeatmap(${film.id})">⊞ Ver mapa de calor</button>
+        </div>
+      </div>
+      <div class="det-chrono-hint" id="det-chrono-hint">${chronoHint}</div>
+    </div>
+    <div class="det-diffs-zone">
+      <div class="det-diffs-label" id="det-diffs-label">${diffsLabel}</div>
+      <div id="det-diffs-list">${renderDetailDiffsHTML(film, f)}</div>
+    </div>
+    <div class="det-met-footer">
+      <span class="det-met-lbl">Metaestabilidad</span>
+      <span class="det-met-val${metClass}" id="det-met-val">${metVal}</span>
+      <span class="det-met-note" id="det-met-note">${metNote}</span>
+    </div>`;
+}
+
+function renderDetailDiffsHTML(film, f) {
+  const diffs = f.differentials || [];
+  if (!diffs.length) return '<div style="font-size:12px;color:var(--text3);">No hay diferenciales definidos.</div>';
+  return diffs.map(d => renderDetailDiffItemHTML(film, d, film.runtime || 0, f)).join('');
+}
+
+function renderDetailDiffItemHTML(film, d, runtime, f) {
+  const expanded = !!appState.detailExpanded[d.id];
+  const dr = (film.detailedRatings || {})[d.id] || { periods: [], complete: false, weightedValue: null };
+  const periods = dr.periods || [];
+  const isRunning = appState.detailChronoFilmId === film.id && !!_detailChronoInterval;
+  const covered = periods.reduce((s,p) => s + (p.to - p.from), 0);
+
+  let statusText, statusClass;
+  if (!periods.length) { statusText = 'sin períodos'; statusClass = ''; }
+  else if (dr.complete) { statusText = `✓ ${covered}/${runtime} min`; statusClass = 'complete'; }
+  else { statusText = `⚠ ${covered}/${runtime} min`; statusClass = 'partial'; }
+
+  let valText, valClass;
+  if (dr.complete && dr.weightedValue !== null) {
+    const v = dr.weightedValue; valText = (v > 0 ? '+' : '') + v; valClass = 'complete';
+  } else if (periods.length > 0) {
+    const p = calcDetailPartialWeighted(periods, runtime);
+    if (p !== null) { valText = (p > 0 ? '+' : '') + p + '*'; valClass = 'partial'; }
+    else { valText = '—'; valClass = ''; }
+  } else { valText = '—'; valClass = ''; }
+
+  let bodyHtml = '';
+  if (expanded) {
+    bodyHtml = `<div class="det-diff-body">
+      ${renderMiniTimelineHTML(periods, runtime)}
+      <div class="det-poles-row">
+        <span class="det-pole-lbl">← ${d.negPole||'Polo−'} (−3)</span>
+        <span class="det-pole-lbl">${d.posPole||'Polo+'} (+3) →</span>
+      </div>
+      <div class="det-period-rows">${periods.map((p,pi) => renderPeriodRowHTML(p, d, film.id)).join('')}</div>
+      ${renderCreatePeriodPanelHTML(film, d, runtime)}
+    </div>`;
+  }
+
+  return `<div class="det-diff-item${expanded ? ' expanded' : ''}" id="det-diff-item-${d.id}">
+    <div class="det-diff-header" onclick="toggleDetailDiff('${film.id}','${d.id}')">
+      <span class="det-diff-chevron${expanded ? ' open' : ''}">▶</span>
+      <span class="det-diff-name">${d.name}</span>
+      <span class="det-diff-status ${statusClass}">${statusText}</span>
+      <span class="det-diff-val ${valClass}">${valText}</span>
+    </div>
+    ${bodyHtml}
+  </div>`;
+}
+
+function renderMiniTimelineHTML(periods, runtime) {
+  if (!runtime) return '<div class="det-mini-timeline"></div>';
+  const sorted = [...periods].sort((a,b) => a.from - b.from);
+  let segs = '', cursor = 0;
+  for (const p of sorted) {
+    if (p.from > cursor) {
+      segs += `<div class="det-mt-seg" style="left:${(cursor/runtime*100).toFixed(2)}%;width:${((p.from-cursor)/runtime*100).toFixed(2)}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
+    }
+    const l = (p.from/runtime*100).toFixed(2), w = ((p.to-p.from)/runtime*100).toFixed(2);
+    if (p.value === null || p.value === undefined) {
+      segs += `<div class="det-mt-seg" style="left:${l}%;width:${w}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
+    } else {
+      const lbl = p.value > 0 ? '+'+p.value : p.value;
+      segs += `<div class="det-mt-seg" style="left:${l}%;width:${w}%;background:${detailPeriodBg(p.value)};color:${detailPeriodFg(p.value)};"><span>${lbl}</span></div>`;
+    }
+    cursor = p.to;
+  }
+  if (cursor < runtime) segs += `<div class="det-mt-seg" style="left:${(cursor/runtime*100).toFixed(2)}%;width:${((runtime-cursor)/runtime*100).toFixed(2)}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
+  return `<div class="det-mini-timeline">${segs}</div>`;
+}
+
+function renderPeriodRowHTML(p, d, filmId) {
+  const hasVal = p.value !== null && p.value !== undefined;
+  const dur = p.to - p.from;
+  const timeStyle = !hasVal ? 'color:var(--amber);' : '';
+  let sliderHtml;
+  if (!hasVal) {
+    sliderHtml = `<span class="det-p-unrated">sin calificar</span><span class="det-p-val" style="color:var(--text3);">—</span>`;
+  } else {
+    const val = p.value;
+    const pct = (val + 3) / 6 * 100;
+    const fillPct = val >= 0 ? val / 3 * 50 : Math.abs(val) / 3 * 50;
+    const fillStyle = val >= 0 ? `left:50%;width:${fillPct}%;` : `right:50%;width:${fillPct}%;`;
+    sliderHtml = `<div class="det-p-track-wrap">
+      <div class="det-p-track">
+        <div class="det-p-center"></div>
+        <div class="${val>=0?'det-p-fill-pos':'det-p-fill-neg'}" id="det-pfill-${p.id}" style="${fillStyle}"></div>
+        <div class="det-p-thumb" id="det-pthumb-${p.id}" style="left:${pct}%;"></div>
+        <input type="range" min="-3" max="3" step="1" value="${val}"
+          style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer;height:20px;top:-8px;"
+          oninput="updateDetailPeriodSlider(this,'${filmId}','${d.id}','${p.id}')" />
+      </div>
+    </div>
+    <span class="det-p-val" id="det-pval-${p.id}">${val > 0 ? '+'+val : val}</span>`;
+  }
+  return `<div class="det-p-row" id="det-p-row-${p.id}">
+    <div class="det-p-time" style="${timeStyle}">${p.from}' – ${p.to}'</div>
+    <div class="det-p-dur">${dur} min</div>
+    ${sliderHtml}
+    <button class="det-p-del" onclick="deleteDetailPeriod('${filmId}','${d.id}','${p.id}')" title="Eliminar">✕</button>
+  </div>`;
+}
+
+function renderCreatePeriodPanelHTML(film, d, runtime) {
+  const isRunning = appState.detailChronoFilmId === film.id && !!_detailChronoInterval;
+  if (isRunning) return '';
+  const periods = ((film.detailedRatings || {})[d.id] || {}).periods || [];
+  const fromMin = periods.length ? Math.max(...periods.map(p => p.to)) : 0;
+  const toMin = Math.floor((film.chronoTime || 0) / 60);
+  if (fromMin === toMin) return '';
+  const dur = toMin - fromMin;
+  return `<div class="det-cpp" id="det-cpp-${d.id}">
+    <div class="det-cpp-title">Nuevo período — cronómetro pausado en ${formatDetailTime(film.chronoTime||0)}</div>
+    <div class="det-cpp-range">${fromMin}' – ${toMin}' · ${dur} min</div>
+    <div class="det-cpp-poles">
+      <span class="det-cpp-pole">← ${d.negPole||'Polo−'} (−3)</span>
+      <span class="det-cpp-pole">${d.posPole||'Polo+'} (+3) →</span>
+    </div>
+    <div class="det-cpp-track-wrap">
+      <div class="det-cpp-track">
+        <div class="det-cpp-center"></div>
+        <div class="det-cpp-fill-pos" id="det-cpp-fill-${d.id}" style="width:0%;"></div>
+        <div class="det-cpp-thumb" id="det-cpp-thumb-${d.id}" style="left:50%;"></div>
+        <input type="range" min="-3" max="3" step="1" value="0" id="det-cpp-input-${d.id}"
+          style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer;height:24px;top:-10px;"
+          oninput="updateCppSlider(this,'${d.id}')" />
+      </div>
+    </div>
+    <div class="det-cpp-val" id="det-cpp-val-${d.id}">0</div>
+    <div class="det-cpp-actions">
+      <button class="btn" style="font-size:11px;" onclick="cancelDetailPeriod('${d.id}')">Cancelar</button>
+      <button class="btn" style="font-size:11px;border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);"
+        onclick="confirmDetailPeriod('${film.id}','${d.id}',${fromMin},${toMin})">Confirmar período</button>
+    </div>
+  </div>`;
+}
+
+function toggleDetailDiff(filmId, diffId) {
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  appState.detailExpanded[diffId] = !appState.detailExpanded[diffId];
+  const d = (f.differentials || []).find(x => x.id === diffId);
+  if (!d) return;
+  const item = document.getElementById('det-diff-item-' + diffId);
+  if (item) item.outerHTML = renderDetailDiffItemHTML(film, d, film.runtime || 0, f);
+}
+
+function startDetailChrono(filmId) {
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  if (_detailChronoInterval) clearInterval(_detailChronoInterval);
+  appState.detailChronoFilmId = +filmId;
+  _detailChronoInterval = setInterval(() => {
+    film.chronoTime = (film.chronoTime || 0) + 1;
+    const el = document.getElementById('det-chrono-display');
+    if (el) el.textContent = formatDetailTime(film.chronoTime);
+  }, 1000);
+  // Update UI
+  const labelEl = document.getElementById('det-chrono-label');
+  if (labelEl) labelEl.textContent = 'CRONÓMETRO';
+  const dispEl = document.getElementById('det-chrono-display');
+  if (dispEl) dispEl.className = 'det-chrono-display det-chrono-running';
+  const btnsEl = document.getElementById('det-chrono-btns');
+  if (btnsEl) btnsEl.innerHTML = `<button class="btn" style="border-color:rgba(239,159,39,.4);color:var(--amber);background:rgba(239,159,39,.1);" onclick="pauseDetailChrono()">⏸ Pausar</button>
+    <button class="btn-danger" style="font-size:11px;" onclick="resetDetailChrono(${filmId})">↺ Reiniciar</button>`;
+  const hintEl = document.getElementById('det-chrono-hint');
+  if (hintEl) hintEl.innerHTML = `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras registrar un corte, luego expandí el diferencial que querés calificar.`;
+  const lblEl = document.getElementById('det-diffs-label');
+  if (lblEl) lblEl.textContent = 'DIFERENCIALES — pausá el cronómetro para crear períodos';
+  const listEl = document.getElementById('det-diffs-list');
+  if (listEl) listEl.innerHTML = renderDetailDiffsHTML(film, f);
+}
+
+function pauseDetailChrono() {
+  if (_detailChronoInterval) { clearInterval(_detailChronoInterval); _detailChronoInterval = null; }
+  const dispEl = document.getElementById('det-chrono-display');
+  if (!dispEl) { appState.detailChronoFilmId = null; return; }
+  // Only do DOM updates if the paused film is still the one being displayed
+  if (appState.currentDetailFilm !== appState.detailChronoFilmId) { appState.detailChronoFilmId = null; return; }
+  appState.detailChronoFilmId = null;
+  dispEl.className = 'det-chrono-display det-chrono-paused';
+  const labelEl = document.getElementById('det-chrono-label');
+  if (labelEl) labelEl.textContent = 'CRONÓMETRO — PAUSADO';
+  const f = currentField();
+  if (!f) return;
+  const film = f.sample.find(m => m.id === appState.currentDetailFilm);
+  if (!film) return;
+  const filmId = film.id;
+  const btnsEl = document.getElementById('det-chrono-btns');
+  if (btnsEl) btnsEl.innerHTML = `<button class="btn" style="border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);" onclick="startDetailChrono(${filmId})">▶ Reanudar</button>
+    <button class="btn-danger" style="font-size:11px;" onclick="resetDetailChrono(${filmId})">↺ Reiniciar</button>`;
+  const hintEl = document.getElementById('det-chrono-hint');
+  if (hintEl) hintEl.innerHTML = `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(film.chronoTime||0)}.</strong> Expandí el diferencial que querés calificar — aparecerá el panel para crear un período hasta este momento.`;
+  const lblEl = document.getElementById('det-diffs-label');
+  if (lblEl) lblEl.textContent = 'DIFERENCIALES';
+  const listEl = document.getElementById('det-diffs-list');
+  if (listEl) listEl.innerHTML = renderDetailDiffsHTML(film, f);
+}
+
+function resetDetailChrono(filmId) {
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  const hasPeriods = film.detailedRatings && Object.values(film.detailedRatings).some(dr => dr.periods && dr.periods.length);
+  if ((film.chronoTime || 0) > 0) {
+    if (!confirm('¿Reiniciar el cronómetro? No borra los períodos ya creados.')) return;
+  }
+  if (_detailChronoInterval && appState.detailChronoFilmId === +filmId) {
+    clearInterval(_detailChronoInterval);
+    _detailChronoInterval = null;
+    appState.detailChronoFilmId = null;
+  }
+  film.chronoTime = 0;
+  renderDetailMain(film, f);
+}
+
+function updateCppSlider(input, diffId) {
+  const val = +input.value;
+  const pct = (val + 3) / 6 * 100;
+  const fillPct = Math.abs(val) / 3 * 50;
+  const fillEl = document.getElementById('det-cpp-fill-' + diffId);
+  const thumbEl = document.getElementById('det-cpp-thumb-' + diffId);
+  const valEl = document.getElementById('det-cpp-val-' + diffId);
+  if (fillEl) {
+    fillEl.className = val >= 0 ? 'det-cpp-fill-pos' : 'det-cpp-fill-neg';
+    fillEl.style.cssText = val >= 0 ? `left:50%;width:${fillPct}%;` : `right:50%;width:${fillPct}%;`;
+  }
+  if (thumbEl) thumbEl.style.left = pct + '%';
+  if (valEl) {
+    valEl.textContent = val > 0 ? '+'+val : String(val);
+    valEl.style.color = val > 0 ? 'var(--green)' : val < 0 ? 'var(--red)' : 'var(--text3)';
+  }
+}
+
+function confirmDetailPeriod(filmId, diffId, from, to) {
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  if (!film.detailedRatings) film.detailedRatings = {};
+  if (!film.detailedRatings[diffId]) film.detailedRatings[diffId] = { periods: [], weightedValue: null, complete: false };
+  const inputEl = document.getElementById('det-cpp-input-' + diffId);
+  const value = inputEl ? +inputEl.value : 0;
+  film.detailedRatings[diffId].periods.push({ id: 'p_' + Date.now(), from, to, value });
+  film.detailedRatings[diffId].periods.sort((a,b) => a.from - b.from);
+  recalcDiffDetail(film, diffId, film.runtime || 0);
+  _updateDetailDiffItemHTML(film, diffId, f);
+  renderDetailSidebar(f);
+  updateDetailMetDisplay(film, f.differentials || []);
+}
+
+function cancelDetailPeriod(diffId) {
+  const el = document.getElementById('det-cpp-' + diffId);
+  if (el) el.remove();
+}
+
+function deleteDetailPeriod(filmId, diffId, periodId) {
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film || !film.detailedRatings || !film.detailedRatings[diffId]) return;
+  const periods = film.detailedRatings[diffId].periods;
+  const period = periods.find(p => p.id === periodId);
+  if (!period) return;
+  if (period.value !== null && period.value !== undefined) {
+    if (!confirm('¿Eliminar este período? Ya tiene un valor asignado.')) return;
+  }
+  film.detailedRatings[diffId].periods = periods.filter(p => p.id !== periodId);
+  recalcDiffDetail(film, diffId, film.runtime || 0);
+  _updateDetailDiffItemHTML(film, diffId, f);
+  renderDetailSidebar(f);
+  updateDetailMetDisplay(film, f.differentials || []);
+}
+
+function updateDetailPeriodSlider(input, filmId, diffId, periodId) {
+  const val = +input.value;
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film || !film.detailedRatings || !film.detailedRatings[diffId]) return;
+  const period = film.detailedRatings[diffId].periods.find(p => p.id === periodId);
+  if (!period) return;
+  period.value = val;
+  const pct = (val + 3) / 6 * 100;
+  const fillPct = Math.abs(val) / 3 * 50;
+  const fillEl = document.getElementById('det-pfill-' + periodId);
+  const thumbEl = document.getElementById('det-pthumb-' + periodId);
+  const valEl = document.getElementById('det-pval-' + periodId);
+  if (fillEl) { fillEl.className = val>=0?'det-p-fill-pos':'det-p-fill-neg'; fillEl.style.cssText = val>=0?`left:50%;width:${fillPct}%;`:`right:50%;width:${fillPct}%;`; }
+  if (thumbEl) thumbEl.style.left = pct + '%';
+  if (valEl) valEl.textContent = val > 0 ? '+'+val : String(val);
+  recalcDiffDetail(film, diffId, film.runtime || 0);
+  _updateDetailDiffHeader(film, diffId, f);
+  updateDetailMetDisplay(film, f.differentials || []);
+}
+
+function _updateDetailDiffItemHTML(film, diffId, f) {
+  const item = document.getElementById('det-diff-item-' + diffId);
+  if (!item) return;
+  const d = (f.differentials || []).find(x => x.id === diffId);
+  if (!d) return;
+  item.outerHTML = renderDetailDiffItemHTML(film, d, film.runtime || 0, f);
+}
+
+function _updateDetailDiffHeader(film, diffId, f) {
+  const dr = (film.detailedRatings || {})[diffId] || { periods: [], complete: false };
+  const periods = dr.periods || [];
+  const runtime = film.runtime || 0;
+  const covered = periods.reduce((s,p) => s + (p.to - p.from), 0);
+  let statusText, statusClass;
+  if (!periods.length) { statusText = 'sin períodos'; statusClass = ''; }
+  else if (dr.complete) { statusText = `✓ ${covered}/${runtime} min`; statusClass = 'complete'; }
+  else { statusText = `⚠ ${covered}/${runtime} min`; statusClass = 'partial'; }
+  let valText, valClass;
+  if (dr.complete && dr.weightedValue !== null) { const v = dr.weightedValue; valText = (v>0?'+':'')+v; valClass = 'complete'; }
+  else if (periods.length > 0) { const p = calcDetailPartialWeighted(periods, runtime); if (p!==null){valText=(p>0?'+':'')+p+'*';valClass='partial';}else{valText='—';valClass='';} }
+  else { valText = '—'; valClass = ''; }
+  const item = document.getElementById('det-diff-item-' + diffId);
+  if (!item) return;
+  const statusEl = item.querySelector('.det-diff-status');
+  const valEl = item.querySelector('.det-diff-val');
+  const tlEl = item.querySelector('.det-mini-timeline');
+  if (statusEl) { statusEl.textContent = statusText; statusEl.className = 'det-diff-status ' + statusClass; }
+  if (valEl) { valEl.textContent = valText; valEl.className = 'det-diff-val ' + valClass; }
+  if (tlEl) tlEl.outerHTML = renderMiniTimelineHTML(periods, runtime);
+}
+
+function updateDetailMetDisplay(film, diffs) {
+  const metInfo = calcDetailMet(film, diffs);
+  const el = document.getElementById('det-met-val');
+  const noteEl = document.getElementById('det-met-note');
+  if (el) { el.textContent = metInfo.value !== null ? metInfo.value.toFixed(2) : '—'; el.className = 'det-met-val' + (metInfo.partial ? ' partial' : ''); }
+  if (noteEl) noteEl.textContent = metInfo.partial ? `* parcial — ${metInfo.incomplete} de ${diffs.length} sin completar` : '';
+}
+
+function setDetailRuntime(filmId, val) {
+  const mins = parseInt(val);
+  if (!mins || mins < 1) return;
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  film.runtime = mins;
+  (f.differentials || []).forEach(d => recalcDiffDetail(film, d.id, mins));
+  renderDetailMain(film, f);
+}
+
+function saveDetailFilm(filmId) {
+  const f = currentField();
+  const film = (f.sample || []).find(m => m.id === +filmId);
+  if (film) {
+    (f.differentials || []).forEach(d => recalcDiffDetail(film, d.id, film.runtime || 0));
+    logActivity('rating.save', { field: f.name, title: film.title, detail: true });
+  }
+  saveState();
+  renderDetailSidebar(f);
+}
+
+function showDetailHeatmap(filmId) {
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  const diffs = f.differentials || [];
+  const runtime = film.runtime || 0;
+  const chronoTime = film.chronoTime || 0;
+  const chronoStr = formatDetailTime(chronoTime);
+  const ticksHtml = runtime
+    ? [0,0.25,0.5,0.75,1].map(t => `<div class="det-hm-tick">${Math.round(t*runtime)}'</div>`).join('')
+    : '';
+  const rowsHtml = diffs.map(d => {
+    const periods = ((film.detailedRatings||{})[d.id]||{}).periods || [];
+    let segs = '';
+    if (!periods.length || !runtime) {
+      segs = `<div class="det-hm-seg" style="left:0;width:100%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
+    } else {
+      const sorted = [...periods].sort((a,b)=>a.from-b.from);
+      let cursor = 0;
+      for (const p of sorted) {
+        if (p.from > cursor) segs += `<div class="det-hm-seg" style="left:${(cursor/runtime*100).toFixed(2)}%;width:${((p.from-cursor)/runtime*100).toFixed(2)}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
+        const l=(p.from/runtime*100).toFixed(2), w=((p.to-p.from)/runtime*100).toFixed(2);
+        if (p.value===null||p.value===undefined) segs += `<div class="det-hm-seg" style="left:${l}%;width:${w}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
+        else { const lbl=p.value>0?'+'+p.value:p.value; segs += `<div class="det-hm-seg" style="left:${l}%;width:${w}%;background:${detailPeriodBg(p.value)};color:${detailPeriodFg(p.value)};"><span>${lbl}</span></div>`; }
+        cursor = p.to;
+      }
+      if (cursor < runtime) segs += `<div class="det-hm-seg" style="left:${(cursor/runtime*100).toFixed(2)}%;width:${((runtime-cursor)/runtime*100).toFixed(2)}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
+    }
+    const short = d.name.length > 16 ? d.name.slice(0,14)+'…' : d.name;
+    return `<div class="det-hm-row"><div class="det-hm-label" title="${d.name}">${short}</div><div class="det-hm-bar">${segs}</div></div>`;
+  }).join('');
+  const chronoPct = runtime ? (chronoTime/60/runtime*100).toFixed(2) : null;
+  const chronoLineHtml = chronoPct !== null ? `<div class="det-hm-row" style="margin-top:2px;">
+    <div class="det-hm-label"></div>
+    <div style="flex:1;position:relative;height:14px;">
+      <div style="position:absolute;left:${chronoPct}%;top:0;bottom:0;width:1.5px;background:var(--amber);"></div>
+      <div style="position:absolute;left:${chronoPct}%;top:0;font-size:9px;color:var(--amber);padding-left:3px;font-family:'DM Mono',monospace;">${chronoStr}</div>
+    </div>
+  </div>` : '';
+  document.getElementById('det-hm-content').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:0.5px solid var(--border);">
+      <div>
+        <div style="font-size:14px;font-weight:500;">Mapa de calor — ${film.title}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">${runtime?runtime+' min':'runtime desconocido'} · ${diffs.length} diferenciales · cronómetro en ${chronoStr}</div>
+      </div>
+      <button class="btn" onclick="closeDetailHeatmap()">✕ Cerrar</button>
+    </div>
+    <div style="padding:18px;overflow-y:auto;max-height:65vh;">
+      ${runtime ? `<div class="det-hm-time-row">${ticksHtml}</div>` : ''}
+      <div class="det-hm-wrap">${rowsHtml}${chronoLineHtml}</div>
+      <div class="det-hm-legend">
+        <div class="det-hm-leg-item"><div class="det-hm-leg-dot" style="background:rgba(29,158,117,0.85);"></div>+3</div>
+        <div class="det-hm-leg-item"><div class="det-hm-leg-dot" style="background:rgba(29,158,117,0.55);"></div>+2</div>
+        <div class="det-hm-leg-item"><div class="det-hm-leg-dot" style="background:rgba(29,158,117,0.28);"></div>+1</div>
+        <div class="det-hm-leg-item"><div class="det-hm-leg-dot" style="background:var(--bg4);border:0.5px solid var(--border2);"></div>0</div>
+        <div class="det-hm-leg-item"><div class="det-hm-leg-dot" style="background:rgba(216,90,48,0.28);"></div>−1</div>
+        <div class="det-hm-leg-item"><div class="det-hm-leg-dot" style="background:rgba(216,90,48,0.55);"></div>−2</div>
+        <div class="det-hm-leg-item"><div class="det-hm-leg-dot" style="background:rgba(216,90,48,0.85);"></div>−3</div>
+        <div class="det-hm-leg-item"><div class="det-hm-leg-dot" style="border:0.5px dashed var(--border2);background:var(--bg3);"></div>sin dato</div>
+      </div>
+    </div>
+    <div style="padding:12px 18px;border-top:0.5px solid var(--border);display:flex;justify-content:flex-end;">
+      <button class="btn-primary" onclick="closeDetailHeatmap()">Cerrar</button>
+    </div>`;
+  document.getElementById('modal-detail-heatmap').style.display = 'flex';
+}
+
+function closeDetailHeatmap() {
+  document.getElementById('modal-detail-heatmap').style.display = 'none';
 }
 
 // ── TAB: ANÁLISIS ──
