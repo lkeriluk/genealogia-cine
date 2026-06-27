@@ -843,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.13</span>
+    <span class="footer-txt">Genealogía del Cine v6.14</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.13</span>
+    <span class="footer-txt">Genealogía del Cine v6.14</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.13</span>
+    <span class="footer-txt">Genealogía del Cine v6.14</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.13</span>
+    <span class="footer-txt">Genealogía del Cine v6.14</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1598,6 +1598,7 @@ let appState = {
   previewCache: null,
   currentDetailFilm: null,
   detailExpanded: {},
+  detailManualCreate: {},
   detailChronoFilmId: null,
 };
 
@@ -1729,6 +1730,7 @@ function openField(id) {
   appState.currentCalFilm = null;
   appState.currentDetailFilm = null;
   appState.detailExpanded = {};
+  appState.detailManualCreate = {};
   const f = currentField();
   document.getElementById('field-title').textContent = f.name;
   showScreen('screen-field');
@@ -3921,21 +3923,31 @@ function renderDetailDiffItemHTML(film, d, runtime, f) {
     else { valText = '—'; valClass = ''; }
   } else { valText = '—'; valClass = ''; }
 
+  const lastTo = periods.length ? Math.max(...periods.map(p => p.to)) : 0;
+  const fromMin = lastTo;
+  const toMin = Math.floor((film.chronoTime || 0) / 60);
+  const panelWouldShow = !isRunning && fromMin < toMin;
+  const manualActive = !!((appState.detailManualCreate || {})[d.id]);
+
   let bodyHtml = '';
   if (expanded) {
+    const panelHtml = manualActive
+      ? renderManualCreatePanelHTML(film, d, runtime)
+      : renderCreatePeriodPanelHTML(film, d, runtime);
     bodyHtml = `<div class="det-diff-body">
       ${renderMiniTimelineHTML(periods, runtime)}
       <div class="det-poles-row">
         <span class="det-pole-lbl">← ${d.negPole||'Polo−'} (−3)</span>
         <span class="det-pole-lbl">${d.posPole||'Polo+'} (+3) →</span>
       </div>
-      <div class="det-period-rows">${periods.map((p,pi) => renderPeriodRowHTML(p, d, film.id)).join('')}</div>
-      ${renderCreatePeriodPanelHTML(film, d, runtime)}
+      <div class="det-period-rows">${periods.map(p => renderPeriodRowHTML(p, d, film.id)).join('')}</div>
+      ${panelHtml}
     </div>`;
   }
 
-  const lastTo = periods.length ? Math.max(...periods.map(p => p.to)) : 0;
   const canClose = runtime > 0 && periods.length > 0 && lastTo < runtime;
+  const createBtnDisabled = panelWouldShow && !manualActive;
+  const createBtn = `<button class="btn" style="font-size:10px;padding:2px 8px;flex-shrink:0;${createBtnDisabled ? 'opacity:0.4;pointer-events:none;' : ''}" onclick="event.stopPropagation();toggleManualCreate('${film.id}','${d.id}')">Crear período</button>`;
   const closeBtn = canClose
     ? `<button class="btn" style="font-size:10px;padding:2px 8px;flex-shrink:0;" onclick="event.stopPropagation();closeDiffDetail('${film.id}','${d.id}')">Cerrar diferencial</button>`
     : '';
@@ -3946,6 +3958,7 @@ function renderDetailDiffItemHTML(film, d, runtime, f) {
       <span class="det-diff-name">${d.name}</span>
       <span class="det-diff-status ${statusClass}">${statusText}</span>
       <span style="flex:1;"></span>
+      ${createBtn}
       ${closeBtn}
       <span class="det-diff-val ${valClass}">${valText}</span>
     </div>
@@ -4345,6 +4358,99 @@ function cancelEditBound() {
   _pendingBoundEdit = null;
   const input = document.getElementById(`det-pb-${bound}-${periodId}`);
   if (input) input.value = oldVal;
+}
+
+function renderManualCreatePanelHTML(film, d, runtime) {
+  const periods = ((film.detailedRatings || {})[d.id] || {}).periods || [];
+  const fromDefault = periods.length ? Math.max(...periods.map(p => p.to)) : 0;
+  const chronoMin = Math.floor((film.chronoTime || 0) / 60);
+  const toDefault = chronoMin > fromDefault ? chronoMin : fromDefault + 1;
+  const dur = toDefault - fromDefault;
+  return `<div class="det-cpp">
+    <div class="det-cpp-title">Nuevo período</div>
+    <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text2);">
+      <input type="number" class="det-p-bound" id="det-mcp-from-${d.id}" value="${fromDefault}" min="0" style="width:44px;" oninput="updateManualCppRange('${d.id}')" />
+      <span style="color:var(--text3);">'–</span>
+      <input type="number" class="det-p-bound" id="det-mcp-to-${d.id}" value="${toDefault}" min="0" style="width:44px;" oninput="updateManualCppRange('${d.id}')" />
+      <span style="color:var(--text3);">' · <span id="det-mcp-dur-${d.id}">${dur}</span> min</span>
+    </div>
+    <div class="det-cpp-poles">
+      <span class="det-cpp-pole">← ${d.negPole||'Polo−'} (−3)</span>
+      <span class="det-cpp-pole">${d.posPole||'Polo+'} (+3) →</span>
+    </div>
+    <div class="det-cpp-track-wrap">
+      <div class="det-cpp-track">
+        <div class="det-cpp-center"></div>
+        <div class="det-cpp-fill-pos" id="det-mcp-fill-${d.id}" style="width:0;"></div>
+        <div class="det-cpp-thumb" id="det-mcp-thumb-${d.id}" style="left:50%;"></div>
+        <input type="range" min="-3" max="3" step="1" value="0" id="det-mcp-slider-${d.id}"
+          style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer;height:20px;top:-8px;"
+          oninput="updateManualCppSlider(this,'${d.id}')" />
+      </div>
+    </div>
+    <div class="det-cpp-val" id="det-mcp-val-${d.id}">0</div>
+    <div style="display:flex;gap:6px;margin-top:8px;">
+      <button class="btn" onclick="cancelManualCreate('${film.id}','${d.id}')">Cancelar</button>
+      <button class="btn" style="background:rgba(29,158,117,0.12);border-color:rgba(29,158,117,0.3);color:var(--green);" onclick="confirmManualPeriod('${film.id}','${d.id}')">Confirmar período</button>
+    </div>
+  </div>`;
+}
+
+function updateManualCppRange(diffId) {
+  const from = parseInt((document.getElementById('det-mcp-from-' + diffId) || {}).value, 10) || 0;
+  const to = parseInt((document.getElementById('det-mcp-to-' + diffId) || {}).value, 10) || 0;
+  const durEl = document.getElementById('det-mcp-dur-' + diffId);
+  if (durEl) durEl.textContent = Math.max(0, to - from);
+}
+
+function updateManualCppSlider(input, diffId) {
+  const val = +input.value;
+  const pct = (val + 3) / 6 * 100;
+  const fillPct = Math.abs(val) / 3 * 50;
+  const fillEl = document.getElementById('det-mcp-fill-' + diffId);
+  const thumbEl = document.getElementById('det-mcp-thumb-' + diffId);
+  const valEl = document.getElementById('det-mcp-val-' + diffId);
+  if (fillEl) { fillEl.className = val >= 0 ? 'det-cpp-fill-pos' : 'det-cpp-fill-neg'; fillEl.style.cssText = val >= 0 ? `left:50%;width:${fillPct}%;` : `right:50%;width:${fillPct}%;`; }
+  if (thumbEl) thumbEl.style.left = pct + '%';
+  if (valEl) valEl.textContent = val > 0 ? '+' + val : String(val);
+}
+
+function toggleManualCreate(filmId, diffId) {
+  if (!appState.detailManualCreate) appState.detailManualCreate = {};
+  appState.detailManualCreate[diffId] = !appState.detailManualCreate[diffId];
+  if (appState.detailManualCreate[diffId]) appState.detailExpanded[diffId] = true;
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (film) _updateDetailDiffItemHTML(film, diffId, f);
+}
+
+function cancelManualCreate(filmId, diffId) {
+  if (!appState.detailManualCreate) appState.detailManualCreate = {};
+  appState.detailManualCreate[diffId] = false;
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (film) _updateDetailDiffItemHTML(film, diffId, f);
+}
+
+function confirmManualPeriod(filmId, diffId) {
+  const from = parseInt((document.getElementById('det-mcp-from-' + diffId) || {}).value, 10);
+  const to = parseInt((document.getElementById('det-mcp-to-' + diffId) || {}).value, 10);
+  const sliderEl = document.getElementById('det-mcp-slider-' + diffId);
+  if (isNaN(from) || isNaN(to) || from < 0 || to <= from || !sliderEl) return;
+  const val = parseInt(sliderEl.value, 10);
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  _ensureDetailFilmData(film);
+  if (!film.detailedRatings[diffId]) film.detailedRatings[diffId] = { periods: [], complete: false, weightedValue: null };
+  film.detailedRatings[diffId].periods.push({ id: 'p_' + Date.now(), from, to, value: val });
+  film.detailedRatings[diffId].periods.sort((a, b) => a.from - b.from);
+  recalcDiffDetail(film, diffId, film.runtime || 0);
+  appState.detailManualCreate[diffId] = false;
+  _updateDetailDiffItemHTML(film, diffId, f);
+  renderDetailSidebar(f);
+  updateDetailMetDisplay(film, f.differentials || []);
+  saveState();
 }
 
 function closeDiffDetail(filmId, diffId) {
