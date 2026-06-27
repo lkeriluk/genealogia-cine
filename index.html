@@ -843,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.15</span>
+    <span class="footer-txt">Genealogía del Cine v6.16</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.15</span>
+    <span class="footer-txt">Genealogía del Cine v6.16</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.15</span>
+    <span class="footer-txt">Genealogía del Cine v6.16</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.15</span>
+    <span class="footer-txt">Genealogía del Cine v6.16</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3693,6 +3693,7 @@ function saveCalFilm(filmId) {
 let _detailChronoInterval = null;
 let _detailSaveTimeout = null;
 let _pendingBoundEdit = null;
+let _manualCreateErrors = {};
 
 function _detailAutoSave() {
   clearTimeout(_detailSaveTimeout);
@@ -4347,6 +4348,17 @@ function _showEditBoundModal(filmId, diffId, periodId, bound, newVal, oldVal, ms
 function confirmEditBound() {
   closeModal('modal-edit-bound');
   if (!_pendingBoundEdit) return;
+  if (_pendingBoundEdit.isManualCreate) {
+    const { filmId, diffId, pendingInsert, adjId, adjBound, adjVal } = _pendingBoundEdit;
+    _pendingBoundEdit = null;
+    const f = currentField();
+    const film = f.sample.find(m => m.id === +filmId);
+    if (!film) return;
+    const adjP = film.detailedRatings[diffId].periods.find(p => p.id === adjId);
+    if (adjP) adjP[adjBound] = adjVal;
+    _doInsertManualPeriod(film, diffId, pendingInsert.from, pendingInsert.to, pendingInsert.value, f);
+    return;
+  }
   const { filmId, diffId, periodId, bound, newVal, adjIdx, adjBound, adjVal } = _pendingBoundEdit;
   _pendingBoundEdit = null;
   const f = currentField();
@@ -4363,6 +4375,10 @@ function confirmEditBound() {
 function cancelEditBound() {
   closeModal('modal-edit-bound');
   if (!_pendingBoundEdit) return;
+  if (_pendingBoundEdit.isManualCreate) {
+    _pendingBoundEdit = null;
+    return;
+  }
   const { periodId, bound, oldVal } = _pendingBoundEdit;
   _pendingBoundEdit = null;
   const input = document.getElementById(`det-pb-${bound}-${periodId}`);
@@ -4375,14 +4391,16 @@ function renderManualCreatePanelHTML(film, d, runtime) {
   const chronoMin = Math.floor((film.chronoTime || 0) / 60);
   const toDefault = chronoMin > fromDefault ? chronoMin : fromDefault + 1;
   const dur = toDefault - fromDefault;
+  const errMsg = (_manualCreateErrors || {})[d.id];
   return `<div class="det-cpp">
     <div class="det-cpp-title">Nuevo período</div>
-    <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text2);">
+    <div style="display:flex;align-items:center;gap:5px;margin-bottom:${errMsg?'4px':'8px'};font-size:11px;font-family:'DM Mono',monospace;color:var(--text2);">
       <input type="number" class="det-p-bound" id="det-mcp-from-${d.id}" value="${fromDefault}" min="0" style="width:44px;" oninput="updateManualCppRange('${d.id}')" />
       <span style="color:var(--text3);">'–</span>
       <input type="number" class="det-p-bound" id="det-mcp-to-${d.id}" value="${toDefault}" min="0" style="width:44px;" oninput="updateManualCppRange('${d.id}')" />
       <span style="color:var(--text3);">' · <span id="det-mcp-dur-${d.id}">${dur}</span> min</span>
     </div>
+    ${errMsg ? `<div style="font-size:10px;color:var(--red);margin-bottom:8px;">${errMsg}</div>` : ''}
     <div class="det-cpp-poles">
       <span class="det-cpp-pole">← ${d.negPole||'Polo−'} (−3)</span>
       <span class="det-cpp-pole">${d.posPole||'Polo+'} (+3) →</span>
@@ -4406,6 +4424,7 @@ function renderManualCreatePanelHTML(film, d, runtime) {
 }
 
 function updateManualCppRange(diffId) {
+  if (_manualCreateErrors) delete _manualCreateErrors[diffId];
   const from = parseInt((document.getElementById('det-mcp-from-' + diffId) || {}).value, 10) || 0;
   const to = parseInt((document.getElementById('det-mcp-to-' + diffId) || {}).value, 10) || 0;
   const durEl = document.getElementById('det-mcp-dur-' + diffId);
@@ -4452,6 +4471,46 @@ function confirmManualPeriod(filmId, diffId) {
   if (!film) return;
   _ensureDetailFilmData(film);
   if (!film.detailedRatings[diffId]) film.detailedRatings[diffId] = { periods: [], complete: false, weightedValue: null };
+
+  const sorted = [...film.detailedRatings[diffId].periods].sort((a,b) => a.from - b.from);
+  const overlapping = sorted.filter(p => p.from < to && p.to > from);
+
+  if (overlapping.length >= 2) {
+    _manualCreateErrors[diffId] = `El rango ${from}'–${to}' se superpone con ${overlapping.length} períodos existentes. Ajustá los límites.`;
+    _updateDetailDiffItemHTML(film, diffId, f);
+    return;
+  }
+
+  if (overlapping.length === 1) {
+    const op = overlapping[0];
+    const leftOverlap  = op.from < from && op.to > from;  // existing ends inside new
+    const rightOverlap = op.from >= from && op.from < to; // existing starts inside new
+    if (leftOverlap && rightOverlap) {
+      // new period fully inside existing (or the other way around) — can't resolve simply
+      _manualCreateErrors[diffId] = `El rango ${from}'–${to}' se superpone completamente con el período ${op.from}'–${op.to}'. Ajustá los límites.`;
+      _updateDetailDiffItemHTML(film, diffId, f);
+      return;
+    }
+    if (leftOverlap) {
+      const msg = `Se superpondría con el período anterior (termina en ${op.to}'). ¿Ajustar el anterior para que termine en ${from}'?`;
+      _pendingBoundEdit = { isManualCreate: true, filmId, diffId, pendingInsert: { from, to, value: val }, adjId: op.id, adjBound: 'to', adjVal: from };
+      document.getElementById('edit-bound-modal-msg').textContent = msg;
+      document.getElementById('modal-edit-bound').classList.add('open');
+      return;
+    }
+    // rightOverlap only
+    const msg = `Se superpondría con el período siguiente (empieza en ${op.from}'). ¿Ajustar el siguiente para que empiece en ${to}'?`;
+    _pendingBoundEdit = { isManualCreate: true, filmId, diffId, pendingInsert: { from, to, value: val }, adjId: op.id, adjBound: 'from', adjVal: to };
+    document.getElementById('edit-bound-modal-msg').textContent = msg;
+    document.getElementById('modal-edit-bound').classList.add('open');
+    return;
+  }
+
+  _doInsertManualPeriod(film, diffId, from, to, val, f);
+}
+
+function _doInsertManualPeriod(film, diffId, from, to, val, f) {
+  delete _manualCreateErrors[diffId];
   film.detailedRatings[diffId].periods.push({ id: 'p_' + Date.now(), from, to, value: val });
   film.detailedRatings[diffId].periods.sort((a, b) => a.from - b.from);
   recalcDiffDetail(film, diffId, film.runtime || 0);
