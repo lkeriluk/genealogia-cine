@@ -843,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.10</span>
+    <span class="footer-txt">Genealogía del Cine v6.11</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.10</span>
+    <span class="footer-txt">Genealogía del Cine v6.11</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.10</span>
+    <span class="footer-txt">Genealogía del Cine v6.11</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.10</span>
+    <span class="footer-txt">Genealogía del Cine v6.11</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -4276,11 +4276,16 @@ function editDetailPeriodBound(filmId, diffId, periodId, bound, input) {
 
   // Basic validation
   if (isNaN(newVal) || newVal < 0 || (runtime && newVal > runtime)) { input.value = oldVal; return; }
+  if (newVal === oldVal) { return; }
   if (bound === 'from' && newVal >= period.to) { input.value = oldVal; return; }
   if (bound === 'to' && newVal <= period.from) { input.value = oldVal; return; }
 
   const prev = idx > 0 ? periods[idx - 1] : null;
   const next = idx < periods.length - 1 ? periods[idx + 1] : null;
+
+  // Hard limits: can't cross the adjacent period's own start/end (would make it invalid)
+  if (bound === 'from' && prev && newVal <= prev.from) { input.value = oldVal; return; }
+  if (bound === 'to' && next && newVal >= next.to) { input.value = oldVal; return; }
 
   if (bound === 'from' && prev && newVal !== prev.to) {
     const msg = newVal < prev.to
@@ -4333,6 +4338,7 @@ function cancelEditBound() {
 }
 
 function _syncPeriodRowAfterBoundEdit(film, diffId, f) {
+  film.detailedRatings[diffId].periods.sort((a, b) => a.from - b.from);
   recalcDiffDetail(film, diffId, film.runtime || 0);
   _updateDetailDiffItemHTML(film, diffId, f);
   renderDetailSidebar(f);
