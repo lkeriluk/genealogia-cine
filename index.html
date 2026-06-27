@@ -839,7 +839,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.6</span>
+    <span class="footer-txt">Genealogía del Cine v6.7</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1002,7 +1002,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.6</span>
+    <span class="footer-txt">Genealogía del Cine v6.7</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1147,7 +1147,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.6</span>
+    <span class="footer-txt">Genealogía del Cine v6.7</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1473,7 +1473,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.6</span>
+    <span class="footer-txt">Genealogía del Cine v6.7</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -4186,6 +4186,12 @@ function deleteDetailPeriod(filmId, diffId, periodId) {
           <div style="font-size:11px;color:var(--text3);">${next.from}' – ${next.to}' &nbsp;→&nbsp; ${period.from}' – ${next.to}'</div>
         </button>`
       : `<div style="padding:10px 14px;background:var(--bg3);border-radius:var(--radius);font-size:11px;color:var(--text3);">Extender el período siguiente — no está calificado y quedaría antes de otro período.</div>`;
+  }
+  if (!next) {
+    html += `<button class="btn" style="text-align:left;padding:10px 14px;width:100%;" onclick="_doDeleteDetailPeriodModal('${filmId}','${diffId}','${periodId}',null)">
+        <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px;">Borrar sin modificar nada</div>
+        <div style="font-size:11px;color:var(--text3);">El rango ${period.from}' – ${period.to}' quedará disponible para un nuevo período.</div>
+      </button>`;
   }
   document.getElementById('del-period-modal-opts').innerHTML = html;
   document.getElementById('modal-del-period').classList.add('open');
