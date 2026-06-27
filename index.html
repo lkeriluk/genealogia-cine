@@ -843,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.8</span>
+    <span class="footer-txt">Genealogía del Cine v6.9</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.8</span>
+    <span class="footer-txt">Genealogía del Cine v6.9</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.8</span>
+    <span class="footer-txt">Genealogía del Cine v6.9</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.8</span>
+    <span class="footer-txt">Genealogía del Cine v6.9</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -4282,16 +4282,18 @@ function editDetailPeriodBound(filmId, diffId, periodId, bound, input) {
   const prev = idx > 0 ? periods[idx - 1] : null;
   const next = idx < periods.length - 1 ? periods[idx + 1] : null;
 
-  if (bound === 'from' && prev && newVal < prev.to) {
-    _showEditBoundModal(filmId, diffId, periodId, bound, newVal, oldVal,
-      `El período anterior termina en ${prev.to}'. ¿Ajustarlo a ${newVal}' para que no se superpongan?`,
-      idx - 1, 'to', newVal);
+  if (bound === 'from' && prev && newVal !== prev.to) {
+    const msg = newVal < prev.to
+      ? `Se superpondría con el período anterior (termina en ${prev.to}'). ¿Ajustar el anterior para que termine en ${newVal}'?`
+      : `Quedaría un rango sin cubrir entre ${prev.to}' y ${newVal}'. ¿Ajustar el período anterior para que termine en ${newVal}'?`;
+    _showEditBoundModal(filmId, diffId, periodId, bound, newVal, oldVal, msg, idx - 1, 'to', newVal);
     return;
   }
-  if (bound === 'to' && next && newVal > next.from) {
-    _showEditBoundModal(filmId, diffId, periodId, bound, newVal, oldVal,
-      `El período siguiente empieza en ${next.from}'. ¿Ajustarlo a ${newVal}' para que no se superpongan?`,
-      idx + 1, 'from', newVal);
+  if (bound === 'to' && next && newVal !== next.from) {
+    const msg = newVal > next.from
+      ? `Se superpondría con el período siguiente (empieza en ${next.from}'). ¿Ajustar el siguiente para que empiece en ${newVal}'?`
+      : `Quedaría un rango sin cubrir entre ${newVal}' y ${next.from}'. ¿Ajustar el período siguiente para que empiece en ${newVal}'?`;
+    _showEditBoundModal(filmId, diffId, periodId, bound, newVal, oldVal, msg, idx + 1, 'from', newVal);
     return;
   }
 
