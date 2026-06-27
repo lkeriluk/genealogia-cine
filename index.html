@@ -1483,6 +1483,18 @@ input[type=number] {
   <div class="det-hm-modal" id="det-hm-content"></div>
 </div>
 
+<!-- MODAL: ELIMINAR PERÍODO DETALLADO -->
+<div class="modal-overlay" id="modal-del-period">
+  <div class="modal" style="max-width:400px;width:90vw;">
+    <div class="modal-title" id="del-period-modal-title">Eliminar período</div>
+    <div class="modal-sub" id="del-period-modal-sub"></div>
+    <div id="del-period-modal-opts" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-del-period')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: ELIMINAR CAMPO -->
 <div class="modal-overlay" id="modal-delete-field">
   <div class="modal">
@@ -4134,12 +4146,66 @@ function deleteDetailPeriod(filmId, diffId, periodId) {
   const film = f.sample.find(m => m.id === +filmId);
   if (!film || !film.detailedRatings || !film.detailedRatings[diffId]) return;
   const periods = film.detailedRatings[diffId].periods;
-  const period = periods.find(p => p.id === periodId);
-  if (!period) return;
-  if (period.value !== null && period.value !== undefined) {
-    if (!confirm('¿Eliminar este período? Ya tiene un valor asignado.')) return;
+  const idx = periods.findIndex(p => p.id === periodId);
+  if (idx === -1) return;
+  const period = periods[idx];
+  const prev = idx > 0 ? periods[idx - 1] : null;
+  const next = idx < periods.length - 1 ? periods[idx + 1] : null;
+
+  // Case 1: único período — borrar directo
+  if (!prev && !next) {
+    _doDeleteDetailPeriod(film, diffId, periodId, null, f);
+    return;
   }
-  film.detailedRatings[diffId].periods = periods.filter(p => p.id !== periodId);
+
+  // Determinar opciones válidas según la restricción: períodos sin calificar no pueden quedar antes de otro período
+  // canPrev: extender prev está OK si prev no queda con valor null antes de next
+  const canPrev = prev && (!next || (prev.value !== null && prev.value !== undefined));
+  // canNext: extender next está OK si next no queda con valor null antes de un período posterior
+  const nextNext = next && (idx + 2 < periods.length) ? periods[idx + 2] : null;
+  const canNext = next && ((next.value !== null && next.value !== undefined) || !nextNext);
+
+  // Mostrar modal de elección
+  const dur = period.to - period.from;
+  document.getElementById('del-period-modal-title').textContent = 'Eliminar período';
+  document.getElementById('del-period-modal-sub').textContent = `${period.from}' – ${period.to}' · ${dur} min`;
+
+  let html = '';
+  if (prev) {
+    html += canPrev
+      ? `<button class="btn" style="text-align:left;padding:10px 14px;width:100%;" onclick="_doDeleteDetailPeriodModal('${filmId}','${diffId}','${periodId}','extendPrev')">
+          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px;">Extender el período anterior</div>
+          <div style="font-size:11px;color:var(--text3);">${prev.from}' – ${prev.to}' &nbsp;→&nbsp; ${prev.from}' – ${period.to}'</div>
+        </button>`
+      : `<div style="padding:10px 14px;background:var(--bg3);border-radius:var(--radius);font-size:11px;color:var(--text3);">Extender el período anterior — no está calificado y quedaría antes de otro período.</div>`;
+  }
+  if (next) {
+    html += canNext
+      ? `<button class="btn" style="text-align:left;padding:10px 14px;width:100%;" onclick="_doDeleteDetailPeriodModal('${filmId}','${diffId}','${periodId}','extendNext')">
+          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px;">Extender el período siguiente</div>
+          <div style="font-size:11px;color:var(--text3);">${next.from}' – ${next.to}' &nbsp;→&nbsp; ${period.from}' – ${next.to}'</div>
+        </button>`
+      : `<div style="padding:10px 14px;background:var(--bg3);border-radius:var(--radius);font-size:11px;color:var(--text3);">Extender el período siguiente — no está calificado y quedaría antes de otro período.</div>`;
+  }
+  document.getElementById('del-period-modal-opts').innerHTML = html;
+  document.getElementById('modal-del-period').classList.add('open');
+}
+
+function _doDeleteDetailPeriodModal(filmId, diffId, periodId, mode) {
+  closeModal('modal-del-period');
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  _doDeleteDetailPeriod(film, diffId, periodId, mode, f);
+}
+
+function _doDeleteDetailPeriod(film, diffId, periodId, mode, f) {
+  const periods = film.detailedRatings[diffId].periods;
+  const idx = periods.findIndex(p => p.id === periodId);
+  if (idx === -1) return;
+  if (mode === 'extendPrev' && idx > 0) periods[idx - 1].to = periods[idx].to;
+  else if (mode === 'extendNext' && idx < periods.length - 1) periods[idx + 1].from = periods[idx].from;
+  periods.splice(idx, 1);
   recalcDiffDetail(film, diffId, film.runtime || 0);
   _updateDetailDiffItemHTML(film, diffId, f);
   renderDetailSidebar(f);
