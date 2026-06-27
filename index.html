@@ -3661,6 +3661,12 @@ function saveCalFilm(filmId) {
 // ── TAB: CALIFICACIÓN DETALLADA ──
 
 let _detailChronoInterval = null;
+let _detailSaveTimeout = null;
+
+function _detailAutoSave() {
+  clearTimeout(_detailSaveTimeout);
+  _detailSaveTimeout = setTimeout(() => saveState(), 800);
+}
 
 function formatDetailTime(sec) {
   const s = Math.floor(sec || 0);
@@ -3813,7 +3819,9 @@ function renderDetailMain(film, f) {
 
   const chronoHint = isRunning
     ? `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras registrar un corte, luego expandí el diferencial que querés calificar.`
-    : `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(chronoTime)}.</strong> Expandí el diferencial que querés calificar — aparecerá el panel para crear un período hasta este momento.`;
+    : chronoTime === 0
+      ? `Presioná <strong style="color:var(--green);">▶ Reanudar</strong> para iniciar el cronómetro mientras mirás la película. Pausalo cuando quieras registrar un corte.`
+      : `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(chronoTime)}.</strong> Expandí el diferencial que querés calificar — aparecerá el panel para crear un período hasta este momento.`;
 
   const diffsLabel = isRunning ? 'DIFERENCIALES — pausá el cronómetro para crear períodos' : 'DIFERENCIALES';
 
@@ -3831,7 +3839,6 @@ function renderDetailMain(film, f) {
       </div>
       ${prevId ? `<button class="btn" onclick="selectDetailFilm(${prevId})">← Anterior</button>` : ''}
       ${nextId ? `<button class="btn" onclick="selectDetailFilm(${nextId})">Siguiente →</button>` : ''}
-      <button class="btn-primary" onclick="saveDetailFilm(${film.id})">Guardar</button>
     </div>
     <div class="det-chrono-zone">
       <div class="det-chrono-row">
@@ -3967,7 +3974,11 @@ function renderCreatePeriodPanelHTML(film, d, runtime) {
   const periods = ((film.detailedRatings || {})[d.id] || {}).periods || [];
   const fromMin = periods.length ? Math.max(...periods.map(p => p.to)) : 0;
   const toMin = Math.floor((film.chronoTime || 0) / 60);
-  if (fromMin === toMin) return '';
+  if (fromMin === toMin) {
+    // No range available: explain why
+    if (toMin === 0) return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:2px;">Presioná ▶ para iniciar el cronómetro, mirá la película, y pausalo cuando quieras registrar un corte.</div>`;
+    return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:2px;">El cronómetro no avanzó desde el último período de este diferencial.</div>`;
+  }
   const dur = toMin - fromMin;
   return `<div class="det-cpp" id="det-cpp-${d.id}">
     <div class="det-cpp-title">Nuevo período — cronómetro pausado en ${formatDetailTime(film.chronoTime||0)}</div>
@@ -4052,7 +4063,9 @@ function pauseDetailChrono() {
   if (btnsEl) btnsEl.innerHTML = `<button class="btn" style="border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);" onclick="startDetailChrono(${filmId})">▶ Reanudar</button>
     <button class="btn-danger" style="font-size:11px;" onclick="resetDetailChrono(${filmId})">↺ Reiniciar</button>`;
   const hintEl = document.getElementById('det-chrono-hint');
-  if (hintEl) hintEl.innerHTML = `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(film.chronoTime||0)}.</strong> Expandí el diferencial que querés calificar — aparecerá el panel para crear un período hasta este momento.`;
+  if (hintEl) hintEl.innerHTML = (film.chronoTime||0) === 0
+    ? `Presioná <strong style="color:var(--green);">▶ Reanudar</strong> para iniciar el cronómetro mientras mirás la película. Pausalo cuando quieras registrar un corte.`
+    : `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(film.chronoTime||0)}.</strong> Expandí el diferencial que querés calificar — aparecerá el panel para crear un período hasta este momento.`;
   const lblEl = document.getElementById('det-diffs-label');
   if (lblEl) lblEl.textContent = 'DIFERENCIALES';
   const listEl = document.getElementById('det-diffs-list');
@@ -4108,6 +4121,7 @@ function confirmDetailPeriod(filmId, diffId, from, to) {
   _updateDetailDiffItemHTML(film, diffId, f);
   renderDetailSidebar(f);
   updateDetailMetDisplay(film, f.differentials || []);
+  saveState();
 }
 
 function cancelDetailPeriod(diffId) {
@@ -4130,6 +4144,7 @@ function deleteDetailPeriod(filmId, diffId, periodId) {
   _updateDetailDiffItemHTML(film, diffId, f);
   renderDetailSidebar(f);
   updateDetailMetDisplay(film, f.differentials || []);
+  saveState();
 }
 
 function updateDetailPeriodSlider(input, filmId, diffId, periodId) {
@@ -4151,6 +4166,7 @@ function updateDetailPeriodSlider(input, filmId, diffId, periodId) {
   recalcDiffDetail(film, diffId, film.runtime || 0);
   _updateDetailDiffHeader(film, diffId, f);
   updateDetailMetDisplay(film, f.differentials || []);
+  _detailAutoSave();
 }
 
 function _updateDetailDiffItemHTML(film, diffId, f) {
@@ -4201,6 +4217,7 @@ function setDetailRuntime(filmId, val) {
   film.runtime = mins;
   (f.differentials || []).forEach(d => recalcDiffDetail(film, d.id, mins));
   renderDetailMain(film, f);
+  saveState();
 }
 
 function saveDetailFilm(filmId) {
@@ -4274,9 +4291,6 @@ function showDetailHeatmap(filmId) {
         <div class="det-hm-leg-item"><div class="det-hm-leg-dot" style="background:rgba(216,90,48,0.85);"></div>−3</div>
         <div class="det-hm-leg-item"><div class="det-hm-leg-dot" style="border:0.5px dashed var(--border2);background:var(--bg3);"></div>sin dato</div>
       </div>
-    </div>
-    <div style="padding:12px 18px;border-top:0.5px solid var(--border);display:flex;justify-content:flex-end;">
-      <button class="btn-primary" onclick="closeDetailHeatmap()">Cerrar</button>
     </div>`;
   document.getElementById('modal-detail-heatmap').style.display = 'flex';
 }
