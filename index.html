@@ -843,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.18</span>
+    <span class="footer-txt">Genealogía del Cine v6.19</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.18</span>
+    <span class="footer-txt">Genealogía del Cine v6.19</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.18</span>
+    <span class="footer-txt">Genealogía del Cine v6.19</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.18</span>
+    <span class="footer-txt">Genealogía del Cine v6.19</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1500,17 +1500,6 @@ input[type=number] {
 </div>
 
 <!-- MODAL: ELIMINAR PERÍODO DETALLADO -->
-<div class="modal-overlay" id="modal-del-period">
-  <div class="modal" style="max-width:400px;width:90vw;">
-    <div class="modal-title" id="del-period-modal-title">Eliminar período</div>
-    <div class="modal-sub" id="del-period-modal-sub"></div>
-    <div id="del-period-modal-opts" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;"></div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeModal('modal-del-period')">Cancelar</button>
-    </div>
-  </div>
-</div>
-
 <!-- MODAL: ELIMINAR CAMPO -->
 <div class="modal-overlay" id="modal-delete-field">
   <div class="modal">
@@ -3730,7 +3719,6 @@ function detailPeriodFg(val) {
 function calcDetailWeighted(periods, runtime) {
   if (!periods || !periods.length || !runtime) return null;
   if (periods.some(p => p.value === null || p.value === undefined)) return null;
-  if (periods.reduce((s,p) => s + (p.to - p.from), 0) < runtime) return null;
   return +(periods.reduce((s,p) => s + p.value * (p.to - p.from), 0) / runtime).toFixed(1);
 }
 
@@ -3749,8 +3737,7 @@ function recalcDiffDetail(film, diffId, runtime) {
   if (!dr) return;
   const periods = dr.periods || [];
   const allRated = periods.length > 0 && periods.every(p => p.value !== null && p.value !== undefined);
-  const covered = periods.reduce((s,p) => s + (p.to - p.from), 0);
-  dr.complete = !!(allRated && runtime && covered >= runtime);
+  dr.complete = !!(allRated && runtime);
   if (dr.complete) {
     dr.weightedValue = calcDetailWeighted(periods, runtime);
     if (!film.ratings) film.ratings = {};
@@ -4202,69 +4189,6 @@ function deleteDetailPeriod(filmId, diffId, periodId) {
   const periods = film.detailedRatings[diffId].periods;
   const idx = periods.findIndex(p => p.id === periodId);
   if (idx === -1) return;
-  const period = periods[idx];
-  const prev = idx > 0 ? periods[idx - 1] : null;
-  const next = idx < periods.length - 1 ? periods[idx + 1] : null;
-
-  // Case 1: único período — borrar directo
-  if (!prev && !next) {
-    _doDeleteDetailPeriod(film, diffId, periodId, null, f);
-    return;
-  }
-
-  // Determinar opciones válidas según la restricción: períodos sin calificar no pueden quedar antes de otro período
-  // canPrev: extender prev está OK si prev no queda con valor null antes de next
-  const canPrev = prev && (!next || (prev.value !== null && prev.value !== undefined));
-  // canNext: extender next está OK si next no queda con valor null antes de un período posterior
-  const nextNext = next && (idx + 2 < periods.length) ? periods[idx + 2] : null;
-  const canNext = next && ((next.value !== null && next.value !== undefined) || !nextNext);
-
-  // Mostrar modal de elección
-  const dur = period.to - period.from;
-  document.getElementById('del-period-modal-title').textContent = 'Eliminar período';
-  document.getElementById('del-period-modal-sub').textContent = `${period.from}' – ${period.to}' · ${dur} min`;
-
-  let html = '';
-  if (prev) {
-    html += canPrev
-      ? `<button class="btn" style="text-align:left;padding:10px 14px;width:100%;" onclick="_doDeleteDetailPeriodModal('${filmId}','${diffId}','${periodId}','extendPrev')">
-          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px;">Extender el período anterior</div>
-          <div style="font-size:11px;color:var(--text3);">${prev.from}' – ${prev.to}' &nbsp;→&nbsp; ${prev.from}' – ${period.to}'</div>
-        </button>`
-      : `<div style="padding:10px 14px;background:var(--bg3);border-radius:var(--radius);font-size:11px;color:var(--text3);">Extender el período anterior — no está calificado y quedaría antes de otro período.</div>`;
-  }
-  if (next) {
-    html += canNext
-      ? `<button class="btn" style="text-align:left;padding:10px 14px;width:100%;" onclick="_doDeleteDetailPeriodModal('${filmId}','${diffId}','${periodId}','extendNext')">
-          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px;">Extender el período siguiente</div>
-          <div style="font-size:11px;color:var(--text3);">${next.from}' – ${next.to}' &nbsp;→&nbsp; ${period.from}' – ${next.to}'</div>
-        </button>`
-      : `<div style="padding:10px 14px;background:var(--bg3);border-radius:var(--radius);font-size:11px;color:var(--text3);">Extender el período siguiente — no está calificado y quedaría antes de otro período.</div>`;
-  }
-  if (!next) {
-    html += `<button class="btn" style="text-align:left;padding:10px 14px;width:100%;" onclick="_doDeleteDetailPeriodModal('${filmId}','${diffId}','${periodId}',null)">
-        <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px;">Borrar sin modificar nada</div>
-        <div style="font-size:11px;color:var(--text3);">El rango ${period.from}' – ${period.to}' quedará disponible para un nuevo período.</div>
-      </button>`;
-  }
-  document.getElementById('del-period-modal-opts').innerHTML = html;
-  document.getElementById('modal-del-period').classList.add('open');
-}
-
-function _doDeleteDetailPeriodModal(filmId, diffId, periodId, mode) {
-  closeModal('modal-del-period');
-  const f = currentField();
-  const film = f.sample.find(m => m.id === +filmId);
-  if (!film) return;
-  _doDeleteDetailPeriod(film, diffId, periodId, mode, f);
-}
-
-function _doDeleteDetailPeriod(film, diffId, periodId, mode, f) {
-  const periods = film.detailedRatings[diffId].periods;
-  const idx = periods.findIndex(p => p.id === periodId);
-  if (idx === -1) return;
-  if (mode === 'extendPrev' && idx > 0) periods[idx - 1].to = periods[idx].to;
-  else if (mode === 'extendNext' && idx < periods.length - 1) periods[idx + 1].from = periods[idx].from;
   periods.splice(idx, 1);
   recalcDiffDetail(film, diffId, film.runtime || 0);
   _updateDetailDiffItemHTML(film, diffId, f);
