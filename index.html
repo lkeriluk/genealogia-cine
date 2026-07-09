@@ -843,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.22</span>
+    <span class="footer-txt">Genealogía del Cine v6.23</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.22</span>
+    <span class="footer-txt">Genealogía del Cine v6.23</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.22</span>
+    <span class="footer-txt">Genealogía del Cine v6.23</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.22</span>
+    <span class="footer-txt">Genealogía del Cine v6.23</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -4024,36 +4024,33 @@ function renderPeriodRowHTML(p, d, filmId) {
 
 function renderCreatePeriodPanelHTML(film, d, runtime) {
   const isRunning = appState.detailChronoFilmId === film.id && !!_detailChronoInterval;
-  if (isRunning) return '';
 
   const openPeriod = (appState.detailOpenPeriods || {})[d.id];
   const hasOpen = openPeriod && openPeriod.filmId === film.id;
   const currentMin = Math.floor((film.chronoTime || 0) / 60);
 
-  // Phase 2: period is open AND clock has advanced past its 'from' minute
-  if (hasOpen && currentMin > openPeriod.from) {
-    return _renderChronoPeriodPanel(film, d, true, openPeriod.from, currentMin, openPeriod.value || 0);
+  // Phase 2: always show when a period is open (gives immediate feedback after "Crear período")
+  if (hasOpen) {
+    const toVal = currentMin > openPeriod.from ? currentMin : openPeriod.from;
+    return _renderChronoPeriodPanel(film, d, true, openPeriod.from, toVal, openPeriod.value || 0, isRunning);
   }
 
-  // No panel when clock hasn't started and no open period
-  if (currentMin === 0 && !hasOpen) {
+  // No panel when clock hasn't started
+  if (currentMin === 0) {
     return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:4px;">Presioná ▶ para iniciar el cronómetro, mirá la película, y pausalo cuando quieras abrir un período.</div>`;
   }
 
-  // fromVal: if period already open (clock not yet advanced), use stored from; else current minute
-  const fromVal = hasOpen ? openPeriod.from : currentMin;
-
-  // Don't show panel if fromVal is already inside an existing period
+  // Don't show panel if current minute is already inside an existing period
   const existingPeriods = ((film.detailedRatings || {})[d.id] || {}).periods || [];
-  if (!hasOpen && existingPeriods.some(p => fromVal >= p.from && fromVal < p.to)) return '';
+  if (existingPeriods.some(p => currentMin >= p.from && currentMin < p.to)) return '';
 
-  // Phase 1 (including "just opened, clock not advanced yet" — keeps panel as-is)
-  return _renderChronoPeriodPanel(film, d, false, fromVal, '', hasOpen ? (openPeriod.value || 0) : 0);
+  // Phase 1
+  return _renderChronoPeriodPanel(film, d, false, currentMin, '', 0, isRunning);
 }
 
-function _renderChronoPeriodPanel(film, d, isPhase2, fromVal, toVal, storedVal) {
+function _renderChronoPeriodPanel(film, d, isPhase2, fromVal, toVal, storedVal, isRunning) {
   // toVal: number for Phase 2, '' for Phase 1
-  const durStr = (toVal !== '' && toVal > fromVal) ? `${toVal - fromVal}` : '—';
+  const durStr = (toVal !== '' && +toVal > +fromVal) ? `${toVal - fromVal}` : '—';
   const pct = (storedVal + 3) / 6 * 100;
   const fillPct = Math.abs(storedVal) / 3 * 50;
   const fillStyle = storedVal >= 0 ? `left:50%;width:${fillPct}%;` : `right:50%;width:${fillPct}%;`;
@@ -4062,14 +4059,15 @@ function _renderChronoPeriodPanel(film, d, isPhase2, fromVal, toVal, storedVal) 
   const valStr = storedVal > 0 ? '+' + storedVal : String(storedVal);
   const toStyle = !isPhase2 ? 'color:var(--amber);' : '';
   const errMsg = (_chronoCloseErrors || {})[d.id];
+  const closeDisabled = isRunning || (toVal !== '' && +toVal <= +fromVal);
   const title = isPhase2
-    ? `Cerrar período — ${fromVal}' → ${toVal}'`
+    ? (+toVal > +fromVal ? `Cerrar período — ${fromVal}' → ${toVal}'` : `Período abierto desde el minuto ${fromVal}' — reanudá el cronómetro`)
     : `Nuevo período — desde el minuto ${fromVal}'`;
   const buttons = isPhase2
     ? `<button class="btn" style="font-size:11px;" onclick="cancelOpenPeriod('${film.id}','${d.id}')">Cancelar</button>
-       <button class="btn" style="font-size:11px;border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);"
+       <button class="btn" style="font-size:11px;border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);${closeDisabled ? 'opacity:.4;pointer-events:none;' : ''}"
          onclick="closeDetailPeriodFromPanel('${film.id}','${d.id}')">Cerrar período</button>`
-    : `<button class="btn" style="font-size:11px;border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);"
+    : `<button class="btn" style="font-size:11px;border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);${isRunning ? 'opacity:.4;pointer-events:none;' : ''}"
          onclick="openDetailPeriodFromPanel('${film.id}','${d.id}')">Crear período</button>`;
 
   return `<div class="det-cpp">
@@ -4307,6 +4305,9 @@ function updateChronoCcpRange(diffId) {
   const to   = toEl ? parseInt(toEl.value, 10) : NaN;
   const durEl = document.getElementById('det-ccp-dur-' + diffId);
   if (durEl) durEl.textContent = (!isNaN(from) && !isNaN(to) && to > from) ? (to - from) : '—';
+  if (toEl && toEl.value.trim() !== '' && !isNaN(to)) {
+    toEl.style.color = to <= from ? 'var(--red)' : '';
+  }
 }
 
 function updateChronoCcpSlider(input, diffId) {

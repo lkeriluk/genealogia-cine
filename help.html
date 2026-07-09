@@ -652,6 +652,13 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <div class="article-title">Release Notes</div>
       <div class="article-meta">Más</div>
 
+      <h2>v6.23 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Julio 2026</span></h2>
+      <ul>
+        <li>Calificación detallada: el panel de período ya no se oculta cuando el cronómetro está corriendo — se muestra siempre, pero los botones de acción ("Crear período" / "Cerrar período") quedan deshabilitados mientras corre. Los campos de inicio, fin y valor siguen siendo editables.</li>
+        <li>Calificación detallada: "Crear período" ahora da feedback visual inmediato al hacer click — el panel pasa a Fase 2 (período abierto) con el campo de fin visible, aunque el cronómetro aún no haya avanzado. El botón "Cerrar período" queda deshabilitado hasta que el reloj avance o el usuario edite el fin manualmente.</li>
+        <li>Calificación detallada: el campo de fin del período se marca en rojo en tiempo real si su valor es menor o igual al de inicio, previniendo períodos con duración negativa o cero.</li>
+      </ul>
+
       <h2>v6.22 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Julio 2026</span></h2>
       <ul>
         <li>Calificación detallada: "Agregar manual" ahora está siempre disponible, independientemente del estado del cronómetro.</li>
