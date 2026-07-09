@@ -843,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.24</span>
+    <span class="footer-txt">Genealogía del Cine v6.25</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.24</span>
+    <span class="footer-txt">Genealogía del Cine v6.25</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.24</span>
+    <span class="footer-txt">Genealogía del Cine v6.25</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.24</span>
+    <span class="footer-txt">Genealogía del Cine v6.25</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -4552,9 +4552,13 @@ function renderManualCreatePanelHTML(film, d, runtime) {
 function updateManualCppRange(diffId) {
   if (_manualCreateErrors) delete _manualCreateErrors[diffId];
   const from = parseInt((document.getElementById('det-mcp-from-' + diffId) || {}).value, 10) || 0;
-  const to = parseInt((document.getElementById('det-mcp-to-' + diffId) || {}).value, 10) || 0;
+  const toEl = document.getElementById('det-mcp-to-' + diffId);
+  const to = toEl ? (parseInt(toEl.value, 10) || 0) : 0;
   const durEl = document.getElementById('det-mcp-dur-' + diffId);
   if (durEl) durEl.textContent = Math.max(0, to - from);
+  if (toEl && toEl.value.trim() !== '') {
+    toEl.style.color = to <= from ? 'var(--red)' : '';
+  }
 }
 
 function updateManualCppSlider(input, diffId) {
