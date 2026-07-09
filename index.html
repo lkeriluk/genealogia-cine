@@ -843,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.21</span>
+    <span class="footer-txt">Genealogía del Cine v6.22</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.21</span>
+    <span class="footer-txt">Genealogía del Cine v6.22</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.21</span>
+    <span class="footer-txt">Genealogía del Cine v6.22</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.21</span>
+    <span class="footer-txt">Genealogía del Cine v6.22</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3945,7 +3945,7 @@ function renderDetailDiffItemHTML(film, d, runtime, f) {
   }
 
   const canClose = runtime > 0 && periods.length > 0 && lastTo < runtime;
-  const createBtnDisabled = chronoPanelActive && !manualActive;
+  const createBtnDisabled = false;
   const createBtn = `<button class="btn" style="font-size:10px;padding:2px 8px;flex-shrink:0;${createBtnDisabled ? 'opacity:0.4;pointer-events:none;' : ''}" onclick="event.stopPropagation();toggleManualCreate('${film.id}','${d.id}')">Agregar manual</button>`;
   const closeBtn = canClose
     ? `<button class="btn" style="font-size:10px;padding:2px 8px;flex-shrink:0;" onclick="event.stopPropagation();closeDiffDetail('${film.id}','${d.id}')">Cerrar diferencial</button>`
@@ -4026,26 +4026,33 @@ function renderCreatePeriodPanelHTML(film, d, runtime) {
   const isRunning = appState.detailChronoFilmId === film.id && !!_detailChronoInterval;
   if (isRunning) return '';
 
-  const openPeriods = appState.detailOpenPeriods || {};
-  const openPeriod = openPeriods[d.id];
+  const openPeriod = (appState.detailOpenPeriods || {})[d.id];
   const hasOpen = openPeriod && openPeriod.filmId === film.id;
   const currentMin = Math.floor((film.chronoTime || 0) / 60);
 
+  // Phase 2: period is open AND clock has advanced past its 'from' minute
+  if (hasOpen && currentMin > openPeriod.from) {
+    return _renderChronoPeriodPanel(film, d, true, openPeriod.from, currentMin, openPeriod.value || 0);
+  }
+
+  // No panel when clock hasn't started and no open period
   if (currentMin === 0 && !hasOpen) {
     return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:4px;">Presioná ▶ para iniciar el cronómetro, mirá la película, y pausalo cuando quieras abrir un período.</div>`;
   }
 
-  if (hasOpen && currentMin <= openPeriod.from) {
-    return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:4px;">El cronómetro no avanzó desde que se abrió este período (minuto ${openPeriod.from}'). Reanudá para poder cerrarlo.</div>`;
-  }
+  // fromVal: if period already open (clock not yet advanced), use stored from; else current minute
+  const fromVal = hasOpen ? openPeriod.from : currentMin;
 
-  return _renderChronoPeriodPanel(film, d, hasOpen, openPeriod, currentMin);
+  // Don't show panel if fromVal is already inside an existing period
+  const existingPeriods = ((film.detailedRatings || {})[d.id] || {}).periods || [];
+  if (!hasOpen && existingPeriods.some(p => fromVal >= p.from && fromVal < p.to)) return '';
+
+  // Phase 1 (including "just opened, clock not advanced yet" — keeps panel as-is)
+  return _renderChronoPeriodPanel(film, d, false, fromVal, '', hasOpen ? (openPeriod.value || 0) : 0);
 }
 
-function _renderChronoPeriodPanel(film, d, isPhase2, openPeriod, currentMin) {
-  const fromVal = isPhase2 ? openPeriod.from : currentMin;
-  const toVal   = isPhase2 ? currentMin : '';
-  const storedVal = isPhase2 ? (openPeriod.value || 0) : 0;
+function _renderChronoPeriodPanel(film, d, isPhase2, fromVal, toVal, storedVal) {
+  // toVal: number for Phase 2, '' for Phase 1
   const durStr = (toVal !== '' && toVal > fromVal) ? `${toVal - fromVal}` : '—';
   const pct = (storedVal + 3) / 6 * 100;
   const fillPct = Math.abs(storedVal) / 3 * 50;
