@@ -843,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.23</span>
+    <span class="footer-txt">Genealogía del Cine v6.24</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.23</span>
+    <span class="footer-txt">Genealogía del Cine v6.24</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.23</span>
+    <span class="footer-txt">Genealogía del Cine v6.24</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.23</span>
+    <span class="footer-txt">Genealogía del Cine v6.24</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3342,7 +3342,7 @@ function editDiff(id) {
     </div>
     <div class="form-group">
       <label class="form-label">DESCRIPCIÓN</label>
-      <textarea class="form-input" id="diff-desc" style="height:70px;padding:8px;resize:none;">${d.desc||''}</textarea>
+      <textarea class="form-input" id="diff-desc" style="height:70px;padding:8px;resize:none;" oninput="autosaveDiffDesc('${id}')">${d.desc||''}</textarea>
     </div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace;">
       ${ratedCount} / ${f.sample?f.sample.length:0} películas calificadas
@@ -3378,6 +3378,16 @@ function saveDiff(existingId) {
   saveState();
   renderDiffs(f);
   cancelDiffEdit();
+}
+
+function autosaveDiffDesc(diffId) {
+  const f = currentField();
+  const d = f.differentials.find(x => x.id === diffId);
+  if (!d) return;
+  const el = document.getElementById('diff-desc');
+  if (!el) return;
+  d.desc = el.value;
+  saveState();
 }
 
 function deleteDiff(id) {
@@ -4427,18 +4437,16 @@ function editDetailPeriodBound(filmId, diffId, periodId, bound, input) {
   if (bound === 'from' && prev && newVal <= prev.from) { input.value = oldVal; return; }
   if (bound === 'to' && next && newVal >= next.to) { input.value = oldVal; return; }
 
-  if (bound === 'from' && prev && newVal !== prev.to) {
-    const msg = newVal < prev.to
-      ? `Se superpondría con el período anterior (termina en ${prev.to}'). ¿Ajustar el anterior para que termine en ${newVal}'?`
-      : `Quedaría un rango sin cubrir entre ${prev.to}' y ${newVal}'. ¿Ajustar el período anterior para que termine en ${newVal}'?`;
-    _showEditBoundModal(filmId, diffId, periodId, bound, newVal, oldVal, msg, idx - 1, 'to', newVal);
+  if (bound === 'from' && prev && newVal < prev.to) {
+    _showEditBoundModal(filmId, diffId, periodId, bound, newVal, oldVal,
+      `Se superpondría con el período anterior (termina en ${prev.to}'). ¿Ajustar el anterior para que termine en ${newVal}'?`,
+      idx - 1, 'to', newVal);
     return;
   }
-  if (bound === 'to' && next && newVal !== next.from) {
-    const msg = newVal > next.from
-      ? `Se superpondría con el período siguiente (empieza en ${next.from}'). ¿Ajustar el siguiente para que empiece en ${newVal}'?`
-      : `Quedaría un rango sin cubrir entre ${newVal}' y ${next.from}'. ¿Ajustar el período siguiente para que empiece en ${newVal}'?`;
-    _showEditBoundModal(filmId, diffId, periodId, bound, newVal, oldVal, msg, idx + 1, 'from', newVal);
+  if (bound === 'to' && next && newVal > next.from) {
+    _showEditBoundModal(filmId, diffId, periodId, bound, newVal, oldVal,
+      `Se superpondría con el período siguiente (empieza en ${next.from}'). ¿Ajustar el siguiente para que empiece en ${newVal}'?`,
+      idx + 1, 'from', newVal);
     return;
   }
 
