@@ -431,15 +431,20 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
         <li><strong>▶ Reanudar / ⏸ Pausar:</strong> inicia o detiene el conteo.</li>
         <li><strong>↺ Reiniciar:</strong> vuelve el cronómetro a 00:00:00 sin borrar los períodos ya creados.</li>
       </ul>
-      <p>Mientras el cronómetro está corriendo, los paneles de creación de períodos no están disponibles. Al pausarlo, se habilitan para todos los diferenciales expandidos.</p>
+      <p>Mientras el cronómetro está corriendo, los paneles de períodos no están disponibles. Al pausarlo, se habilitan para todos los diferenciales expandidos.</p>
       <h3>Períodos</h3>
-      <p>Un período es un segmento temporal de la película (de X' a Y' minutos) con un valor de diferencial asignado. Para crear un período:</p>
+      <p>Un período es un segmento temporal de la película (de X' a Y' minutos) con un valor de diferencial asignado. Los períodos se identifican cuando <strong>inician</strong>: pausás el cronómetro al comienzo de un segmento significativo, lo abrís, reanudás la película, y al pausar de nuevo lo cerrás asignándole un valor.</p>
+      <p>Para crear un período con el cronómetro:</p>
       <ol>
-        <li>Mirá la película y pausá el cronómetro en el momento en que querés hacer un corte.</li>
-        <li>Expandí el diferencial que querés calificar — aparece automáticamente el panel de creación.</li>
-        <li>Ajustá el slider al valor (−3 a +3) que represente ese segmento y presioná <strong>Confirmar período</strong>.</li>
+        <li>Pausá el cronómetro cuando quieras marcar el <strong>inicio</strong> del período.</li>
+        <li>Expandí el diferencial y presioná <strong>Crear período</strong> — el período queda abierto desde ese minuto.</li>
+        <li>Reanudá el cronómetro y continuá mirando la película.</li>
+        <li>Pausá el cronómetro cuando quieras marcar el <strong>final</strong> del período.</li>
+        <li>Ajustá el slider al valor (−3 a +3) del segmento y presioná <strong>Cerrar período</strong>.</li>
       </ol>
-      <p>Cada período creado aparece como una fila con su rango de minutos, duración, slider de valor y un botón de eliminación. Los períodos sin valor aparecen marcados en ámbar.</p>
+      <p>Solo puede haber un período abierto por vez. Mientras uno esté abierto, el panel de los demás diferenciales indica qué diferencial está ocupado. El período abierto queda indicado en el hint del cronómetro.</p>
+      <p>Para crear períodos con rangos específicos sin usar el cronómetro, usá el botón <strong>Agregar manual</strong> del header de cada diferencial — permite ingresar inicio, fin y valor libremente.</p>
+      <p>Cada período creado aparece como una fila con su rango de minutos, duración, slider de valor y un botón de eliminación.</p>
       <h3>Valor ponderado y propagación</h3>
       <p>Cuando todos los períodos de un diferencial tienen valor asignado y la suma de sus duraciones cubre el runtime completo de la película, se calcula automáticamente el <strong>valor ponderado</strong>:</p>
       <p style="font-family:'DM Mono',monospace;background:var(--bg3);padding:8px 12px;border-radius:var(--radius);font-size:12px;">Valor = Σ(valor × duración) / runtime total</p>
@@ -646,6 +651,12 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
     <div id="art-release-notes" class="article">
       <div class="article-title">Release Notes</div>
       <div class="article-meta">Más</div>
+
+      <h2>v6.20 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Julio 2026</span></h2>
+      <ul>
+        <li>Calificación detallada: los períodos se identifican cuando <strong>inician</strong>. Al pausar el cronómetro, aparece el panel "Período desde el minuto X'" con el botón "Crear período" que abre el período. Al pausar de nuevo, el panel muestra el rango completo y el slider para asignar el valor antes de cerrarlo. Solo puede haber un período abierto por vez; los demás diferenciales muestran un bloqueo hasta que se cierre.</li>
+        <li>Calificación detallada: el botón de creación manual en el header de cada diferencial fue renombrado a "Agregar manual" para distinguirlo del flujo de cronómetro.</li>
+      </ul>
 
       <h2>v6.19 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Julio 2026</span></h2>
       <ul>

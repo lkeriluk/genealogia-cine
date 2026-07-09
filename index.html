@@ -843,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.19</span>
+    <span class="footer-txt">Genealogía del Cine v6.20</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.19</span>
+    <span class="footer-txt">Genealogía del Cine v6.20</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.19</span>
+    <span class="footer-txt">Genealogía del Cine v6.20</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.19</span>
+    <span class="footer-txt">Genealogía del Cine v6.20</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1589,6 +1589,7 @@ let appState = {
   detailExpanded: {},
   detailManualCreate: {},
   detailChronoFilmId: null,
+  detailOpenPeriod: null,
 };
 
 async function getState() {
@@ -1720,6 +1721,7 @@ function openField(id) {
   appState.currentDetailFilm = null;
   appState.detailExpanded = {};
   appState.detailManualCreate = {};
+  appState.detailOpenPeriod = null;
   const f = currentField();
   document.getElementById('field-title').textContent = f.name;
   showScreen('screen-field');
@@ -3683,6 +3685,7 @@ let _detailChronoInterval = null;
 let _detailSaveTimeout = null;
 let _pendingBoundEdit = null;
 let _manualCreateErrors = {};
+let _chronoCloseErrors = {};
 
 function _detailAutoSave() {
   clearTimeout(_detailSaveTimeout);
@@ -3830,6 +3833,10 @@ function renderDetailMain(film, f) {
   const nextId = filmIdx < f.sample.length-1 ? f.sample[filmIdx+1].id : null;
   const isRunning = appState.detailChronoFilmId === film.id && !!_detailChronoInterval;
   const chronoTime = film.chronoTime || 0;
+  if (appState.detailOpenPeriod && appState.detailOpenPeriod.filmId !== film.id) {
+    appState.detailOpenPeriod = null;
+    _chronoCloseErrors = {};
+  }
 
   const posterHtml = film._detailPosterPath
     ? `<img src="https://image.tmdb.org/t/p/w154${film._detailPosterPath}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);" />`
@@ -3845,13 +3852,20 @@ function renderDetailMain(film, f) {
     : `<button class="btn" style="border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);" onclick="startDetailChrono(${film.id})">▶ Reanudar</button>
        <button class="btn-danger" style="font-size:11px;" onclick="resetDetailChrono(${film.id})">↺ Reiniciar</button>`;
 
+  const _openP = appState.detailOpenPeriod;
+  const _hasOpen = _openP && _openP.filmId === film.id;
+  const _openDiffName = _hasOpen ? ((f.differentials || []).find(d => d.id === _openP.diffId) || {}).name || _openP.diffId : '';
   const chronoHint = isRunning
-    ? `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras registrar un corte, luego expandí el diferencial que querés calificar.`
+    ? (_hasOpen
+        ? `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras cerrar el período abierto en <strong>${_openDiffName}</strong>.`
+        : `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras marcar el inicio de un período.`)
     : chronoTime === 0
-      ? `Presioná <strong style="color:var(--green);">▶ Reanudar</strong> para iniciar el cronómetro mientras mirás la película. Pausalo cuando quieras registrar un corte.`
-      : `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(chronoTime)}.</strong> Expandí el diferencial que querés calificar — aparecerá el panel para crear un período hasta este momento.`;
+      ? `Presioná <strong style="color:var(--green);">▶ Reanudar</strong> para iniciar el cronómetro mientras mirás la película. Pausalo cuando quieras abrir un período.`
+      : _hasOpen
+        ? `Período abierto en <strong style="color:var(--amber);">${_openDiffName}</strong> desde el minuto ${_openP.from}'. Reanudá el cronómetro y pausalo cuando quieras cerrarlo.`
+        : `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(chronoTime)}.</strong> Expandí el diferencial que querés calificar para abrir un período desde este momento.`;
 
-  const diffsLabel = isRunning ? 'DIFERENCIALES — pausá el cronómetro para crear períodos' : 'DIFERENCIALES';
+  const diffsLabel = isRunning ? 'DIFERENCIALES — pausá el cronómetro para abrir períodos' : 'DIFERENCIALES';
 
   const metInfo = calcDetailMet(film, diffs);
   const metVal = metInfo.value !== null ? metInfo.value.toFixed(2) : '—';
@@ -3921,9 +3935,8 @@ function renderDetailDiffItemHTML(film, d, runtime, f) {
   } else { valText = '—'; valClass = ''; }
 
   const lastTo = periods.length ? Math.max(...periods.map(p => p.to)) : 0;
-  const fromMin = lastTo;
-  const toMin = Math.floor((film.chronoTime || 0) / 60);
-  const panelWouldShow = !isRunning && fromMin < toMin;
+  const currentMin = Math.floor((film.chronoTime || 0) / 60);
+  const chronoPanelActive = !isRunning && currentMin > 0;
   const manualActive = !!((appState.detailManualCreate || {})[d.id]);
 
   let bodyHtml = '';
@@ -3943,8 +3956,8 @@ function renderDetailDiffItemHTML(film, d, runtime, f) {
   }
 
   const canClose = runtime > 0 && periods.length > 0 && lastTo < runtime;
-  const createBtnDisabled = panelWouldShow && !manualActive;
-  const createBtn = `<button class="btn" style="font-size:10px;padding:2px 8px;flex-shrink:0;${createBtnDisabled ? 'opacity:0.4;pointer-events:none;' : ''}" onclick="event.stopPropagation();toggleManualCreate('${film.id}','${d.id}')">Crear período</button>`;
+  const createBtnDisabled = chronoPanelActive && !manualActive;
+  const createBtn = `<button class="btn" style="font-size:10px;padding:2px 8px;flex-shrink:0;${createBtnDisabled ? 'opacity:0.4;pointer-events:none;' : ''}" onclick="event.stopPropagation();toggleManualCreate('${film.id}','${d.id}')">Agregar manual</button>`;
   const closeBtn = canClose
     ? `<button class="btn" style="font-size:10px;padding:2px 8px;flex-shrink:0;" onclick="event.stopPropagation();closeDiffDetail('${film.id}','${d.id}')">Cerrar diferencial</button>`
     : '';
@@ -4023,38 +4036,64 @@ function renderPeriodRowHTML(p, d, filmId) {
 function renderCreatePeriodPanelHTML(film, d, runtime) {
   const isRunning = appState.detailChronoFilmId === film.id && !!_detailChronoInterval;
   if (isRunning) return '';
-  const periods = ((film.detailedRatings || {})[d.id] || {}).periods || [];
-  const fromMin = periods.length ? Math.max(...periods.map(p => p.to)) : 0;
-  const toMin = Math.floor((film.chronoTime || 0) / 60);
-  if (fromMin >= toMin) {
-    // No range available: explain why
-    if (toMin === 0) return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:2px;">Presioná ▶ para iniciar el cronómetro, mirá la película, y pausalo cuando quieras registrar un corte.</div>`;
-    if (fromMin > toMin) return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:2px;">El cronómetro está en el minuto ${toMin}, que ya está cubierto por un período existente. Avanzá el cronómetro para crear un período nuevo.</div>`;
-    return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:2px;">El cronómetro no avanzó desde el último período de este diferencial.</div>`;
-  }
-  const dur = toMin - fromMin;
-  return `<div class="det-cpp" id="det-cpp-${d.id}">
-    <div class="det-cpp-title">Nuevo período — cronómetro pausado en ${formatDetailTime(film.chronoTime||0)}</div>
-    <div class="det-cpp-range">${fromMin}' – ${toMin}' · ${dur} min</div>
-    <div class="det-cpp-poles">
-      <span class="det-cpp-pole">← ${d.negPole||'Polo−'} (−3)</span>
-      <span class="det-cpp-pole">${d.posPole||'Polo+'} (+3) →</span>
-    </div>
-    <div class="det-cpp-track-wrap">
-      <div class="det-cpp-track">
-        <div class="det-cpp-center"></div>
-        <div class="det-cpp-fill-pos" id="det-cpp-fill-${d.id}" style="width:0%;"></div>
-        <div class="det-cpp-thumb" id="det-cpp-thumb-${d.id}" style="left:50%;"></div>
-        <input type="range" min="-3" max="3" step="1" value="0" id="det-cpp-input-${d.id}"
-          style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer;height:24px;top:-10px;"
-          oninput="updateCppSlider(this,'${d.id}')" />
+
+  const openPeriod = appState.detailOpenPeriod;
+  const hasOpenForThisDiff = openPeriod && openPeriod.filmId === film.id && openPeriod.diffId === d.id;
+  const hasOpenForOtherDiff = openPeriod && openPeriod.filmId === film.id && openPeriod.diffId !== d.id;
+  const currentMin = Math.floor((film.chronoTime || 0) / 60);
+
+  if (hasOpenForThisDiff) {
+    const fromMin = openPeriod.from;
+    const toMin = currentMin;
+    if (toMin <= fromMin) {
+      return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:4px;">El cronómetro no avanzó desde que se abrió este período (minuto ${fromMin}'). Reanudá para poder cerrarlo.</div>`;
+    }
+    const dur = toMin - fromMin;
+    const errMsg = (_chronoCloseErrors || {})[d.id];
+    return `<div class="det-cpp" id="det-cpp-${d.id}">
+      <div class="det-cpp-title">Cerrar período — ${fromMin}' → ${toMin}'</div>
+      <div class="det-cpp-range">${fromMin}' – ${toMin}' · ${dur} min</div>
+      ${errMsg ? `<div style="font-size:10px;color:var(--red);margin-bottom:6px;">${errMsg}</div>` : ''}
+      <div class="det-cpp-poles">
+        <span class="det-cpp-pole">← ${d.negPole||'Polo−'} (−3)</span>
+        <span class="det-cpp-pole">${d.posPole||'Polo+'} (+3) →</span>
       </div>
-    </div>
-    <div class="det-cpp-val" id="det-cpp-val-${d.id}">0</div>
-    <div class="det-cpp-actions">
-      <button class="btn" style="font-size:11px;" onclick="cancelDetailPeriod('${d.id}')">Cancelar</button>
+      <div class="det-cpp-track-wrap">
+        <div class="det-cpp-track">
+          <div class="det-cpp-center"></div>
+          <div class="det-cpp-fill-pos" id="det-cpp-fill-${d.id}" style="width:0%;"></div>
+          <div class="det-cpp-thumb" id="det-cpp-thumb-${d.id}" style="left:50%;"></div>
+          <input type="range" min="-3" max="3" step="1" value="0" id="det-cpp-input-${d.id}"
+            style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer;height:24px;top:-10px;"
+            oninput="updateCppSlider(this,'${d.id}')" />
+        </div>
+      </div>
+      <div class="det-cpp-val" id="det-cpp-val-${d.id}">0</div>
+      <div class="det-cpp-actions">
+        <button class="btn" style="font-size:11px;" onclick="cancelOpenPeriod('${film.id}','${d.id}')">Cancelar</button>
+        <button class="btn" style="font-size:11px;border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);"
+          onclick="confirmDetailPeriod('${film.id}','${d.id}',${fromMin},${toMin})">Cerrar período</button>
+      </div>
+    </div>`;
+  }
+
+  if (hasOpenForOtherDiff) {
+    const f2 = currentField();
+    const otherDiff = (f2.differentials || []).find(x => x.id === openPeriod.diffId);
+    const otherName = otherDiff ? otherDiff.name : 'otro diferencial';
+    return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:4px;">Hay un período abierto en <strong style="color:var(--amber);">${otherName}</strong> desde el minuto ${openPeriod.from}'. Cerralo primero para crear uno aquí.</div>`;
+  }
+
+  if (currentMin === 0) {
+    return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:4px;">Presioná ▶ para iniciar el cronómetro, mirá la película, y pausalo cuando quieras abrir un período.</div>`;
+  }
+
+  return `<div class="det-cpp" style="padding:8px 11px;">
+    <div class="det-cpp-title">Período desde el minuto ${currentMin}'</div>
+    <div style="font-size:11px;color:var(--text3);margin:4px 0 8px;">El período comenzará en el minuto ${currentMin}'. Reanudá y pausá de nuevo para cerrarlo y asignarle un valor.</div>
+    <div style="display:flex;justify-content:flex-end;">
       <button class="btn" style="font-size:11px;border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);"
-        onclick="confirmDetailPeriod('${film.id}','${d.id}',${fromMin},${toMin})">Confirmar período</button>
+        onclick="openDetailPeriod('${film.id}','${d.id}',${currentMin})">Crear período</button>
     </div>
   </div>`;
 }
@@ -4090,9 +4129,13 @@ function startDetailChrono(filmId) {
   if (btnsEl) btnsEl.innerHTML = `<button class="btn" style="border-color:rgba(239,159,39,.4);color:var(--amber);background:rgba(239,159,39,.1);" onclick="pauseDetailChrono()">⏸ Pausar</button>
     <button class="btn-danger" style="font-size:11px;" onclick="resetDetailChrono(${filmId})">↺ Reiniciar</button>`;
   const hintEl = document.getElementById('det-chrono-hint');
-  if (hintEl) hintEl.innerHTML = `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras registrar un corte, luego expandí el diferencial que querés calificar.`;
+  const _openPSC = appState.detailOpenPeriod;
+  const _openNameSC = _openPSC ? ((f.differentials || []).find(d => d.id === _openPSC.diffId) || {}).name || '' : '';
+  if (hintEl) hintEl.innerHTML = _openPSC
+    ? `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras cerrar el período abierto en <strong>${_openNameSC}</strong>.`
+    : `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras marcar el inicio de un período.`;
   const lblEl = document.getElementById('det-diffs-label');
-  if (lblEl) lblEl.textContent = 'DIFERENCIALES — pausá el cronómetro para crear períodos';
+  if (lblEl) lblEl.textContent = 'DIFERENCIALES — pausá el cronómetro para abrir períodos';
   const listEl = document.getElementById('det-diffs-list');
   if (listEl) listEl.innerHTML = renderDetailDiffsHTML(film, f);
 }
@@ -4116,9 +4159,13 @@ function pauseDetailChrono() {
   if (btnsEl) btnsEl.innerHTML = `<button class="btn" style="border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);" onclick="startDetailChrono(${filmId})">▶ Reanudar</button>
     <button class="btn-danger" style="font-size:11px;" onclick="resetDetailChrono(${filmId})">↺ Reiniciar</button>`;
   const hintEl = document.getElementById('det-chrono-hint');
+  const _openPPC = appState.detailOpenPeriod;
+  const _openNamePC = _openPPC ? ((f.differentials || []).find(d => d.id === _openPPC.diffId) || {}).name || '' : '';
   if (hintEl) hintEl.innerHTML = (film.chronoTime||0) === 0
-    ? `Presioná <strong style="color:var(--green);">▶ Reanudar</strong> para iniciar el cronómetro mientras mirás la película. Pausalo cuando quieras registrar un corte.`
-    : `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(film.chronoTime||0)}.</strong> Expandí el diferencial que querés calificar — aparecerá el panel para crear un período hasta este momento.`;
+    ? `Presioná <strong style="color:var(--green);">▶ Reanudar</strong> para iniciar el cronómetro mientras mirás la película. Pausalo cuando quieras abrir un período.`
+    : _openPPC
+      ? `Período abierto en <strong style="color:var(--amber);">${_openNamePC}</strong> desde el minuto ${_openPPC.from}'. Reanudá el cronómetro y pausalo cuando quieras cerrarlo.`
+      : `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(film.chronoTime||0)}.</strong> Expandí el diferencial que querés calificar para abrir un período desde este momento.`;
   const lblEl = document.getElementById('det-diffs-label');
   if (lblEl) lblEl.textContent = 'DIFERENCIALES';
   const listEl = document.getElementById('det-diffs-list');
@@ -4138,6 +4185,8 @@ function resetDetailChrono(filmId) {
     _detailChronoInterval = null;
     appState.detailChronoFilmId = null;
   }
+  appState.detailOpenPeriod = null;
+  _chronoCloseErrors = {};
   film.chronoTime = 0;
   renderDetailMain(film, f);
 }
@@ -4164,14 +4213,55 @@ function confirmDetailPeriod(filmId, diffId, from, to) {
   const f = currentField();
   const film = f.sample.find(m => m.id === +filmId);
   if (!film) return;
-  if (!film.detailedRatings) film.detailedRatings = {};
+  _ensureDetailFilmData(film);
   if (!film.detailedRatings[diffId]) film.detailedRatings[diffId] = { periods: [], weightedValue: null, complete: false };
   const inputEl = document.getElementById('det-cpp-input-' + diffId);
   const value = inputEl ? +inputEl.value : 0;
+
+  const sorted = [...film.detailedRatings[diffId].periods].sort((a,b) => a.from - b.from);
+  const overlapping = sorted.filter(p => p.from < to && p.to > from);
+
+  if (overlapping.length >= 2) {
+    if (!_chronoCloseErrors) _chronoCloseErrors = {};
+    _chronoCloseErrors[diffId] = `El rango ${from}'–${to}' se superpone con ${overlapping.length} períodos existentes. Editá los límites manualmente.`;
+    _updateDetailDiffItemHTML(film, diffId, f);
+    return;
+  }
+  if (overlapping.length === 1) {
+    const op = overlapping[0];
+    const leftOverlap  = op.from < from && op.to > from;
+    const rightOverlap = op.from >= from && op.from < to;
+    if (leftOverlap && rightOverlap) {
+      if (!_chronoCloseErrors) _chronoCloseErrors = {};
+      _chronoCloseErrors[diffId] = `El rango ${from}'–${to}' se superpone completamente con ${op.from}'–${op.to}'. Editá los límites manualmente.`;
+      _updateDetailDiffItemHTML(film, diffId, f);
+      return;
+    }
+    if (leftOverlap) {
+      _pendingBoundEdit = { isChronoClose: true, filmId, diffId, pendingInsert: { from, to, value }, adjId: op.id, adjBound: 'to', adjVal: from };
+      document.getElementById('edit-bound-modal-msg').textContent = `Se superpondría con el período anterior (termina en ${op.to}'). ¿Ajustar el anterior para que termine en ${from}'?`;
+      document.getElementById('modal-edit-bound').classList.add('open');
+      return;
+    }
+    _pendingBoundEdit = { isChronoClose: true, filmId, diffId, pendingInsert: { from, to, value }, adjId: op.id, adjBound: 'from', adjVal: to };
+    document.getElementById('edit-bound-modal-msg').textContent = `Se superpondría con el período siguiente (empieza en ${op.from}'). ¿Ajustar el siguiente para que empiece en ${to}'?`;
+    document.getElementById('modal-edit-bound').classList.add('open');
+    return;
+  }
+
+  _doInsertChronoPeriod(film, diffId, from, to, value, f);
+}
+
+function _doInsertChronoPeriod(film, diffId, from, to, value, f) {
+  if (!_chronoCloseErrors) _chronoCloseErrors = {};
+  delete _chronoCloseErrors[diffId];
+  appState.detailOpenPeriod = null;
+  if (!film.detailedRatings[diffId]) film.detailedRatings[diffId] = { periods: [], weightedValue: null, complete: false };
   film.detailedRatings[diffId].periods.push({ id: 'p_' + Date.now(), from, to, value });
   film.detailedRatings[diffId].periods.sort((a,b) => a.from - b.from);
   recalcDiffDetail(film, diffId, film.runtime || 0);
-  _updateDetailDiffItemHTML(film, diffId, f);
+  const listEl = document.getElementById('det-diffs-list');
+  if (listEl) listEl.innerHTML = renderDetailDiffsHTML(film, f);
   renderDetailSidebar(f);
   updateDetailMetDisplay(film, f.differentials || []);
   saveState();
@@ -4180,6 +4270,30 @@ function confirmDetailPeriod(filmId, diffId, from, to) {
 function cancelDetailPeriod(diffId) {
   const el = document.getElementById('det-cpp-' + diffId);
   if (el) el.remove();
+}
+
+function openDetailPeriod(filmId, diffId, fromMin) {
+  appState.detailOpenPeriod = { filmId: +filmId, diffId, from: fromMin };
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  const listEl = document.getElementById('det-diffs-list');
+  if (listEl) listEl.innerHTML = renderDetailDiffsHTML(film, f);
+  const diffName = ((f.differentials || []).find(d => d.id === diffId) || {}).name || '';
+  const hintEl = document.getElementById('det-chrono-hint');
+  if (hintEl) hintEl.innerHTML = `Período abierto en <strong style="color:var(--amber);">${diffName}</strong> desde el minuto ${fromMin}'. Reanudá el cronómetro y pausalo cuando quieras cerrarlo.`;
+}
+
+function cancelOpenPeriod(filmId, diffId) {
+  if (_chronoCloseErrors) delete _chronoCloseErrors[diffId];
+  appState.detailOpenPeriod = null;
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  const listEl = document.getElementById('det-diffs-list');
+  if (listEl) listEl.innerHTML = renderDetailDiffsHTML(film, f);
+  const hintEl = document.getElementById('det-chrono-hint');
+  if (hintEl) hintEl.innerHTML = `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(film.chronoTime||0)}.</strong> Expandí el diferencial que querés calificar para abrir un período desde este momento.`;
 }
 
 function deleteDetailPeriod(filmId, diffId, periodId) {
@@ -4283,6 +4397,17 @@ function confirmEditBound() {
     _doInsertManualPeriod(film, diffId, pendingInsert.from, pendingInsert.to, pendingInsert.value, f);
     return;
   }
+  if (_pendingBoundEdit.isChronoClose) {
+    const { filmId, diffId, pendingInsert, adjId, adjBound, adjVal } = _pendingBoundEdit;
+    _pendingBoundEdit = null;
+    const f = currentField();
+    const film = f.sample.find(m => m.id === +filmId);
+    if (!film) return;
+    const adjP = film.detailedRatings[diffId].periods.find(p => p.id === adjId);
+    if (adjP) adjP[adjBound] = adjVal;
+    _doInsertChronoPeriod(film, diffId, pendingInsert.from, pendingInsert.to, pendingInsert.value, f);
+    return;
+  }
   const { filmId, diffId, periodId, bound, newVal, adjIdx, adjBound, adjVal } = _pendingBoundEdit;
   _pendingBoundEdit = null;
   const f = currentField();
@@ -4299,7 +4424,7 @@ function confirmEditBound() {
 function cancelEditBound() {
   closeModal('modal-edit-bound');
   if (!_pendingBoundEdit) return;
-  if (_pendingBoundEdit.isManualCreate) {
+  if (_pendingBoundEdit.isManualCreate || _pendingBoundEdit.isChronoClose) {
     _pendingBoundEdit = null;
     return;
   }
