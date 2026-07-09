@@ -843,7 +843,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.20</span>
+    <span class="footer-txt">Genealogía del Cine v6.21</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1006,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.20</span>
+    <span class="footer-txt">Genealogía del Cine v6.21</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1151,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.20</span>
+    <span class="footer-txt">Genealogía del Cine v6.21</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1477,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.20</span>
+    <span class="footer-txt">Genealogía del Cine v6.21</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1589,7 +1589,7 @@ let appState = {
   detailExpanded: {},
   detailManualCreate: {},
   detailChronoFilmId: null,
-  detailOpenPeriod: null,
+  detailOpenPeriods: {},
 };
 
 async function getState() {
@@ -1721,7 +1721,7 @@ function openField(id) {
   appState.currentDetailFilm = null;
   appState.detailExpanded = {};
   appState.detailManualCreate = {};
-  appState.detailOpenPeriod = null;
+  appState.detailOpenPeriods = {};
   const f = currentField();
   document.getElementById('field-title').textContent = f.name;
   showScreen('screen-field');
@@ -3833,8 +3833,8 @@ function renderDetailMain(film, f) {
   const nextId = filmIdx < f.sample.length-1 ? f.sample[filmIdx+1].id : null;
   const isRunning = appState.detailChronoFilmId === film.id && !!_detailChronoInterval;
   const chronoTime = film.chronoTime || 0;
-  if (appState.detailOpenPeriod && appState.detailOpenPeriod.filmId !== film.id) {
-    appState.detailOpenPeriod = null;
+  if (Object.values(appState.detailOpenPeriods || {}).some(p => p.filmId !== film.id)) {
+    appState.detailOpenPeriods = {};
     _chronoCloseErrors = {};
   }
 
@@ -3852,18 +3852,7 @@ function renderDetailMain(film, f) {
     : `<button class="btn" style="border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);" onclick="startDetailChrono(${film.id})">▶ Reanudar</button>
        <button class="btn-danger" style="font-size:11px;" onclick="resetDetailChrono(${film.id})">↺ Reiniciar</button>`;
 
-  const _openP = appState.detailOpenPeriod;
-  const _hasOpen = _openP && _openP.filmId === film.id;
-  const _openDiffName = _hasOpen ? ((f.differentials || []).find(d => d.id === _openP.diffId) || {}).name || _openP.diffId : '';
-  const chronoHint = isRunning
-    ? (_hasOpen
-        ? `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras cerrar el período abierto en <strong>${_openDiffName}</strong>.`
-        : `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras marcar el inicio de un período.`)
-    : chronoTime === 0
-      ? `Presioná <strong style="color:var(--green);">▶ Reanudar</strong> para iniciar el cronómetro mientras mirás la película. Pausalo cuando quieras abrir un período.`
-      : _hasOpen
-        ? `Período abierto en <strong style="color:var(--amber);">${_openDiffName}</strong> desde el minuto ${_openP.from}'. Reanudá el cronómetro y pausalo cuando quieras cerrarlo.`
-        : `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(chronoTime)}.</strong> Expandí el diferencial que querés calificar para abrir un período desde este momento.`;
+  const chronoHint = _computeChronoHint(film, f, isRunning);
 
   const diffsLabel = isRunning ? 'DIFERENCIALES — pausá el cronómetro para abrir períodos' : 'DIFERENCIALES';
 
@@ -4037,64 +4026,72 @@ function renderCreatePeriodPanelHTML(film, d, runtime) {
   const isRunning = appState.detailChronoFilmId === film.id && !!_detailChronoInterval;
   if (isRunning) return '';
 
-  const openPeriod = appState.detailOpenPeriod;
-  const hasOpenForThisDiff = openPeriod && openPeriod.filmId === film.id && openPeriod.diffId === d.id;
-  const hasOpenForOtherDiff = openPeriod && openPeriod.filmId === film.id && openPeriod.diffId !== d.id;
+  const openPeriods = appState.detailOpenPeriods || {};
+  const openPeriod = openPeriods[d.id];
+  const hasOpen = openPeriod && openPeriod.filmId === film.id;
   const currentMin = Math.floor((film.chronoTime || 0) / 60);
 
-  if (hasOpenForThisDiff) {
-    const fromMin = openPeriod.from;
-    const toMin = currentMin;
-    if (toMin <= fromMin) {
-      return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:4px;">El cronómetro no avanzó desde que se abrió este período (minuto ${fromMin}'). Reanudá para poder cerrarlo.</div>`;
-    }
-    const dur = toMin - fromMin;
-    const errMsg = (_chronoCloseErrors || {})[d.id];
-    return `<div class="det-cpp" id="det-cpp-${d.id}">
-      <div class="det-cpp-title">Cerrar período — ${fromMin}' → ${toMin}'</div>
-      <div class="det-cpp-range">${fromMin}' – ${toMin}' · ${dur} min</div>
-      ${errMsg ? `<div style="font-size:10px;color:var(--red);margin-bottom:6px;">${errMsg}</div>` : ''}
-      <div class="det-cpp-poles">
-        <span class="det-cpp-pole">← ${d.negPole||'Polo−'} (−3)</span>
-        <span class="det-cpp-pole">${d.posPole||'Polo+'} (+3) →</span>
-      </div>
-      <div class="det-cpp-track-wrap">
-        <div class="det-cpp-track">
-          <div class="det-cpp-center"></div>
-          <div class="det-cpp-fill-pos" id="det-cpp-fill-${d.id}" style="width:0%;"></div>
-          <div class="det-cpp-thumb" id="det-cpp-thumb-${d.id}" style="left:50%;"></div>
-          <input type="range" min="-3" max="3" step="1" value="0" id="det-cpp-input-${d.id}"
-            style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer;height:24px;top:-10px;"
-            oninput="updateCppSlider(this,'${d.id}')" />
-        </div>
-      </div>
-      <div class="det-cpp-val" id="det-cpp-val-${d.id}">0</div>
-      <div class="det-cpp-actions">
-        <button class="btn" style="font-size:11px;" onclick="cancelOpenPeriod('${film.id}','${d.id}')">Cancelar</button>
-        <button class="btn" style="font-size:11px;border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);"
-          onclick="confirmDetailPeriod('${film.id}','${d.id}',${fromMin},${toMin})">Cerrar período</button>
-      </div>
-    </div>`;
-  }
-
-  if (hasOpenForOtherDiff) {
-    const f2 = currentField();
-    const otherDiff = (f2.differentials || []).find(x => x.id === openPeriod.diffId);
-    const otherName = otherDiff ? otherDiff.name : 'otro diferencial';
-    return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:4px;">Hay un período abierto en <strong style="color:var(--amber);">${otherName}</strong> desde el minuto ${openPeriod.from}'. Cerralo primero para crear uno aquí.</div>`;
-  }
-
-  if (currentMin === 0) {
+  if (currentMin === 0 && !hasOpen) {
     return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:4px;">Presioná ▶ para iniciar el cronómetro, mirá la película, y pausalo cuando quieras abrir un período.</div>`;
   }
 
-  return `<div class="det-cpp" style="padding:8px 11px;">
-    <div class="det-cpp-title">Período desde el minuto ${currentMin}'</div>
-    <div style="font-size:11px;color:var(--text3);margin:4px 0 8px;">El período comenzará en el minuto ${currentMin}'. Reanudá y pausá de nuevo para cerrarlo y asignarle un valor.</div>
-    <div style="display:flex;justify-content:flex-end;">
-      <button class="btn" style="font-size:11px;border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);"
-        onclick="openDetailPeriod('${film.id}','${d.id}',${currentMin})">Crear período</button>
+  if (hasOpen && currentMin <= openPeriod.from) {
+    return `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-top:4px;">El cronómetro no avanzó desde que se abrió este período (minuto ${openPeriod.from}'). Reanudá para poder cerrarlo.</div>`;
+  }
+
+  return _renderChronoPeriodPanel(film, d, hasOpen, openPeriod, currentMin);
+}
+
+function _renderChronoPeriodPanel(film, d, isPhase2, openPeriod, currentMin) {
+  const fromVal = isPhase2 ? openPeriod.from : currentMin;
+  const toVal   = isPhase2 ? currentMin : '';
+  const storedVal = isPhase2 ? (openPeriod.value || 0) : 0;
+  const durStr = (toVal !== '' && toVal > fromVal) ? `${toVal - fromVal}` : '—';
+  const pct = (storedVal + 3) / 6 * 100;
+  const fillPct = Math.abs(storedVal) / 3 * 50;
+  const fillStyle = storedVal >= 0 ? `left:50%;width:${fillPct}%;` : `right:50%;width:${fillPct}%;`;
+  const fillClass = storedVal >= 0 ? 'det-cpp-fill-pos' : 'det-cpp-fill-neg';
+  const valColor = storedVal > 0 ? 'var(--green)' : storedVal < 0 ? 'var(--red)' : 'var(--text3)';
+  const valStr = storedVal > 0 ? '+' + storedVal : String(storedVal);
+  const toStyle = !isPhase2 ? 'color:var(--amber);' : '';
+  const errMsg = (_chronoCloseErrors || {})[d.id];
+  const title = isPhase2
+    ? `Cerrar período — ${fromVal}' → ${toVal}'`
+    : `Nuevo período — desde el minuto ${fromVal}'`;
+  const buttons = isPhase2
+    ? `<button class="btn" style="font-size:11px;" onclick="cancelOpenPeriod('${film.id}','${d.id}')">Cancelar</button>
+       <button class="btn" style="font-size:11px;border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);"
+         onclick="closeDetailPeriodFromPanel('${film.id}','${d.id}')">Cerrar período</button>`
+    : `<button class="btn" style="font-size:11px;border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);"
+         onclick="openDetailPeriodFromPanel('${film.id}','${d.id}')">Crear período</button>`;
+
+  return `<div class="det-cpp">
+    <div class="det-cpp-title">${title}</div>
+    <div style="display:flex;align-items:center;gap:5px;margin-bottom:${errMsg?'4px':'8px'};font-size:11px;font-family:'DM Mono',monospace;color:var(--text2);">
+      <input type="number" class="det-p-bound" id="det-ccp-from-${d.id}" value="${fromVal}" min="0"
+        oninput="updateChronoCcpRange('${d.id}')" />
+      <span style="color:var(--text3);">'–</span>
+      <input type="number" class="det-p-bound" id="det-ccp-to-${d.id}" value="${toVal}" min="0"
+        placeholder="—" style="${toStyle}" oninput="updateChronoCcpRange('${d.id}')" />
+      <span style="color:var(--text3);">' · <span id="det-ccp-dur-${d.id}">${durStr}</span> min</span>
     </div>
+    ${errMsg ? `<div style="font-size:10px;color:var(--red);margin-bottom:6px;">${errMsg}</div>` : ''}
+    <div class="det-cpp-poles">
+      <span class="det-cpp-pole">← ${d.negPole||'Polo−'} (−3)</span>
+      <span class="det-cpp-pole">${d.posPole||'Polo+'} (+3) →</span>
+    </div>
+    <div class="det-cpp-track-wrap">
+      <div class="det-cpp-track">
+        <div class="det-cpp-center"></div>
+        <div class="${fillClass}" id="det-ccp-fill-${d.id}" style="${fillStyle}"></div>
+        <div class="det-cpp-thumb" id="det-ccp-thumb-${d.id}" style="left:${pct}%;"></div>
+        <input type="range" min="-3" max="3" step="1" value="${storedVal}" id="det-ccp-slider-${d.id}"
+          style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer;height:24px;top:-10px;"
+          oninput="updateChronoCcpSlider(this,'${d.id}')" />
+      </div>
+    </div>
+    <div class="det-cpp-val" id="det-ccp-val-${d.id}" style="color:${valColor};">${valStr}</div>
+    <div class="det-cpp-actions">${buttons}</div>
   </div>`;
 }
 
@@ -4129,11 +4126,7 @@ function startDetailChrono(filmId) {
   if (btnsEl) btnsEl.innerHTML = `<button class="btn" style="border-color:rgba(239,159,39,.4);color:var(--amber);background:rgba(239,159,39,.1);" onclick="pauseDetailChrono()">⏸ Pausar</button>
     <button class="btn-danger" style="font-size:11px;" onclick="resetDetailChrono(${filmId})">↺ Reiniciar</button>`;
   const hintEl = document.getElementById('det-chrono-hint');
-  const _openPSC = appState.detailOpenPeriod;
-  const _openNameSC = _openPSC ? ((f.differentials || []).find(d => d.id === _openPSC.diffId) || {}).name || '' : '';
-  if (hintEl) hintEl.innerHTML = _openPSC
-    ? `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras cerrar el período abierto en <strong>${_openNameSC}</strong>.`
-    : `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras marcar el inicio de un período.`;
+  if (hintEl) hintEl.innerHTML = _computeChronoHint(film, f, true);
   const lblEl = document.getElementById('det-diffs-label');
   if (lblEl) lblEl.textContent = 'DIFERENCIALES — pausá el cronómetro para abrir períodos';
   const listEl = document.getElementById('det-diffs-list');
@@ -4159,13 +4152,7 @@ function pauseDetailChrono() {
   if (btnsEl) btnsEl.innerHTML = `<button class="btn" style="border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);" onclick="startDetailChrono(${filmId})">▶ Reanudar</button>
     <button class="btn-danger" style="font-size:11px;" onclick="resetDetailChrono(${filmId})">↺ Reiniciar</button>`;
   const hintEl = document.getElementById('det-chrono-hint');
-  const _openPPC = appState.detailOpenPeriod;
-  const _openNamePC = _openPPC ? ((f.differentials || []).find(d => d.id === _openPPC.diffId) || {}).name || '' : '';
-  if (hintEl) hintEl.innerHTML = (film.chronoTime||0) === 0
-    ? `Presioná <strong style="color:var(--green);">▶ Reanudar</strong> para iniciar el cronómetro mientras mirás la película. Pausalo cuando quieras abrir un período.`
-    : _openPPC
-      ? `Período abierto en <strong style="color:var(--amber);">${_openNamePC}</strong> desde el minuto ${_openPPC.from}'. Reanudá el cronómetro y pausalo cuando quieras cerrarlo.`
-      : `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(film.chronoTime||0)}.</strong> Expandí el diferencial que querés calificar para abrir un período desde este momento.`;
+  if (hintEl) hintEl.innerHTML = _computeChronoHint(film, f, false);
   const lblEl = document.getElementById('det-diffs-label');
   if (lblEl) lblEl.textContent = 'DIFERENCIALES';
   const listEl = document.getElementById('det-diffs-list');
@@ -4185,7 +4172,7 @@ function resetDetailChrono(filmId) {
     _detailChronoInterval = null;
     appState.detailChronoFilmId = null;
   }
-  appState.detailOpenPeriod = null;
+  appState.detailOpenPeriods = {};
   _chronoCloseErrors = {};
   film.chronoTime = 0;
   renderDetailMain(film, f);
@@ -4209,21 +4196,77 @@ function updateCppSlider(input, diffId) {
   }
 }
 
-function confirmDetailPeriod(filmId, diffId, from, to) {
+function _doInsertChronoPeriod(film, diffId, from, to, value, f) {
+  if (!_chronoCloseErrors) _chronoCloseErrors = {};
+  delete _chronoCloseErrors[diffId];
+  if (appState.detailOpenPeriods) delete appState.detailOpenPeriods[diffId];
+  if (!film.detailedRatings[diffId]) film.detailedRatings[diffId] = { periods: [], weightedValue: null, complete: false };
+  film.detailedRatings[diffId].periods.push({ id: 'p_' + Date.now(), from, to, value });
+  film.detailedRatings[diffId].periods.sort((a,b) => a.from - b.from);
+  recalcDiffDetail(film, diffId, film.runtime || 0);
+  const listEl = document.getElementById('det-diffs-list');
+  if (listEl) listEl.innerHTML = renderDetailDiffsHTML(film, f);
+  renderDetailSidebar(f);
+  updateDetailMetDisplay(film, f.differentials || []);
+  _updateChronoHint(film, f);
+  saveState();
+}
+
+function cancelDetailPeriod(diffId) {
+  const el = document.getElementById('det-cpp-' + diffId);
+  if (el) el.remove();
+}
+
+function openDetailPeriodFromPanel(filmId, diffId) {
+  const fromEl = document.getElementById('det-ccp-from-' + diffId);
+  const toEl   = document.getElementById('det-ccp-to-'   + diffId);
+  const slEl   = document.getElementById('det-ccp-slider-' + diffId);
+  const from  = parseInt(fromEl ? fromEl.value : 0, 10);
+  const toRaw = toEl ? toEl.value.trim() : '';
+  const to    = toRaw !== '' ? parseInt(toRaw, 10) : NaN;
+  const value = slEl ? +slEl.value : 0;
+  if (isNaN(from) || from < 0) return;
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  // If to is also filled and valid: create immediately (skip Phase 2)
+  if (!isNaN(to) && to > from) { _confirmChronoPeriod(filmId, diffId, from, to, value); return; }
+  if (!appState.detailOpenPeriods) appState.detailOpenPeriods = {};
+  appState.detailOpenPeriods[diffId] = { filmId: +filmId, from, value };
+  const listEl = document.getElementById('det-diffs-list');
+  if (listEl) listEl.innerHTML = renderDetailDiffsHTML(film, f);
+  _updateChronoHint(film, f);
+}
+
+function closeDetailPeriodFromPanel(filmId, diffId) {
+  const fromEl = document.getElementById('det-ccp-from-' + diffId);
+  const toEl   = document.getElementById('det-ccp-to-'   + diffId);
+  const slEl   = document.getElementById('det-ccp-slider-' + diffId);
+  const from  = parseInt(fromEl ? fromEl.value : 0, 10);
+  const to    = parseInt(toEl   ? toEl.value   : 0, 10);
+  const value = slEl ? +slEl.value : 0;
+  if (isNaN(from) || isNaN(to) || to <= from) {
+    if (!_chronoCloseErrors) _chronoCloseErrors = {};
+    _chronoCloseErrors[diffId] = isNaN(from) || isNaN(to) ? 'Ingresá valores numéricos válidos.' : `El inicio (${from}') debe ser menor que el final (${to}').`;
+    const f2 = currentField();
+    const film2 = f2.sample.find(m => m.id === +filmId);
+    if (film2) _updateDetailDiffItemHTML(film2, diffId, f2);
+    return;
+  }
+  _confirmChronoPeriod(filmId, diffId, from, to, value);
+}
+
+function _confirmChronoPeriod(filmId, diffId, from, to, value) {
   const f = currentField();
   const film = f.sample.find(m => m.id === +filmId);
   if (!film) return;
   _ensureDetailFilmData(film);
   if (!film.detailedRatings[diffId]) film.detailedRatings[diffId] = { periods: [], weightedValue: null, complete: false };
-  const inputEl = document.getElementById('det-cpp-input-' + diffId);
-  const value = inputEl ? +inputEl.value : 0;
-
   const sorted = [...film.detailedRatings[diffId].periods].sort((a,b) => a.from - b.from);
   const overlapping = sorted.filter(p => p.from < to && p.to > from);
-
   if (overlapping.length >= 2) {
     if (!_chronoCloseErrors) _chronoCloseErrors = {};
-    _chronoCloseErrors[diffId] = `El rango ${from}'–${to}' se superpone con ${overlapping.length} períodos existentes. Editá los límites manualmente.`;
+    _chronoCloseErrors[diffId] = `El rango ${from}'–${to}' se superpone con ${overlapping.length} períodos existentes. Editá los límites.`;
     _updateDetailDiffItemHTML(film, diffId, f);
     return;
   }
@@ -4233,7 +4276,7 @@ function confirmDetailPeriod(filmId, diffId, from, to) {
     const rightOverlap = op.from >= from && op.from < to;
     if (leftOverlap && rightOverlap) {
       if (!_chronoCloseErrors) _chronoCloseErrors = {};
-      _chronoCloseErrors[diffId] = `El rango ${from}'–${to}' se superpone completamente con ${op.from}'–${op.to}'. Editá los límites manualmente.`;
+      _chronoCloseErrors[diffId] = `El rango ${from}'–${to}' se superpone completamente con ${op.from}'–${op.to}'. Editá los límites.`;
       _updateDetailDiffItemHTML(film, diffId, f);
       return;
     }
@@ -4248,52 +4291,70 @@ function confirmDetailPeriod(filmId, diffId, from, to) {
     document.getElementById('modal-edit-bound').classList.add('open');
     return;
   }
-
   _doInsertChronoPeriod(film, diffId, from, to, value, f);
 }
 
-function _doInsertChronoPeriod(film, diffId, from, to, value, f) {
-  if (!_chronoCloseErrors) _chronoCloseErrors = {};
-  delete _chronoCloseErrors[diffId];
-  appState.detailOpenPeriod = null;
-  if (!film.detailedRatings[diffId]) film.detailedRatings[diffId] = { periods: [], weightedValue: null, complete: false };
-  film.detailedRatings[diffId].periods.push({ id: 'p_' + Date.now(), from, to, value });
-  film.detailedRatings[diffId].periods.sort((a,b) => a.from - b.from);
-  recalcDiffDetail(film, diffId, film.runtime || 0);
-  const listEl = document.getElementById('det-diffs-list');
-  if (listEl) listEl.innerHTML = renderDetailDiffsHTML(film, f);
-  renderDetailSidebar(f);
-  updateDetailMetDisplay(film, f.differentials || []);
-  saveState();
+function updateChronoCcpRange(diffId) {
+  const from = parseInt((document.getElementById('det-ccp-from-' + diffId) || {}).value, 10);
+  const toEl = document.getElementById('det-ccp-to-' + diffId);
+  const to   = toEl ? parseInt(toEl.value, 10) : NaN;
+  const durEl = document.getElementById('det-ccp-dur-' + diffId);
+  if (durEl) durEl.textContent = (!isNaN(from) && !isNaN(to) && to > from) ? (to - from) : '—';
 }
 
-function cancelDetailPeriod(diffId) {
-  const el = document.getElementById('det-cpp-' + diffId);
-  if (el) el.remove();
-}
-
-function openDetailPeriod(filmId, diffId, fromMin) {
-  appState.detailOpenPeriod = { filmId: +filmId, diffId, from: fromMin };
-  const f = currentField();
-  const film = f.sample.find(m => m.id === +filmId);
-  if (!film) return;
-  const listEl = document.getElementById('det-diffs-list');
-  if (listEl) listEl.innerHTML = renderDetailDiffsHTML(film, f);
-  const diffName = ((f.differentials || []).find(d => d.id === diffId) || {}).name || '';
-  const hintEl = document.getElementById('det-chrono-hint');
-  if (hintEl) hintEl.innerHTML = `Período abierto en <strong style="color:var(--amber);">${diffName}</strong> desde el minuto ${fromMin}'. Reanudá el cronómetro y pausalo cuando quieras cerrarlo.`;
+function updateChronoCcpSlider(input, diffId) {
+  const val = +input.value;
+  const pct = (val + 3) / 6 * 100;
+  const fillPct = Math.abs(val) / 3 * 50;
+  const fillEl = document.getElementById('det-ccp-fill-' + diffId);
+  const thumbEl = document.getElementById('det-ccp-thumb-' + diffId);
+  const valEl = document.getElementById('det-ccp-val-' + diffId);
+  if (fillEl) { fillEl.className = val >= 0 ? 'det-cpp-fill-pos' : 'det-cpp-fill-neg'; fillEl.style.cssText = val >= 0 ? `left:50%;width:${fillPct}%;` : `right:50%;width:${fillPct}%;`; }
+  if (thumbEl) thumbEl.style.left = pct + '%';
+  if (valEl) { valEl.textContent = val > 0 ? '+' + val : String(val); valEl.style.color = val > 0 ? 'var(--green)' : val < 0 ? 'var(--red)' : 'var(--text3)'; }
+  // Also update stored value in open period if this is Phase 2
+  const openPeriods = appState.detailOpenPeriods || {};
+  if (openPeriods[diffId]) openPeriods[diffId].value = val;
 }
 
 function cancelOpenPeriod(filmId, diffId) {
   if (_chronoCloseErrors) delete _chronoCloseErrors[diffId];
-  appState.detailOpenPeriod = null;
+  if (appState.detailOpenPeriods) delete appState.detailOpenPeriods[diffId];
   const f = currentField();
   const film = f.sample.find(m => m.id === +filmId);
   if (!film) return;
   const listEl = document.getElementById('det-diffs-list');
   if (listEl) listEl.innerHTML = renderDetailDiffsHTML(film, f);
+  _updateChronoHint(film, f);
+}
+
+function _computeChronoHint(film, f, isRunning) {
+  const openPeriods = appState.detailOpenPeriods || {};
+  const filmOpen = Object.entries(openPeriods).filter(([, v]) => v.filmId === film.id);
+  const t = film.chronoTime || 0;
+  if (isRunning) {
+    if (filmOpen.length === 1) {
+      const [[did]] = filmOpen;
+      const name = ((f.differentials || []).find(d => d.id === did) || {}).name || '';
+      return `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras cerrar el período abierto en <strong>${name}</strong>.`;
+    }
+    if (filmOpen.length > 1) return `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras cerrar alguno de los ${filmOpen.length} períodos abiertos.`;
+    return `Cronómetro corriendo. <strong style="color:var(--amber);">Pausalo</strong> cuando quieras marcar el inicio de un período.`;
+  }
+  if (t === 0) return `Presioná <strong style="color:var(--green);">▶ Reanudar</strong> para iniciar el cronómetro mientras mirás la película. Pausalo cuando quieras abrir un período.`;
+  if (filmOpen.length === 1) {
+    const [[did, op]] = filmOpen;
+    const name = ((f.differentials || []).find(d => d.id === did) || {}).name || '';
+    return `Período abierto en <strong style="color:var(--amber);">${name}</strong> desde el minuto ${op.from}'. Reanudá el cronómetro y pausalo cuando quieras cerrarlo.`;
+  }
+  if (filmOpen.length > 1) return `${filmOpen.length} períodos abiertos. Expandí cada diferencial para cerrarlos.`;
+  return `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(t)}.</strong> Expandí el diferencial que querés calificar para abrir un período desde este momento.`;
+}
+
+function _updateChronoHint(film, f) {
+  const isRunning = appState.detailChronoFilmId === film.id && !!_detailChronoInterval;
   const hintEl = document.getElementById('det-chrono-hint');
-  if (hintEl) hintEl.innerHTML = `<strong style="color:var(--amber);">Pausado en ${formatDetailTime(film.chronoTime||0)}.</strong> Expandí el diferencial que querés calificar para abrir un período desde este momento.`;
+  if (hintEl) hintEl.innerHTML = _computeChronoHint(film, f, isRunning);
 }
 
 function deleteDetailPeriod(filmId, diffId, periodId) {
