@@ -344,7 +344,10 @@ table.tbl tr:hover td { background: var(--bg3); }
 .toggle-label { font-size: 12px; color: var(--text2); }
 
 /* ── SLIDER ── */
-.slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.slider-row { display: flex; align-items: center; gap: 10px; margin-bottom: 3px; }
+.diff-inline-desc { width: 100%; box-sizing: border-box; background: transparent; border: none; border-bottom: 0.5px solid var(--border); color: var(--text3); font-size: 11px; font-family: 'DM Sans', sans-serif; padding: 3px 0; resize: none; outline: none; margin-bottom: 10px; line-height: 1.4; min-height: 20px; display: block; }
+.diff-inline-desc:focus { border-bottom-color: var(--border2); color: var(--text2); }
+.diff-inline-desc::placeholder { color: var(--text3); opacity: .5; font-style: italic; }
 .slider-name { font-size: 12px; color: var(--text2); width: 140px; flex-shrink: 0; }
 .slider-track { flex: 1; height: 4px; background: var(--bg4); border-radius: 2px; position: relative; }
 .slider-fill { height: 100%; border-radius: 2px; position: absolute; top: 0; }
@@ -843,7 +846,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.25</span>
+    <span class="footer-txt">Genealogía del Cine v6.26</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1006,7 +1009,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.25</span>
+    <span class="footer-txt">Genealogía del Cine v6.26</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1151,7 +1154,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.25</span>
+    <span class="footer-txt">Genealogía del Cine v6.26</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1477,7 +1480,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.25</span>
+    <span class="footer-txt">Genealogía del Cine v6.26</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3342,7 +3345,7 @@ function editDiff(id) {
     </div>
     <div class="form-group">
       <label class="form-label">DESCRIPCIÓN</label>
-      <textarea class="form-input" id="diff-desc" style="height:70px;padding:8px;resize:none;" oninput="autosaveDiffDesc('${id}')">${d.desc||''}</textarea>
+      <textarea class="form-input" id="diff-desc" style="height:70px;padding:8px;resize:none;">${d.desc||''}</textarea>
     </div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace;">
       ${ratedCount} / ${f.sample?f.sample.length:0} películas calificadas
@@ -3380,12 +3383,10 @@ function saveDiff(existingId) {
   cancelDiffEdit();
 }
 
-function autosaveDiffDesc(diffId) {
+function autosaveDiffDesc(diffId, el) {
   const f = currentField();
-  const d = f.differentials.find(x => x.id === diffId);
+  const d = (f.differentials || []).find(x => x.id === diffId);
   if (!d) return;
-  const el = document.getElementById('diff-desc');
-  if (!el) return;
   d.desc = el.value;
   saveState();
 }
@@ -3577,20 +3578,23 @@ async function selectCalFilm(filmId) {
     const fillStyle = val >= 0 ? `left:50%;width:${fillPct}%` : `right:50%;width:${fillPct}%`;
     const fillClass = val >= 0 ? 'slider-fill-pos' : 'slider-fill-neg';
     const isActive = film.activeRatings[d.id] === true;
-    return `<div class="slider-row" id="row-${d.id}" style="${isActive ? '' : 'opacity:0.45;'}">
-      <button class="diff-toggle${isActive ? ' active' : ''}" id="toggle-${d.id}" onclick="toggleDiffActive('${film.id}', '${d.id}')" title="${isActive ? 'Desactivar diferencial' : 'Activar diferencial'}">●</button>
-      <span class="slider-name" title="${d.desc||''}">${d.name}</span>
-      <div class="slider-track-wrap">
-        <div class="slider-track" style="flex:1;">
-          <div class="slider-center"></div>
-          <div class="slider-fill ${fillClass}" style="${fillStyle};"></div>
-          <div class="slider-thumb" style="left:${pct}%;" id="thumb-${d.id}"></div>
-          <input type="range" min="-${negMax}" max="${posMax}" step="1" value="${val}"
-            style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer;height:20px;top:-8px;"
-            oninput="updateSlider(this, '${film.id}', '${d.id}', ${negMax}, ${posMax})" />
+    return `<div>
+      <div class="slider-row" id="row-${d.id}" style="${isActive ? '' : 'opacity:0.45;'}">
+        <button class="diff-toggle${isActive ? ' active' : ''}" id="toggle-${d.id}" onclick="toggleDiffActive('${film.id}', '${d.id}')" title="${isActive ? 'Desactivar diferencial' : 'Activar diferencial'}">●</button>
+        <span class="slider-name">${d.name}</span>
+        <div class="slider-track-wrap">
+          <div class="slider-track" style="flex:1;">
+            <div class="slider-center"></div>
+            <div class="slider-fill ${fillClass}" style="${fillStyle};"></div>
+            <div class="slider-thumb" style="left:${pct}%;" id="thumb-${d.id}"></div>
+            <input type="range" min="-${negMax}" max="${posMax}" step="1" value="${val}"
+              style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer;height:20px;top:-8px;"
+              oninput="updateSlider(this, '${film.id}', '${d.id}', ${negMax}, ${posMax})" />
+          </div>
+          <span class="slider-val" id="val-${d.id}">${val > 0 ? '+'+val : val}</span>
         </div>
-        <span class="slider-val" id="val-${d.id}">${val > 0 ? '+'+val : val}</span>
       </div>
+      <textarea class="diff-inline-desc" rows="1" placeholder="Descripción del diferencial..." oninput="autosaveDiffDesc('${d.id}', this)">${d.desc||''}</textarea>
     </div>`;
   }).join('') : '<div style="font-size:12px;color:var(--text3);">No hay diferenciales definidos. Creá algunos en la pestaña Diferenciales.</div>';
 
@@ -3944,6 +3948,7 @@ function renderDetailDiffItemHTML(film, d, runtime, f) {
       ? renderManualCreatePanelHTML(film, d, runtime)
       : renderCreatePeriodPanelHTML(film, d, runtime);
     bodyHtml = `<div class="det-diff-body">
+      <textarea class="diff-inline-desc" rows="1" placeholder="Descripción del diferencial..." oninput="autosaveDiffDesc('${d.id}', this)">${d.desc||''}</textarea>
       ${renderMiniTimelineHTML(periods, runtime)}
       <div class="det-poles-row">
         <span class="det-pole-lbl">← ${d.negPole||'Polo−'} (−3)</span>
