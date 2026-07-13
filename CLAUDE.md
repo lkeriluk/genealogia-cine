@@ -10,7 +10,7 @@ Contexto completo del proyecto para Claude Code. Leé este archivo antes de hace
 
 El método: el investigador selecciona una muestra representativa de películas de un género, define **diferenciales** (tensiones narrativas binarias, ej: Cuerpo/Máquina), asigna a cada película un valor de −3 a +3 en cada diferencial, y calcula la **metaestabilidad** (promedio de |valores| / 3, escala 0–3). Las películas con metaestabilidad alta son "transformadoras" del género; las de baja son "estables".
 
-La versión actual es **v6.5**.
+La versión actual es **v6.26**.
 
 ---
 
@@ -140,15 +140,35 @@ La app tiene **3 pantallas** (`screen-home`, `screen-new-field`, `screen-field`)
 - Sección expandible (por defecto expandida): distribución comparativa campo vs muestra con índice de representatividad por variable (décadas, rating, votos, géneros, países, taquilla)
 
 #### Tab Diferenciales
-- Lista reordenable con drag handle
-- Editor lateral: nombre, polo−, polo+, descripción, progreso de calificación
+- Lista reordenable con drag & drop
+- Editor lateral: nombre, polo−, polo+, máximos de cada polo (negMax/posMax, default 3), descripción, progreso de calificación
 - Botón importar de otro campo
 
 #### Tab Calificación
-- Sidebar: lista de pendientes / en progreso / calificadas
+- Sidebar: lista de pendientes / en progreso / calificadas (colapsable por sección)
 - Área principal: poster TMDB + metadata + sliders −3 a +3 por diferencial
+- Cada diferencial tiene un toggle de activación (●) y un textarea de descripción editable inline que auto-guarda al tipear
 - Metaestabilidad calculada en tiempo real
 - Navegación anterior/siguiente + guardar
+
+#### Tab Calificación detallada
+- Mismo sidebar que Cal. básica (películas pendientes / calificadas)
+- Cronómetro por película: ▶ Reanudar / ⏸ Pausar / ↺ Reiniciar; muestra tiempo acumulado en mm:ss
+- Flujo de períodos por diferencial:
+  - Al pausar, en cada diferencial expandido aparece el panel de creación de período
+  - **Fase 1** ("Nuevo período"): muestra el minuto actual como inicio; botón "Crear período" abre el período (guarda el `from`) y transiciona a Fase 2
+  - **Fase 2** ("Período abierto"): muestra `from` → `to` (actualizado al pausar), slider de valor. "Cerrar período" inserta el período. "Cancelar" descarta
+  - Mientras el cronómetro corre, los paneles se muestran pero los botones de acción quedan deshabilitados (los inputs de inicio/fin/valor sí son editables)
+  - El campo "fin" se marca en rojo si ≤ inicio
+  - No se muestra panel si el minuto actual ya está cubierto por un período existente
+  - Cada diferencial puede tener su propio período abierto simultáneamente
+- **Agregar manual**: siempre disponible; abre un panel con campos de inicio/fin/valor para insertar un período arbitrario
+- Los períodos se muestran como filas editables con mini-timeline visual; se pueden borrar o editar sus límites (modal si hay solapamiento con el período adyacente)
+- Botón "Cerrar diferencial": extiende el último período hasta el runtime del film
+- Botón "Cerrar diferenciales": aplica lo anterior a todos los diferenciales de una vez
+- Botón "⊞ Ver mapa de calor": modal con vista de todos los períodos de todos los diferenciales
+- Cada diferencial tiene un textarea de descripción editable inline que auto-guarda al tipear
+- La tab se oculta en mobile (sin soporte responsive)
 
 #### Tab Análisis
 - 4 stat cards: calificadas, met. promedio, transformadoras (>1.8), diferenciales
@@ -163,25 +183,29 @@ La app tiene **3 pantallas** (`screen-home`, `screen-new-field`, `screen-field`)
 
 ```js
 appState = {
-  fields: [],           // array de campos (persiste en PostgreSQL via /api/state)
+  fields: [],                 // array de campos (persiste en PostgreSQL via /api/state)
   currentFieldId: null,
   samplePage: 1,
   sampleSort: { col: 'year', dir: 'asc' },
   sampleFilter: '',
-  previewChart: null,
-  previewRatingChart: null,
-  previewGenresChart: null,
-  previewRevenueChart: null,
-  previewCountriesChart: null,
+  sampleGenreFilter: '',
   previewCache: null,         // snapshot del universo durante la creación
+  previewChart: null,
+  previewVotesChart: null,
   descCharts: {},
   distCharts: {},
   analysisCharts: {},
-  regenOpts: { manual: false, rated: false },
+  regenOpts: { manual: true, rated: true },
   selectedFilmToAdd: null,
   currentCalFilm: null,
+  calFilter: '',
+  calCollapsed: { pending: false, inProgress: false, done: false },
   addFilmTimeout: null,
-  allGenres: [],
+  currentDetailFilm: null,    // id de la película activa en Cal. detallada
+  detailExpanded: {},         // { [diffId]: boolean } — diferenciales expandidos en Cal. detallada
+  detailManualCreate: {},     // { [diffId]: boolean } — panel "Agregar manual" abierto
+  detailChronoFilmId: null,   // id de la película cuyo cronómetro está corriendo
+  detailOpenPeriods: {},      // { [diffId]: { filmId, from, value } } — períodos abiertos por diferencial
 }
 ```
 
@@ -226,12 +250,13 @@ appState = {
         // key: diffId
         'd_xxx': {
           periods: [{ id: 'p_'+Date.now(), from: 0, to: 50, value: null }], // from/to in minutes
-          weightedValue: null,  // Σ(value×(to-from))/runtime rounded to 1 decimal; null if incomplete
-          complete: false,      // true when all periods have values and cover runtime
+          weightedValue: null,  // Σ(value×(to-from))/runtime rounded to 1 decimal; null if any period unrated
+          complete: false,      // true when all periods have non-null values (no full-coverage requirement)
         }
       },
       chronoTime: 0,      // seconds accumulated for this film's chronometer in Calificación detallada
       runtime: null,      // minutes, from TMDB GET /movie/{id} → runtime; settable manually
+      _detailPosterPath: string,  // poster_path from TMDB, fetched on first open in Cal. detallada
       manual: boolean,
       manualReason: string,
     }
@@ -242,7 +267,9 @@ appState = {
       name: string,
       negPole: string,
       posPole: string,
-      desc: string,
+      desc: string,       // descripción editable inline en Cal. básica y Cal. detallada
+      negMax: number,     // máximo valor polo negativo (default 3)
+      posMax: number,     // máximo valor polo positivo (default 3)
     }
   ],
   createdAt: string,
@@ -295,7 +322,7 @@ El índice global es el promedio de los 6 índices penalizados (décadas, rating
 - `GET /genre/movie/list?language=es` — lista de géneros
 - `GET /configuration/countries` — lista de países ISO
 - `GET /discover/movie?with_genres=X&vote_count.gte=Y&sort_by=Z&page=N` — universo y muestreo
-- `GET /movie/{id}` — detalles (revenue, budget, production_countries, poster_path)
+- `GET /movie/{id}` — detalles (revenue, budget, production_countries, poster_path, runtime)
 - `GET /search/movie?query=X&year=Y` — búsqueda para agregar películas manualmente
 
 **Parámetros de discover usados:**
@@ -314,9 +341,10 @@ El índice global es el promedio de los 6 índices penalizados (décadas, rating
 - Algoritmo de muestreo 60/40 real (actualmente reparte proporcionalmente por décadas con páginas aleatorias)
 - Histogramas comparativos campo vs muestra en la sección expandible de la tab Muestra
 - Gráfico de votos en tab Descripción (actualmente placeholder)
-- Drag & drop para reordenar diferenciales (actualmente sin interacción)
 - Exportar campo a JSON
 - Estado vacío más elaborado en home
+- Perfiles de usuario para segmentar qué ve cada investigador (actualmente todos ven el mismo workspace)
+- Calificación detallada: adaptación responsive para mobile (actualmente el tab se oculta en mobile)
 
 ### Limitaciones conocidas
 - **Filtro de países en el universo:** `with_origin_country` solo filtra por país primario, no captura coproduciones
@@ -341,6 +369,8 @@ El índice global es el promedio de los 6 índices penalizados (décadas, rating
 7. **Escalado de gráficos.** Los conteos de géneros, países y rating se escalan al universo total con el factor `universeTotal / (páginas_consultadas × 20)`. Es una estimación, no un conteo exacto.
 
 8. **Dark theme.** Variables CSS en `:root`, paleta oscura: `--bg`, `--bg2`, `--bg3`, `--bg4`, `--text`, `--text2`, `--text3`, `--green`, `--blue`, `--amber`, `--red`, `--border`, `--border2`, `--border3`.
+
+9. **Períodos en Cal. detallada no requieren cobertura completa.** Un diferencial queda `complete = true` cuando todos sus períodos tienen valor asignado, sin importar si cubren el runtime total. Pueden existir franjas sin período.
 
 ---
 
@@ -372,7 +402,7 @@ El índice global es el promedio de los 6 índices penalizados (décadas, rating
 | `descripcion` | Campos | Tab Descripción: stat cards, gráficos de distribución |
 | `muestra` | Campos | Tab Muestra: slider, tabla, generar, agregar película, índice de representatividad |
 | `diferenciales` | Campos | Tab Diferenciales: lista, editor, importar de otro campo |
-| `calificacion` | Campos | Tab Calificación: sidebar, sliders, metaestabilidad, navegación |
+| `calificacion` | Campos | Tab Calificación (sliders, metaestabilidad) + Tab Calificación detallada (cronómetro, períodos) |
 | `peliculas` | Películas | Sección Películas: formulario de búsqueda, tabla de resultados, detalle, distribución |
 | `usuario` | General | Menú de usuario: avatar, listado de usuarios, historial de actividad |
 | `mobile` | General | Versión mobile: header, navegación, pantallas |
@@ -388,6 +418,6 @@ Los cambios en autenticación, sesiones o infraestructura de servidor van solo e
 1. Completar histogramas comparativos campo vs muestra en tab Muestra
 2. Implementar algoritmo de muestreo 60/40 real
 3. Iterar gráfico de votos en tab Descripción
-4. Drag & drop para reordenar diferenciales
+4. Exportar campo a JSON
 5. Perfiles de usuario para segmentar qué ve cada investigador (actualmente todos ven el mismo workspace)
-6. Calificación detallada: adaptación responsive para mobile (actualmente sin soporte mobile, el tab se oculta en mobile como el resto de tabs)
+6. Calificación detallada: adaptación responsive para mobile
