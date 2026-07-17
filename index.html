@@ -846,7 +846,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.29</span>
+    <span class="footer-txt">Genealogía del Cine v6.30</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1009,7 +1009,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.29</span>
+    <span class="footer-txt">Genealogía del Cine v6.30</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1154,7 +1154,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.29</span>
+    <span class="footer-txt">Genealogía del Cine v6.30</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1480,7 +1480,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.29</span>
+    <span class="footer-txt">Genealogía del Cine v6.30</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3302,6 +3302,7 @@ function renderDiffs(f) {
 }
 
 function showNewDiffForm() {
+  _diffRelSelected = [];
   document.getElementById('diff-editor').innerHTML = `
     <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;">Nuevo diferencial</div>
     <div class="form-group"><label class="form-label">NOMBRE</label><input class="form-input" id="diff-name" type="text" placeholder="Ej: Naturaleza / Técnica" /></div>
@@ -3317,10 +3318,18 @@ function showNewDiffForm() {
       <label class="form-label">DESCRIPCIÓN</label>
       <textarea class="form-input" id="diff-desc" style="height:70px;padding:8px;resize:none;" placeholder="Describe qué mide este diferencial..."></textarea>
     </div>
+    <div class="form-group">
+      <label class="form-label">RELACIONES</label>
+      <div id="diff-rel-wrap" data-editing="" style="position:relative;">
+        <div id="diff-rel-display" onclick="toggleDiffRelDropdown()" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;min-height:32px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;cursor:pointer;user-select:none;"></div>
+        <div id="diff-rel-dropdown" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;z-index:200;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;max-height:160px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.4);"></div>
+      </div>
+    </div>
     <div style="display:flex;gap:8px;margin-top:4px;">
       <button class="btn" style="flex:1;" onclick="cancelDiffEdit()">Cancelar</button>
       <button class="btn-primary" style="flex:1;" onclick="saveDiff(null)">Guardar</button>
     </div>`;
+  _renderDiffRelPicker();
 }
 
 function editDiff(id) {
@@ -3330,6 +3339,7 @@ function editDiff(id) {
   const negMax = d.negMax || 3;
   const posMax = d.posMax || 3;
   const ratedCount = f.sample ? f.sample.filter(m => m.ratings && m.ratings[id] !== undefined).length : 0;
+  _diffRelSelected = [...(d.relatedDiffs || [])];
   document.getElementById('diff-editor').innerHTML = `
     <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;">Editar diferencial</div>
     <div class="form-group"><label class="form-label">NOMBRE</label><input class="form-input" id="diff-name" type="text" value="${d.name}" /></div>
@@ -3345,6 +3355,13 @@ function editDiff(id) {
       <label class="form-label">DESCRIPCIÓN</label>
       <textarea class="form-input" id="diff-desc" style="height:70px;padding:8px;resize:none;">${d.desc||''}</textarea>
     </div>
+    <div class="form-group">
+      <label class="form-label">RELACIONES</label>
+      <div id="diff-rel-wrap" data-editing="${id}" style="position:relative;">
+        <div id="diff-rel-display" onclick="toggleDiffRelDropdown()" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;min-height:32px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;cursor:pointer;user-select:none;"></div>
+        <div id="diff-rel-dropdown" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;z-index:200;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;max-height:160px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.4);"></div>
+      </div>
+    </div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace;">
       ${ratedCount} / ${f.sample?f.sample.length:0} películas calificadas
     </div>
@@ -3353,6 +3370,7 @@ function editDiff(id) {
       <button class="btn" style="color:var(--red);border-color:var(--red);" onclick="deleteDiff('${id}')">Eliminar</button>
       <button class="btn-primary" style="flex:1;" onclick="saveDiff('${id}')">Guardar</button>
     </div>`;
+  _renderDiffRelPicker();
 }
 
 function cancelDiffEdit() {
@@ -3370,10 +3388,10 @@ function saveDiff(existingId) {
   const f = currentField();
   if (existingId) {
     const d = f.differentials.find(x => x.id === existingId);
-    if (d) { d.name = name; d.negPole = negPole; d.posPole = posPole; d.desc = desc; d.negMax = negMax; d.posMax = posMax; }
+    if (d) { d.name = name; d.negPole = negPole; d.posPole = posPole; d.desc = desc; d.negMax = negMax; d.posMax = posMax; d.relatedDiffs = [..._diffRelSelected]; }
     logActivity('diff.edit', { field: f.name, diff: name });
   } else {
-    f.differentials.push({ id: 'd_' + Date.now(), name, negPole, posPole, desc, negMax, posMax });
+    f.differentials.push({ id: 'd_' + Date.now(), name, negPole, posPole, desc, negMax, posMax, relatedDiffs: [..._diffRelSelected] });
     logActivity('diff.create', { field: f.name, diff: name });
   }
   saveState();
@@ -3387,6 +3405,49 @@ function autosaveDiffDesc(diffId, el) {
   if (!d) return;
   d.desc = el.value;
   saveState();
+}
+
+function toggleDiffRelDropdown() {
+  const dd = document.getElementById('diff-rel-dropdown');
+  if (dd) dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleDiffRelItem(id) {
+  const idx = _diffRelSelected.indexOf(id);
+  if (idx >= 0) _diffRelSelected.splice(idx, 1);
+  else _diffRelSelected.push(id);
+  _renderDiffRelPicker();
+}
+
+function _renderDiffRelPicker() {
+  const f = currentField();
+  const wrap = document.getElementById('diff-rel-wrap');
+  if (!wrap) return;
+  const editingId = wrap.dataset.editing || null;
+  const others = (f.differentials || []).filter(d => d.id !== editingId);
+  const display = document.getElementById('diff-rel-display');
+  const dropdown = document.getElementById('diff-rel-dropdown');
+  if (!display || !dropdown) return;
+
+  if (_diffRelSelected.length === 0) {
+    display.innerHTML = `<span style="color:var(--text3);font-size:11px;font-style:italic;flex:1;">Ninguno</span><span style="color:var(--text3);font-size:10px;">▾</span>`;
+  } else {
+    const chips = _diffRelSelected.map(sid => {
+      const od = others.find(x => x.id === sid);
+      return od ? `<span style="background:var(--bg4);border:0.5px solid var(--border2);border-radius:3px;padding:1px 6px;font-size:10px;color:var(--text2);white-space:nowrap;">${od.name}</span>` : '';
+    }).join('');
+    display.innerHTML = chips + `<span style="margin-left:auto;color:var(--text3);font-size:10px;flex-shrink:0;">▾</span>`;
+  }
+
+  dropdown.innerHTML = others.length === 0
+    ? `<div style="font-size:11px;color:var(--text3);padding:8px 10px;">No hay otros diferenciales</div>`
+    : others.map(od => {
+        const sel = _diffRelSelected.includes(od.id);
+        return `<div onclick="toggleDiffRelItem('${od.id}')" style="display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:11px;color:${sel ? 'var(--text)' : 'var(--text2)'};background:${sel ? 'var(--bg3)' : 'transparent'};">
+          <span style="width:12px;height:12px;border-radius:2px;border:1px solid ${sel ? 'var(--green)' : 'var(--border2)'};background:${sel ? 'var(--green)' : 'transparent'};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;color:var(--bg);">${sel ? '✓' : ''}</span>
+          ${od.name}
+        </div>`;
+      }).join('');
 }
 
 function deleteDiff(id) {
@@ -3693,6 +3754,7 @@ function saveCalFilm(filmId) {
 
 // ── TAB: CALIFICACIÓN DETALLADA ──
 
+let _diffRelSelected = [];
 let _detailChronoInterval = null;
 let _detailSaveTimeout = null;
 let _pendingBoundEdit = null;
