@@ -846,7 +846,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.27</span>
+    <span class="footer-txt">Genealogía del Cine v6.28</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1009,7 +1009,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.27</span>
+    <span class="footer-txt">Genealogía del Cine v6.28</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1154,7 +1154,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.27</span>
+    <span class="footer-txt">Genealogía del Cine v6.28</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1480,7 +1480,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.27</span>
+    <span class="footer-txt">Genealogía del Cine v6.28</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -4056,7 +4056,8 @@ function _renderChronoPeriodPanel(film, d, fromVal, toVal, storedVal, isRunning)
   const valColor = storedVal > 0 ? 'var(--green)' : storedVal < 0 ? 'var(--red)' : 'var(--text3)';
   const valStr = storedVal > 0 ? '+' + storedVal : String(storedVal);
   const errMsg = (_chronoCloseErrors || {})[d.id];
-  const addDisabled = isRunning || +toVal <= +fromVal;
+  const addDisabled = isRunning;
+  const toInvalid = +toVal <= +fromVal;
   const title = `Nuevo período — ${fromVal}' → ${toVal}'`;
   const button = `<button class="btn" style="font-size:11px;border-color:rgba(29,158,117,.4);color:var(--green);background:rgba(29,158,117,.1);${addDisabled ? 'opacity:.4;pointer-events:none;' : ''}"
     onclick="insertChronoPeriod('${film.id}','${d.id}')">Agregar período</button>`;
@@ -4068,7 +4069,7 @@ function _renderChronoPeriodPanel(film, d, fromVal, toVal, storedVal, isRunning)
         oninput="updateChronoCcpRange('${d.id}')" />
       <span style="color:var(--text3);">'–</span>
       <input type="number" class="det-p-bound" id="det-ccp-to-${d.id}" value="${toVal}" min="0"
-        oninput="updateChronoCcpRange('${d.id}')" />
+        style="${toInvalid ? 'color:var(--red);' : ''}" oninput="updateChronoCcpRange('${d.id}')" />
       <span style="color:var(--text3);">' · <span id="det-ccp-dur-${d.id}">${durStr}</span> min</span>
     </div>
     ${errMsg ? `<div style="font-size:10px;color:var(--red);margin-bottom:6px;">${errMsg}</div>` : ''}
