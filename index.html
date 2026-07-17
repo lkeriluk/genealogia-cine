@@ -846,7 +846,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.31</span>
+    <span class="footer-txt">Genealogía del Cine v6.32</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1009,7 +1009,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.31</span>
+    <span class="footer-txt">Genealogía del Cine v6.32</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1154,7 +1154,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.31</span>
+    <span class="footer-txt">Genealogía del Cine v6.32</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1480,7 +1480,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.31</span>
+    <span class="footer-txt">Genealogía del Cine v6.32</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3389,9 +3389,28 @@ function autosaveDiffDesc(diffId, el) {
   saveState();
 }
 
-function renderFilmDiffRelPickerHTML(film, diffId, f) {
+function autosaveCalNote(filmId, diffId, el) {
+  const f = currentField();
+  const film = (f.sample || []).find(m => String(m.id) === String(filmId));
+  if (!film) return;
+  if (!film.calNotes) film.calNotes = {};
+  film.calNotes[diffId] = el.value;
+  saveState();
+}
+
+function autosaveDetailNote(filmId, diffId, el) {
+  const f = currentField();
+  const film = (f.sample || []).find(m => String(m.id) === String(filmId));
+  if (!film) return;
+  if (!film.detailNotes) film.detailNotes = {};
+  film.detailNotes[diffId] = el.value;
+  saveState();
+}
+
+function renderFilmDiffRelPickerHTML(film, diffId, f, tab) {
   const others = (f.differentials || []).filter(d => d.id !== diffId);
-  const selected = ((film.diffRelations || {})[diffId]) || [];
+  const relKey = tab === 'detail' ? 'detailRelations' : 'calRelations';
+  const selected = ((film[relKey] || {})[diffId]) || [];
   const displayContent = selected.length === 0
     ? `<span style="color:var(--text3);font-size:11px;font-style:italic;flex:1;">Ninguno</span><span style="color:var(--text3);font-size:10px;">▾</span>`
     : selected.map(sid => {
@@ -3402,44 +3421,51 @@ function renderFilmDiffRelPickerHTML(film, diffId, f) {
     ? `<div style="font-size:11px;color:var(--text3);padding:8px 10px;">No hay otros diferenciales</div>`
     : others.map(od => {
         const sel = selected.includes(od.id);
-        return `<div onclick="toggleFilmDiffRelItem('${film.id}','${diffId}','${od.id}')" style="display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:11px;color:${sel ? 'var(--text)' : 'var(--text2)'};background:${sel ? 'var(--bg3)' : 'transparent'};">
+        return `<div onclick="toggleFilmDiffRelItem('${film.id}','${diffId}','${od.id}','${tab}')" style="display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:11px;color:${sel ? 'var(--text)' : 'var(--text2)'};background:${sel ? 'var(--bg3)' : 'transparent'};">
           <span style="width:12px;height:12px;border-radius:2px;border:1px solid ${sel ? 'var(--green)' : 'var(--border2)'};background:${sel ? 'var(--green)' : 'transparent'};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;color:var(--bg);">${sel ? '✓' : ''}</span>
           ${od.name}
         </div>`;
       }).join('');
-  return `<div style="position:relative;margin-bottom:10px;">
+  return `<div style="margin-bottom:10px;">
     <div style="font-size:9px;font-weight:600;letter-spacing:.07em;color:var(--text3);margin-bottom:4px;text-transform:uppercase;">Relaciones</div>
-    <div id="film-rel-display-${diffId}" onclick="toggleFilmDiffRelDropdown('${diffId}')" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;min-height:28px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;cursor:pointer;user-select:none;">${displayContent}</div>
-    <div id="film-rel-dd-${diffId}" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;z-index:200;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;max-height:160px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.4);">${dropdownContent}</div>
+    <div id="film-rel-display-${tab}-${diffId}" onclick="toggleFilmDiffRelDropdown('${tab}','${diffId}',this)" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;min-height:28px;padding:4px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;cursor:pointer;user-select:none;">${displayContent}</div>
+    <div id="film-rel-dd-${tab}-${diffId}" style="display:none;position:fixed;z-index:9999;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;max-height:160px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.4);">${dropdownContent}</div>
   </div>`;
 }
 
-function toggleFilmDiffRelDropdown(diffId) {
-  const dd = document.getElementById('film-rel-dd-' + diffId);
-  if (dd) dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+function toggleFilmDiffRelDropdown(tab, diffId, trigger) {
+  const dd = document.getElementById('film-rel-dd-' + tab + '-' + diffId);
+  if (!dd) return;
+  if (dd.style.display !== 'none') { dd.style.display = 'none'; return; }
+  const rect = trigger.getBoundingClientRect();
+  dd.style.top = (rect.bottom + 2) + 'px';
+  dd.style.left = rect.left + 'px';
+  dd.style.width = rect.width + 'px';
+  dd.style.display = 'block';
 }
 
-function toggleFilmDiffRelItem(filmId, diffId, relId) {
+function toggleFilmDiffRelItem(filmId, diffId, relId, tab) {
   const f = currentField();
   const film = (f.sample || []).find(m => String(m.id) === String(filmId));
   if (!film) return;
-  if (!film.diffRelations) film.diffRelations = {};
-  const arr = [...(film.diffRelations[diffId] || [])];
+  const relKey = tab === 'detail' ? 'detailRelations' : 'calRelations';
+  if (!film[relKey]) film[relKey] = {};
+  const arr = [...(film[relKey][diffId] || [])];
   const idx = arr.indexOf(relId);
   if (idx >= 0) arr.splice(idx, 1);
   else arr.push(relId);
-  film.diffRelations[diffId] = arr;
+  film[relKey][diffId] = arr;
   saveState();
   const others = (f.differentials || []).filter(d => d.id !== diffId);
-  const display = document.getElementById('film-rel-display-' + diffId);
-  const dropdown = document.getElementById('film-rel-dd-' + diffId);
+  const display = document.getElementById('film-rel-display-' + tab + '-' + diffId);
+  const dropdown = document.getElementById('film-rel-dd-' + tab + '-' + diffId);
   if (!display || !dropdown) return;
   display.innerHTML = arr.length === 0
     ? `<span style="color:var(--text3);font-size:11px;font-style:italic;flex:1;">Ninguno</span><span style="color:var(--text3);font-size:10px;">▾</span>`
     : arr.map(sid => { const od = others.find(x => x.id === sid); return od ? `<span style="background:var(--bg4);border:0.5px solid var(--border2);border-radius:3px;padding:1px 6px;font-size:10px;color:var(--text2);white-space:nowrap;">${od.name}</span>` : ''; }).join('') + `<span style="margin-left:auto;color:var(--text3);font-size:10px;flex-shrink:0;">▾</span>`;
   dropdown.innerHTML = others.map(od => {
     const sel = arr.includes(od.id);
-    return `<div onclick="toggleFilmDiffRelItem('${filmId}','${diffId}','${od.id}')" style="display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:11px;color:${sel ? 'var(--text)' : 'var(--text2)'};background:${sel ? 'var(--bg3)' : 'transparent'};">
+    return `<div onclick="toggleFilmDiffRelItem('${filmId}','${diffId}','${od.id}','${tab}')" style="display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:11px;color:${sel ? 'var(--text)' : 'var(--text2)'};background:${sel ? 'var(--bg3)' : 'transparent'};">
       <span style="width:12px;height:12px;border-radius:2px;border:1px solid ${sel ? 'var(--green)' : 'var(--border2)'};background:${sel ? 'var(--green)' : 'transparent'};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;color:var(--bg);">${sel ? '✓' : ''}</span>
       ${od.name}
     </div>`;
@@ -3649,8 +3675,8 @@ async function selectCalFilm(filmId) {
           <span class="slider-val" id="val-${d.id}">${val > 0 ? '+'+val : val}</span>
         </div>
       </div>
-      <textarea class="diff-inline-desc" rows="1" placeholder="Descripción del diferencial..." oninput="autosaveDiffDesc('${d.id}', this)">${d.desc||''}</textarea>
-      ${renderFilmDiffRelPickerHTML(film, d.id, f)}
+      <textarea class="diff-inline-desc" rows="1" placeholder="Notas sobre este diferencial..." oninput="autosaveCalNote('${film.id}','${d.id}',this)">${(film.calNotes||{})[d.id]||''}</textarea>
+      ${renderFilmDiffRelPickerHTML(film, d.id, f, 'cal')}
     </div>`;
   }).join('') : '<div style="font-size:12px;color:var(--text3);">No hay diferenciales definidos. Creá algunos en la pestaña Diferenciales.</div>';
 
@@ -4001,8 +4027,8 @@ function renderDetailDiffItemHTML(film, d, runtime, f) {
       ? renderManualCreatePanelHTML(film, d, runtime)
       : renderCreatePeriodPanelHTML(film, d, runtime);
     bodyHtml = `<div class="det-diff-body">
-      <textarea class="diff-inline-desc" rows="1" placeholder="Descripción del diferencial..." oninput="autosaveDiffDesc('${d.id}', this)">${d.desc||''}</textarea>
-      ${renderFilmDiffRelPickerHTML(film, d.id, f)}
+      <textarea class="diff-inline-desc" rows="1" placeholder="Notas sobre este diferencial..." oninput="autosaveDetailNote('${film.id}','${d.id}',this)">${(film.detailNotes||{})[d.id]||''}</textarea>
+      ${renderFilmDiffRelPickerHTML(film, d.id, f, 'detail')}
       ${renderMiniTimelineHTML(periods, runtime)}
       <div class="det-poles-row">
         <span class="det-pole-lbl">← ${d.negPole||'Polo−'} (−3)</span>
