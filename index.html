@@ -846,7 +846,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.34</span>
+    <span class="footer-txt">Genealogía del Cine v6.35</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1009,7 +1009,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.34</span>
+    <span class="footer-txt">Genealogía del Cine v6.35</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1154,7 +1154,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.34</span>
+    <span class="footer-txt">Genealogía del Cine v6.35</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1482,7 +1482,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.34</span>
+    <span class="footer-txt">Genealogía del Cine v6.35</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3809,13 +3809,13 @@ function warmCell(intensity) {
   const t = hi[0]===lo[0] ? 1 : (intensity-lo[0])/(hi[0]-lo[0]);
   return `rgb(${Math.round(lo[1][0]+(hi[1][0]-lo[1][0])*t)},${Math.round(lo[1][1]+(hi[1][1]-lo[1][1])*t)},${Math.round(lo[1][2]+(hi[1][2]-lo[1][2])*t)})`;
 }
-function detailPeriodBg(val, max) {
+function detailPeriodBg(val) {
   if (val === null || val === undefined) return null;
-  return warmCell(Math.abs(val) / (max || 3));
+  return warmCell(Math.abs(val) / 3);
 }
-function detailPeriodFg(val, max) {
+function detailPeriodFg(val) {
   if (val === null || val === undefined) return 'var(--text2)';
-  return Math.abs(val) / (max || 3) < 0.18 ? '#888480' : '#F0EDE8';
+  return Math.abs(val) / 3 < 0.18 ? '#888480' : '#F0EDE8';
 }
 
 function calcDetailWeighted(periods, runtime) {
@@ -4032,7 +4032,7 @@ function renderDetailDiffItemHTML(film, d, runtime, f) {
     bodyHtml = `<div class="det-diff-body">
       <textarea class="diff-inline-desc" rows="1" placeholder="Notas sobre este diferencial..." oninput="autosaveDetailNote('${film.id}','${d.id}',this)">${(film.detailNotes||{})[d.id]||''}</textarea>
       ${renderFilmDiffRelPickerHTML(film, d.id, f, 'detail')}
-      ${renderMiniTimelineHTML(periods, runtime, f.max || 3)}
+      ${renderMiniTimelineHTML(periods, runtime)}
       <div class="det-poles-row">
         <span class="det-pole-lbl">← ${d.negPole||'Polo−'} (−3)</span>
         <span class="det-pole-lbl">${d.posPole||'Polo+'} (+3) →</span>
@@ -4063,7 +4063,7 @@ function renderDetailDiffItemHTML(film, d, runtime, f) {
   </div>`;
 }
 
-function renderMiniTimelineHTML(periods, runtime, max) {
+function renderMiniTimelineHTML(periods, runtime) {
   if (!runtime) return '<div class="det-mini-timeline"></div>';
   const sorted = [...periods].sort((a,b) => a.from - b.from);
   let segs = '', cursor = 0;
@@ -4076,7 +4076,7 @@ function renderMiniTimelineHTML(periods, runtime, max) {
       segs += `<div class="det-mt-seg" style="left:${l}%;width:${w}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
     } else {
       const lbl = p.value > 0 ? '+'+p.value : p.value;
-      segs += `<div class="det-mt-seg" style="left:${l}%;width:${w}%;background:${detailPeriodBg(p.value,max)};color:${detailPeriodFg(p.value,max)};"><span>${lbl}</span></div>`;
+      segs += `<div class="det-mt-seg" style="left:${l}%;width:${w}%;background:${detailPeriodBg(p.value)};color:${detailPeriodFg(p.value)};"><span>${lbl}</span></div>`;
     }
     cursor = p.to;
   }
@@ -4739,7 +4739,7 @@ function _updateDetailDiffHeader(film, diffId, f) {
   const tlEl = item.querySelector('.det-mini-timeline');
   if (statusEl) { statusEl.textContent = statusText; statusEl.className = 'det-diff-status ' + statusClass; }
   if (valEl) { valEl.textContent = valText; valEl.className = 'det-diff-val ' + valClass; }
-  if (tlEl) tlEl.outerHTML = renderMiniTimelineHTML(periods, runtime, f.max || 3);
+  if (tlEl) tlEl.outerHTML = renderMiniTimelineHTML(periods, runtime);
 }
 
 function updateDetailMetDisplay(film, diffs) {
@@ -4796,7 +4796,7 @@ function showDetailHeatmap(filmId) {
         if (p.from > cursor) segs += `<div class="det-hm-seg" style="left:${(cursor/runtime*100).toFixed(2)}%;width:${((p.from-cursor)/runtime*100).toFixed(2)}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
         const l=(p.from/runtime*100).toFixed(2), w=((p.to-p.from)/runtime*100).toFixed(2);
         if (p.value===null||p.value===undefined) segs += `<div class="det-hm-seg" style="left:${l}%;width:${w}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
-        else { const lbl=p.value>0?'+'+p.value:p.value; segs += `<div class="det-hm-seg" style="left:${l}%;width:${w}%;background:${detailPeriodBg(p.value,f.max||3)};color:${detailPeriodFg(p.value,f.max||3)};"><span>${lbl}</span></div>`; }
+        else { const lbl=p.value>0?'+'+p.value:p.value; segs += `<div class="det-hm-seg" style="left:${l}%;width:${w}%;background:${detailPeriodBg(p.value)};color:${detailPeriodFg(p.value)};"><span>${lbl}</span></div>`; }
         cursor = p.to;
       }
       if (cursor < runtime) segs += `<div class="det-hm-seg" style="left:${(cursor/runtime*100).toFixed(2)}%;width:${((runtime-cursor)/runtime*100).toFixed(2)}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
