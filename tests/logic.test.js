@@ -209,7 +209,7 @@ describe('calcMet', () => {
     expect(calcMet({ ratings: null }, [d1])).toBeNull();
   });
 
-  test('all ratings at max absolute value → 3.00', () => {
+  test('all ratings at max absolute value → promedio de |vals|', () => {
     expect(calcMet({ ratings: { d1: 3, d2: -3 } }, [d1, d2])).toBe(3.00);
   });
 
@@ -218,23 +218,15 @@ describe('calcMet', () => {
   });
 
   test('partial ratings (only d1 filled) → computed from d1 only', () => {
-    // d1 = 3/3 * 3 = 3.00
     expect(calcMet({ ratings: { d1: 3 } }, [d1, d2])).toBe(3.00);
   });
 
   test('mixed values give correct average', () => {
-    // d1: |3|/3 = 1, d2: |0|/3 = 0  → avg = 0.5 → * 3 = 1.50
+    // (|3| + |0|) / 2 = 1.50
     expect(calcMet({ ratings: { d1: 3, d2: 0 } }, [d1, d2])).toBe(1.50);
   });
 
-  test('max param scales the result', () => {
-    const dNeg = { id: 'dn' };
-    // val = -2, max = 2 → |−2|/2 = 1 → * 3 = 3.00
-    expect(calcMet({ ratings: { dn: -2 } }, [dNeg], 2)).toBe(3.00);
-  });
-
   test('activeRatings: only active diffs count toward average', () => {
-    // d1=3 active, d2=3 inactive → only d1 → 3.00
     expect(calcMet({ ratings: { d1: 3, d2: 3 }, activeRatings: { d1: true, d2: false } }, [d1, d2])).toBe(3.00);
   });
 
@@ -247,7 +239,6 @@ describe('calcMet', () => {
   });
 
   test('activeRatings absent → legacy: all rated diffs count', () => {
-    // no activeRatings key → same as before
     expect(calcMet({ ratings: { d1: 3, d2: 0 } }, [d1, d2])).toBe(1.50);
   });
 });

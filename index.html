@@ -846,7 +846,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.33</span>
+    <span class="footer-txt">Genealogía del Cine v6.34</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1009,7 +1009,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.33</span>
+    <span class="footer-txt">Genealogía del Cine v6.34</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1154,7 +1154,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.33</span>
+    <span class="footer-txt">Genealogía del Cine v6.34</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1482,7 +1482,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.33</span>
+    <span class="footer-txt">Genealogía del Cine v6.34</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3604,7 +3604,7 @@ async function selectCalFilm(filmId) {
     revenue = film.revenue || d.revenue || 0;
   } catch(e) {}
 
-  const met = calcMet(film, diffs, f.max || 3);
+  const met = calcMet(film, diffs);
   const filmIdx = f.sample.indexOf(film);
   const prevId = filmIdx > 0 ? f.sample[filmIdx-1].id : null;
   const nextId = filmIdx < f.sample.length-1 ? f.sample[filmIdx+1].id : null;
@@ -3728,7 +3728,7 @@ function updateSlider(input, filmId, diffId) {
     fillEl.className = 'slider-fill ' + (val>=0?'slider-fill-pos':'slider-fill-neg');
     fillEl.style.cssText = val>=0 ? `left:50%;width:${fillPct}%` : `right:50%;width:${fillPct}%`;
   }
-  const met = calcMet(film, f.differentials||[], f.max || 3);
+  const met = calcMet(film, f.differentials||[]);
   const metEl = document.getElementById('met-display');
   if (metEl) { metEl.textContent = met !== null ? met.toFixed(2) : '—'; }
 }
@@ -3748,7 +3748,7 @@ function toggleDiffActive(filmId, diffId) {
   const row = document.getElementById('row-' + diffId);
   if (row) row.style.opacity = !wasActive ? '1' : '0.45';
 
-  const met = calcMet(film, f.differentials || [], f.max || 3);
+  const met = calcMet(film, f.differentials || []);
   const metEl = document.getElementById('met-display');
   if (metEl) metEl.textContent = met !== null ? met.toFixed(2) : '—';
   updateActiveCount(film, f.differentials || []);
@@ -3771,7 +3771,7 @@ function saveCalFilm(filmId) {
   const m = (f.sample || []).find(x => x.id === filmId);
   if (m) {
     const diffs = f.differentials || [];
-    const met = calcMet(m, diffs, f.max || 3);
+    const met = calcMet(m, diffs);
     logActivity('rating.save', { field: f.name, title: m.title, metaestability: met });
   }
   saveState();
@@ -4843,8 +4843,8 @@ function renderAnalysis(f) {
   const sample = f.sample || [];
   const diffs = f.differentials || [];
   const rated = sample.filter(m => m.ratings && Object.keys(m.ratings).length >= diffs.length);
-  const avgMet = rated.length ? rated.reduce((s,m) => s + (calcMet(m,diffs,f.max||3)||0), 0) / rated.length : 0;
-  const transf = rated.filter(m => (calcMet(m,diffs,f.max||3)||0) > 1.8).length;
+  const avgMet = rated.length ? rated.reduce((s,m) => s + (calcMet(m,diffs)||0), 0) / rated.length : 0;
+  const transf = rated.filter(m => (calcMet(m,diffs)||0) > 1.8).length;
 
   document.getElementById('analysis-stats').innerHTML = `
     <div class="stat-card"><div class="stat-label">CALIFICADAS</div><div class="stat-value">${rated.length}</div><div class="stat-sub">de ${sample.length}</div></div>
@@ -4854,7 +4854,7 @@ function renderAnalysis(f) {
 
   if (!rated.length) return;
 
-  const ranked = [...rated].map(m => ({ title: m.title, met: calcMet(m,diffs,f.max||3)||0 }))
+  const ranked = [...rated].map(m => ({ title: m.title, met: calcMet(m,diffs)||0 }))
     .sort((a,b) => b.met - a.met).slice(0,15);
 
   const r1 = document.getElementById('analysis-ranking');
@@ -4881,7 +4881,7 @@ function renderAnalysis(f) {
   for(let d=f.decFrom;d<=f.decTo;d+=10) decades.push(d);
   const decAvg = decades.map(dec => {
     const films = rated.filter(m => Math.floor(m.year/10)*10===dec);
-    return films.length ? +(films.reduce((s,m)=>s+(calcMet(m,diffs,f.max||3)||0),0)/films.length).toFixed(2) : null;
+    return films.length ? +(films.reduce((s,m)=>s+(calcMet(m,diffs)||0),0)/films.length).toFixed(2) : null;
   });
 
   const r2 = document.getElementById('analysis-evolution');
