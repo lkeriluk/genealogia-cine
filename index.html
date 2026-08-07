@@ -846,7 +846,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.32</span>
+    <span class="footer-txt">Genealogía del Cine v6.33</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1009,7 +1009,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.32</span>
+    <span class="footer-txt">Genealogía del Cine v6.33</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1154,7 +1154,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.32</span>
+    <span class="footer-txt">Genealogía del Cine v6.33</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1387,7 +1387,10 @@ input[type=number] {
     <div class="body-grid">
       <div class="body-main">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-          <span style="font-size:13px;font-weight:500;" id="diffs-count">Diferenciales (0)</span>
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="font-size:13px;font-weight:500;" id="diffs-count">Diferenciales (0)</span>
+            <label style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;letter-spacing:.04em;">RANGO ±<input type="number" id="field-max-input" class="form-input" min="1" max="20" value="3" style="width:52px;padding:3px 6px;font-family:'DM Mono',monospace;font-size:12px;" oninput="setFieldMax(this.value)" /></label>
+          </div>
           <div style="display:flex;gap:8px;">
             <button class="btn" onclick="importDiffs()">Importar de otro campo</button>
             <button class="btn-primary" onclick="showNewDiffForm()">+ Nuevo diferencial</button>
@@ -1400,7 +1403,6 @@ input[type=number] {
               <th>Nombre</th>
               <th>Polo −</th>
               <th>Polo +</th>
-              <th style="width:60px;">Rango</th>
               <th>Calificadas</th>
               <th></th>
             </tr>
@@ -1480,7 +1482,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.32</span>
+    <span class="footer-txt">Genealogía del Cine v6.33</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1594,12 +1596,21 @@ let appState = {
   detailChronoFilmId: null,
 };
 
+function _migrateFields(fields) {
+  fields.forEach(f => {
+    if (f.max === undefined) {
+      f.max = (f.differentials && f.differentials[0] && f.differentials[0].negMax) || 3;
+    }
+  });
+}
+
 async function getState() {
   try {
     const r = await fetch('/api/state');
     if (r.ok) {
       const data = await r.json();
       appState.fields = data.fields || [];
+      _migrateFields(appState.fields);
       localStorage.setItem('cg_state', JSON.stringify(data));
       return;
     }
@@ -1607,6 +1618,7 @@ async function getState() {
   // Servidor no disponible — usar caché local
   const local = localStorage.getItem('cg_state');
   appState.fields = local ? (JSON.parse(local).fields || []) : [];
+  _migrateFields(appState.fields);
 }
 
 function saveState() {
@@ -2253,6 +2265,7 @@ async function createField() {
     name, genreId: +genreId, votes, decFrom, decTo,
     excludedGenres: excluded, countries, allowOutside,
     universeTotal,
+    max: 3,
     cache: appState.previewCache || null,
     sample: [],
     differentials: [],
@@ -3268,17 +3281,16 @@ function diffDragEnd(e) {
 
 function renderDiffs(f) {
   document.getElementById('diffs-count').textContent = `Diferenciales (${(f.differentials||[]).length})`;
+  const maxInput = document.getElementById('field-max-input');
+  if (maxInput) maxInput.value = f.max || 3;
   const tbody = document.getElementById('diffs-tbody');
   if (!f.differentials || !f.differentials.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="color:var(--text3);font-size:12px;padding:16px 10px;">No hay diferenciales. Creá uno para empezar.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--text3);font-size:12px;padding:16px 10px;">No hay diferenciales. Creá uno para empezar.</td></tr>`;
     return;
   }
   tbody.innerHTML = f.differentials.map((d, i) => {
     const rated = f.sample ? f.sample.filter(m => m.ratings && m.ratings[d.id] !== undefined).length : 0;
     const total = f.sample ? f.sample.length : 0;
-    const negMax = d.negMax || 3;
-    const posMax = d.posMax || 3;
-    const rangeLabel = (negMax === posMax) ? `±${negMax}` : `−${negMax} / +${posMax}`;
     return `<tr draggable="true"
       ondragstart="diffDragStart(event, ${i})"
       ondragover="diffDragOver(event)"
@@ -3289,7 +3301,6 @@ function renderDiffs(f) {
       <td class="td-title">${d.name}</td>
       <td style="color:var(--text3);font-size:12px;">${d.negPole}</td>
       <td style="color:var(--text3);font-size:12px;">${d.posPole}</td>
-      <td style="color:var(--text3);font-size:11px;font-family:'DM Mono',monospace;">${rangeLabel}</td>
       <td>
         <div class="prog-wrap">
           <div class="prog-track"><div class="prog-fill" style="width:${total?Math.round(rated/total*100):0}%;"></div></div>
@@ -3301,6 +3312,14 @@ function renderDiffs(f) {
   }).join('');
 }
 
+function setFieldMax(val) {
+  const max = Math.max(1, Math.min(20, parseInt(val) || 3));
+  const f = currentField();
+  if (!f) return;
+  f.max = max;
+  saveState();
+}
+
 function showNewDiffForm() {
   document.getElementById('diff-editor').innerHTML = `
     <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;">Nuevo diferencial</div>
@@ -3308,10 +3327,6 @@ function showNewDiffForm() {
     <div class="form-row form-row-2">
       <div class="form-group" style="margin:0"><label class="form-label">POLO −</label><input class="form-input" id="diff-neg" type="text" placeholder="Naturaleza" /></div>
       <div class="form-group" style="margin:0"><label class="form-label">POLO +</label><input class="form-input" id="diff-pos" type="text" placeholder="Técnica" /></div>
-    </div>
-    <div class="form-row form-row-2">
-      <div class="form-group" style="margin:0"><label class="form-label">MÁX. POLO −</label><input class="form-input" id="diff-neg-max" type="number" min="1" max="10" value="3" style="font-family:'DM Mono',monospace;" /></div>
-      <div class="form-group" style="margin:0"><label class="form-label">MÁX. POLO +</label><input class="form-input" id="diff-pos-max" type="number" min="1" max="10" value="3" style="font-family:'DM Mono',monospace;" /></div>
     </div>
     <div class="form-group">
       <label class="form-label">DESCRIPCIÓN</label>
@@ -3327,8 +3342,6 @@ function editDiff(id) {
   const f = currentField();
   const d = f.differentials.find(x => x.id === id);
   if (!d) return;
-  const negMax = d.negMax || 3;
-  const posMax = d.posMax || 3;
   const ratedCount = f.sample ? f.sample.filter(m => m.ratings && m.ratings[id] !== undefined).length : 0;
   document.getElementById('diff-editor').innerHTML = `
     <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;">Editar diferencial</div>
@@ -3336,10 +3349,6 @@ function editDiff(id) {
     <div class="form-row form-row-2">
       <div class="form-group" style="margin:0"><label class="form-label">POLO −</label><input class="form-input" id="diff-neg" type="text" value="${d.negPole}" /></div>
       <div class="form-group" style="margin:0"><label class="form-label">POLO +</label><input class="form-input" id="diff-pos" type="text" value="${d.posPole}" /></div>
-    </div>
-    <div class="form-row form-row-2">
-      <div class="form-group" style="margin:0"><label class="form-label">MÁX. POLO −</label><input class="form-input" id="diff-neg-max" type="number" min="1" max="10" value="${negMax}" style="font-family:'DM Mono',monospace;" /></div>
-      <div class="form-group" style="margin:0"><label class="form-label">MÁX. POLO +</label><input class="form-input" id="diff-pos-max" type="number" min="1" max="10" value="${posMax}" style="font-family:'DM Mono',monospace;" /></div>
     </div>
     <div class="form-group">
       <label class="form-label">DESCRIPCIÓN</label>
@@ -3364,16 +3373,14 @@ function saveDiff(existingId) {
   const negPole = document.getElementById('diff-neg').value.trim();
   const posPole = document.getElementById('diff-pos').value.trim();
   const desc = document.getElementById('diff-desc').value.trim();
-  const negMax = Math.max(1, Math.min(10, parseInt(document.getElementById('diff-neg-max').value) || 3));
-  const posMax = Math.max(1, Math.min(10, parseInt(document.getElementById('diff-pos-max').value) || 3));
   if (!name || !negPole || !posPole) { alert('Completá nombre y polos'); return; }
   const f = currentField();
   if (existingId) {
     const d = f.differentials.find(x => x.id === existingId);
-    if (d) { d.name = name; d.negPole = negPole; d.posPole = posPole; d.desc = desc; d.negMax = negMax; d.posMax = posMax; }
+    if (d) { d.name = name; d.negPole = negPole; d.posPole = posPole; d.desc = desc; }
     logActivity('diff.edit', { field: f.name, diff: name });
   } else {
-    f.differentials.push({ id: 'd_' + Date.now(), name, negPole, posPole, desc, negMax, posMax });
+    f.differentials.push({ id: 'd_' + Date.now(), name, negPole, posPole, desc });
     logActivity('diff.create', { field: f.name, diff: name });
   }
   saveState();
@@ -3597,7 +3604,7 @@ async function selectCalFilm(filmId) {
     revenue = film.revenue || d.revenue || 0;
   } catch(e) {}
 
-  const met = calcMet(film, diffs);
+  const met = calcMet(film, diffs, f.max || 3);
   const filmIdx = f.sample.indexOf(film);
   const prevId = filmIdx > 0 ? f.sample[filmIdx-1].id : null;
   const nextId = filmIdx < f.sample.length-1 ? f.sample[filmIdx+1].id : null;
@@ -3648,14 +3655,12 @@ async function selectCalFilm(filmId) {
 
   const activeCount = diffs.filter(d => film.activeRatings[d.id] === true).length;
   const activePct = diffs.length ? Math.round(activeCount / diffs.length * 100) : 0;
+  const fieldMax = f.max || 3;
   const diffsHtml = diffs.length ? diffs.map(d => {
-    const negMax = d.negMax || 3;
-    const posMax = d.posMax || 3;
-    const totalRange = negMax + posMax;
     const rawVal = film.ratings[d.id] !== undefined ? +film.ratings[d.id] : 0;
-    const val = Math.max(-negMax, Math.min(posMax, rawVal));
-    const pct = (val + negMax) / totalRange * 100;
-    const fillPct = val >= 0 ? (val / posMax * 50) : (Math.abs(val) / negMax * 50);
+    const val = Math.max(-fieldMax, Math.min(fieldMax, rawVal));
+    const pct = (val + fieldMax) / (fieldMax * 2) * 100;
+    const fillPct = Math.abs(val) / fieldMax * 50;
     const fillStyle = val >= 0 ? `left:50%;width:${fillPct}%` : `right:50%;width:${fillPct}%`;
     const fillClass = val >= 0 ? 'slider-fill-pos' : 'slider-fill-neg';
     const isActive = film.activeRatings[d.id] === true;
@@ -3668,9 +3673,9 @@ async function selectCalFilm(filmId) {
             <div class="slider-center"></div>
             <div class="slider-fill ${fillClass}" style="${fillStyle};"></div>
             <div class="slider-thumb" style="left:${pct}%;" id="thumb-${d.id}"></div>
-            <input type="range" min="-${negMax}" max="${posMax}" step="1" value="${val}"
+            <input type="range" min="-${fieldMax}" max="${fieldMax}" step="1" value="${val}"
               style="position:absolute;inset:0;opacity:0;width:100%;cursor:pointer;height:20px;top:-8px;"
-              oninput="updateSlider(this, '${film.id}', '${d.id}', ${negMax}, ${posMax})" />
+              oninput="updateSlider(this, '${film.id}', '${d.id}')" />
           </div>
           <span class="slider-val" id="val-${d.id}">${val > 0 ? '+'+val : val}</span>
         </div>
@@ -3695,11 +3700,10 @@ async function selectCalFilm(filmId) {
     </div>`;
 }
 
-function updateSlider(input, filmId, diffId, negMax, posMax) {
-  negMax = negMax || 3;
-  posMax = posMax || 3;
+function updateSlider(input, filmId, diffId) {
   const val = +input.value;
   const f = currentField();
+  const max = f.max || 3;
   const film = f.sample.find(m => m.id === +filmId);
   if (!film) return;
   if (!film.ratings) film.ratings = {};
@@ -3713,9 +3717,8 @@ function updateSlider(input, filmId, diffId, negMax, posMax) {
     if (row) row.style.opacity = '1';
     updateActiveCount(film, f.differentials || []);
   }
-  const totalRange = negMax + posMax;
-  const pct = (val + negMax) / totalRange * 100;
-  const fillPct = val >= 0 ? (val / posMax * 50) : (Math.abs(val) / negMax * 50);
+  const pct = (val + max) / (max * 2) * 100;
+  const fillPct = Math.abs(val) / max * 50;
   const thumb = document.getElementById('thumb-' + diffId);
   const valEl = document.getElementById('val-' + diffId);
   if (thumb) thumb.style.left = pct + '%';
@@ -3725,7 +3728,7 @@ function updateSlider(input, filmId, diffId, negMax, posMax) {
     fillEl.className = 'slider-fill ' + (val>=0?'slider-fill-pos':'slider-fill-neg');
     fillEl.style.cssText = val>=0 ? `left:50%;width:${fillPct}%` : `right:50%;width:${fillPct}%`;
   }
-  const met = calcMet(film, f.differentials||[]);
+  const met = calcMet(film, f.differentials||[], f.max || 3);
   const metEl = document.getElementById('met-display');
   if (metEl) { metEl.textContent = met !== null ? met.toFixed(2) : '—'; }
 }
@@ -3745,7 +3748,7 @@ function toggleDiffActive(filmId, diffId) {
   const row = document.getElementById('row-' + diffId);
   if (row) row.style.opacity = !wasActive ? '1' : '0.45';
 
-  const met = calcMet(film, f.differentials || []);
+  const met = calcMet(film, f.differentials || [], f.max || 3);
   const metEl = document.getElementById('met-display');
   if (metEl) metEl.textContent = met !== null ? met.toFixed(2) : '—';
   updateActiveCount(film, f.differentials || []);
@@ -3768,7 +3771,7 @@ function saveCalFilm(filmId) {
   const m = (f.sample || []).find(x => x.id === filmId);
   if (m) {
     const diffs = f.differentials || [];
-    const met = calcMet(m, diffs);
+    const met = calcMet(m, diffs, f.max || 3);
     logActivity('rating.save', { field: f.name, title: m.title, metaestability: met });
   }
   saveState();
@@ -3806,13 +3809,13 @@ function warmCell(intensity) {
   const t = hi[0]===lo[0] ? 1 : (intensity-lo[0])/(hi[0]-lo[0]);
   return `rgb(${Math.round(lo[1][0]+(hi[1][0]-lo[1][0])*t)},${Math.round(lo[1][1]+(hi[1][1]-lo[1][1])*t)},${Math.round(lo[1][2]+(hi[1][2]-lo[1][2])*t)})`;
 }
-function detailPeriodBg(val) {
+function detailPeriodBg(val, max) {
   if (val === null || val === undefined) return null;
-  return warmCell(Math.abs(val) / 3);
+  return warmCell(Math.abs(val) / (max || 3));
 }
-function detailPeriodFg(val) {
+function detailPeriodFg(val, max) {
   if (val === null || val === undefined) return 'var(--text2)';
-  return Math.abs(val) / 3 < 0.18 ? '#888480' : '#F0EDE8';
+  return Math.abs(val) / (max || 3) < 0.18 ? '#888480' : '#F0EDE8';
 }
 
 function calcDetailWeighted(periods, runtime) {
@@ -4029,7 +4032,7 @@ function renderDetailDiffItemHTML(film, d, runtime, f) {
     bodyHtml = `<div class="det-diff-body">
       <textarea class="diff-inline-desc" rows="1" placeholder="Notas sobre este diferencial..." oninput="autosaveDetailNote('${film.id}','${d.id}',this)">${(film.detailNotes||{})[d.id]||''}</textarea>
       ${renderFilmDiffRelPickerHTML(film, d.id, f, 'detail')}
-      ${renderMiniTimelineHTML(periods, runtime)}
+      ${renderMiniTimelineHTML(periods, runtime, f.max || 3)}
       <div class="det-poles-row">
         <span class="det-pole-lbl">← ${d.negPole||'Polo−'} (−3)</span>
         <span class="det-pole-lbl">${d.posPole||'Polo+'} (+3) →</span>
@@ -4060,7 +4063,7 @@ function renderDetailDiffItemHTML(film, d, runtime, f) {
   </div>`;
 }
 
-function renderMiniTimelineHTML(periods, runtime) {
+function renderMiniTimelineHTML(periods, runtime, max) {
   if (!runtime) return '<div class="det-mini-timeline"></div>';
   const sorted = [...periods].sort((a,b) => a.from - b.from);
   let segs = '', cursor = 0;
@@ -4073,7 +4076,7 @@ function renderMiniTimelineHTML(periods, runtime) {
       segs += `<div class="det-mt-seg" style="left:${l}%;width:${w}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
     } else {
       const lbl = p.value > 0 ? '+'+p.value : p.value;
-      segs += `<div class="det-mt-seg" style="left:${l}%;width:${w}%;background:${detailPeriodBg(p.value)};color:${detailPeriodFg(p.value)};"><span>${lbl}</span></div>`;
+      segs += `<div class="det-mt-seg" style="left:${l}%;width:${w}%;background:${detailPeriodBg(p.value,max)};color:${detailPeriodFg(p.value,max)};"><span>${lbl}</span></div>`;
     }
     cursor = p.to;
   }
@@ -4736,7 +4739,7 @@ function _updateDetailDiffHeader(film, diffId, f) {
   const tlEl = item.querySelector('.det-mini-timeline');
   if (statusEl) { statusEl.textContent = statusText; statusEl.className = 'det-diff-status ' + statusClass; }
   if (valEl) { valEl.textContent = valText; valEl.className = 'det-diff-val ' + valClass; }
-  if (tlEl) tlEl.outerHTML = renderMiniTimelineHTML(periods, runtime);
+  if (tlEl) tlEl.outerHTML = renderMiniTimelineHTML(periods, runtime, f.max || 3);
 }
 
 function updateDetailMetDisplay(film, diffs) {
@@ -4793,7 +4796,7 @@ function showDetailHeatmap(filmId) {
         if (p.from > cursor) segs += `<div class="det-hm-seg" style="left:${(cursor/runtime*100).toFixed(2)}%;width:${((p.from-cursor)/runtime*100).toFixed(2)}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
         const l=(p.from/runtime*100).toFixed(2), w=((p.to-p.from)/runtime*100).toFixed(2);
         if (p.value===null||p.value===undefined) segs += `<div class="det-hm-seg" style="left:${l}%;width:${w}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
-        else { const lbl=p.value>0?'+'+p.value:p.value; segs += `<div class="det-hm-seg" style="left:${l}%;width:${w}%;background:${detailPeriodBg(p.value)};color:${detailPeriodFg(p.value)};"><span>${lbl}</span></div>`; }
+        else { const lbl=p.value>0?'+'+p.value:p.value; segs += `<div class="det-hm-seg" style="left:${l}%;width:${w}%;background:${detailPeriodBg(p.value,f.max||3)};color:${detailPeriodFg(p.value,f.max||3)};"><span>${lbl}</span></div>`; }
         cursor = p.to;
       }
       if (cursor < runtime) segs += `<div class="det-hm-seg" style="left:${(cursor/runtime*100).toFixed(2)}%;width:${((runtime-cursor)/runtime*100).toFixed(2)}%;background:var(--bg3);border:0.5px dashed var(--border2);"></div>`;
@@ -4840,8 +4843,8 @@ function renderAnalysis(f) {
   const sample = f.sample || [];
   const diffs = f.differentials || [];
   const rated = sample.filter(m => m.ratings && Object.keys(m.ratings).length >= diffs.length);
-  const avgMet = rated.length ? rated.reduce((s,m) => s + (calcMet(m,diffs)||0), 0) / rated.length : 0;
-  const transf = rated.filter(m => (calcMet(m,diffs)||0) > 1.8).length;
+  const avgMet = rated.length ? rated.reduce((s,m) => s + (calcMet(m,diffs,f.max||3)||0), 0) / rated.length : 0;
+  const transf = rated.filter(m => (calcMet(m,diffs,f.max||3)||0) > 1.8).length;
 
   document.getElementById('analysis-stats').innerHTML = `
     <div class="stat-card"><div class="stat-label">CALIFICADAS</div><div class="stat-value">${rated.length}</div><div class="stat-sub">de ${sample.length}</div></div>
@@ -4851,7 +4854,7 @@ function renderAnalysis(f) {
 
   if (!rated.length) return;
 
-  const ranked = [...rated].map(m => ({ title: m.title, met: calcMet(m,diffs)||0 }))
+  const ranked = [...rated].map(m => ({ title: m.title, met: calcMet(m,diffs,f.max||3)||0 }))
     .sort((a,b) => b.met - a.met).slice(0,15);
 
   const r1 = document.getElementById('analysis-ranking');
@@ -4878,7 +4881,7 @@ function renderAnalysis(f) {
   for(let d=f.decFrom;d<=f.decTo;d+=10) decades.push(d);
   const decAvg = decades.map(dec => {
     const films = rated.filter(m => Math.floor(m.year/10)*10===dec);
-    return films.length ? +(films.reduce((s,m)=>s+(calcMet(m,diffs)||0),0)/films.length).toFixed(2) : null;
+    return films.length ? +(films.reduce((s,m)=>s+(calcMet(m,diffs,f.max||3)||0),0)/films.length).toFixed(2) : null;
   });
 
   const r2 = document.getElementById('analysis-evolution');

@@ -197,8 +197,8 @@ describe('calculateRepIndex', () => {
 // ── calcMet ─────────────────────────────────────────────────────────────────
 
 describe('calcMet', () => {
-  const d1 = { id: 'd1', posMax: 3, negMax: 3 };
-  const d2 = { id: 'd2', posMax: 3, negMax: 3 };
+  const d1 = { id: 'd1' };
+  const d2 = { id: 'd2' };
 
   test('no diffs → null', () => {
     expect(calcMet({ ratings: { d1: 2 } }, [])).toBeNull();
@@ -227,10 +227,10 @@ describe('calcMet', () => {
     expect(calcMet({ ratings: { d1: 3, d2: 0 } }, [d1, d2])).toBe(1.50);
   });
 
-  test('negative values use negMax', () => {
-    const dNeg = { id: 'dn', negMax: 2 };
-    // val = -2, negMax = 2 → |−2|/2 = 1 → * 3 = 3.00
-    expect(calcMet({ ratings: { dn: -2 } }, [dNeg])).toBe(3.00);
+  test('max param scales the result', () => {
+    const dNeg = { id: 'dn' };
+    // val = -2, max = 2 → |−2|/2 = 1 → * 3 = 3.00
+    expect(calcMet({ ratings: { dn: -2 } }, [dNeg], 2)).toBe(3.00);
   });
 
   test('activeRatings: only active diffs count toward average', () => {
