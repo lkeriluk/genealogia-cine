@@ -853,7 +853,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.37</span>
+    <span class="footer-txt">Genealogía del Cine v6.38</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1016,7 +1016,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.37</span>
+    <span class="footer-txt">Genealogía del Cine v6.38</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1161,7 +1161,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.37</span>
+    <span class="footer-txt">Genealogía del Cine v6.38</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1480,6 +1480,9 @@ input[type=number] {
   <div id="tab-detail" class="tab-content" style="display:none;">
     <div class="det-layout">
       <div class="det-sidebar" id="det-sidebar">
+        <div style="padding:8px 10px 4px;">
+          <input type="text" class="form-input" id="det-search" placeholder="Buscar..." style="font-size:11px;padding:5px 8px;" oninput="filterDetailSidebar()" />
+        </div>
         <div id="det-groups"></div>
       </div>
       <div class="det-main" id="det-main">
@@ -1489,7 +1492,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.37</span>
+    <span class="footer-txt">Genealogía del Cine v6.38</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1602,6 +1605,8 @@ let appState = {
   currentCalFilm: null,
   calFilter: '',
   calCollapsed: { pending: false, inProgress: false, done: false },
+  detFilter: '',
+  detCollapsed: { pending: false, done: false },
   addFilmTimeout: null,
   previewCache: null,
   currentDetailFilm: null,
@@ -3896,20 +3901,43 @@ function renderDetailTab(f) {
   }
 }
 
+function filterDetailSidebar() {
+  appState.detFilter = (document.getElementById('det-search') || {}).value || '';
+  renderDetailSidebar(currentField());
+}
+
+function toggleDetailGroup(key) {
+  appState.detCollapsed[key] = !appState.detCollapsed[key];
+  renderDetailSidebar(currentField());
+}
+
 function renderDetailSidebar(f) {
   const diffs = f.differentials || [];
-  const sample = f.sample || [];
+  const filter = (appState.detFilter || '').toLowerCase().trim();
+  const sample = (f.sample || []).filter(m => !filter || m.title.toLowerCase().includes(filter));
   const pending = sample.filter(m => !isDetailDone(m, diffs));
   const done = sample.filter(m => isDetailDone(m, diffs));
-  document.getElementById('det-groups').innerHTML = `
-    <div style="padding:4px 0;">
-      <div style="font-size:10px;color:var(--text3);padding:8px 14px 4px;letter-spacing:.04em;">PENDIENTES (${pending.length})</div>
-      ${pending.map(m => `<div class="det-sidebar-item${appState.currentDetailFilm===m.id?' active':''}" onclick="selectDetailFilm(${m.id})">${m.title}</div>`).join('')}
-    </div>
-    <div style="margin-top:4px;border-top:0.5px solid var(--border);padding:4px 0;">
-      <div style="font-size:10px;color:var(--text3);padding:8px 14px 4px;letter-spacing:.04em;">CALIFICADAS (${done.length})</div>
-      ${done.map(m => `<div class="det-sidebar-item done${appState.currentDetailFilm===m.id?' active':''}" onclick="selectDetailFilm(${m.id})">${m.title}</div>`).join('')}
+
+  const renderGroup = (key, label, items, extraClass) => {
+    const collapsed = appState.detCollapsed[key];
+    const itemHtml = collapsed ? '' : (items.length
+      ? items.map(m => `<div class="det-sidebar-item${extraClass?' '+extraClass:''}${appState.currentDetailFilm===m.id?' active':''}" onclick="selectDetailFilm(${m.id})">${m.title}</div>`).join('')
+      : `<div style="font-size:11px;color:var(--text3);padding:3px 14px 6px;">${filter ? 'Sin resultados' : 'Ninguna'}</div>`);
+    return `<div class="cal-sidebar-section">
+      <div class="cal-group-header" onclick="toggleDetailGroup('${key}')">
+        <span class="cal-group-label">${label}</span>
+        <span class="cal-group-meta">
+          <span class="cal-group-count">${items.length}</span>
+          <span class="cal-group-caret${collapsed?' collapsed':''}">▼</span>
+        </span>
+      </div>
+      ${itemHtml}
     </div>`;
+  };
+
+  document.getElementById('det-groups').innerHTML =
+    renderGroup('pending', 'PENDIENTES', pending, '') +
+    renderGroup('done',    'CALIFICADAS', done,   'done');
 }
 
 function _ensureDetailFilmData(film) {
