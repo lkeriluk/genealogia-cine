@@ -8,9 +8,9 @@ Contexto completo del proyecto para Claude Code. Leé este archivo antes de hace
 
 **Cine y Géneros** es una app web para que investigadores analicen géneros cinematográficos usando un método propio basado en la teoría de Simondon.
 
-El método: el investigador selecciona una muestra representativa de películas de un género, define **diferenciales** (tensiones narrativas binarias, ej: Cuerpo/Máquina), asigna a cada película un valor de −3 a +3 en cada diferencial, y calcula la **metaestabilidad** (promedio de |valores| / 3, escala 0–3). Las películas con metaestabilidad alta son "transformadoras" del género; las de baja son "estables".
+El método: el investigador selecciona una muestra representativa de películas de un género, define **diferenciales** (tensiones narrativas binarias, ej: Cuerpo/Máquina), asigna a cada película un valor dentro del rango ±max del campo en cada diferencial, y calcula la **metaestabilidad** (`promedio(|valores|)` de los diferenciales activos — escala 0 a `field.max`). Las películas con metaestabilidad alta son "transformadoras" del género; las de baja son "estables".
 
-La versión actual es **v6.26**.
+La versión actual es **v6.39**.
 
 ---
 
@@ -24,7 +24,7 @@ La versión actual es **v6.26**.
 - **Chart.js 4.4.1** — todos los gráficos
 - **TMDB API** — datos de películas (géneros, discover, detalles)
 - **lib/logic.js** — módulo CommonJS con funciones puras de cálculo; cargado como `<script>` en el browser (globals) y `require()`d en tests Jest
-- **Jest** — suite de tests unitarios en `tests/logic.test.js` (40 tests), ejecutar con `npm test`
+- **Jest** — suite de tests unitarios en `tests/logic.test.js` (43 tests), ejecutar con `npm test`
 - **Google Fonts** — DM Sans + DM Mono
 
 **TMDB API Key (Bearer token):**
@@ -47,7 +47,7 @@ Siempre se usa como `Authorization: Bearer <token>` en los headers. Base URL: `h
 ├── lib/
 │   └── logic.js       — Funciones puras exportadas (CommonJS + globals)
 ├── tests/
-│   └── logic.test.js  — Jest: 40 tests unitarios
+│   └── logic.test.js  — Jest: 43 tests unitarios
 ├── help-img/          — Imágenes para help.html
 ├── package.json       — Dependencias + script "test": "jest"
 └── CLAUDE.md          — Este archivo
@@ -95,7 +95,7 @@ Tablas:
 | `l1Overlap(a, b)` | Overlap L1 entre dos distribuciones (suma de mínimos normalizados), rango [0,1] |
 | `cosineSimilarity(a, b)` | Similitud de coseno, clampeada a [0,1] |
 | `calculateRepIndex(f)` | Índice de representatividad de décadas: `l1Overlap(univCounts, sampleCounts) × sizeFactor` |
-| `calcMet(film, diffs)` | Metaestabilidad: promedio de `|valor|/max` × 3, escala 0–3 |
+| `calcMet(film, diffs)` | Metaestabilidad: `promedio(|valor|)` de los diferenciales activos con rating — escala 0 a `field.max` |
 | `calClassify(film, totalDiffs)` | Estado de calificación: `'pending'` / `'inProgress'` / `'done'` |
 | `fmtRevenue(r)` | Formatea ingresos: `'$150M'`, `'$2.5B'`, `'—'` |
 
@@ -141,33 +141,36 @@ La app tiene **3 pantallas** (`screen-home`, `screen-new-field`, `screen-field`)
 
 #### Tab Diferenciales
 - Lista reordenable con drag & drop
-- Editor lateral: nombre, polo−, polo+, máximos de cada polo (negMax/posMax, default 3), descripción, progreso de calificación
+- Editor lateral: nombre, polo−, polo+, **RANGO ±** (input numérico para `field.max`, aplica a todos los diferenciales del campo — default 3, máximo 20), descripción, progreso de calificación
 - Botón importar de otro campo
 
 #### Tab Calificación
-- Sidebar: lista de pendientes / en progreso / calificadas (colapsable por sección)
-- Área principal: poster TMDB + metadata + sliders −3 a +3 por diferencial
+- Sidebar: buscador por título + lista de pendientes / en progreso / calificadas (secciones colapsables)
+- Área principal: poster TMDB + metadata + sliders −max a +max por diferencial
 - Cada diferencial tiene un toggle de activación (●) y un textarea de descripción editable inline que auto-guarda al tipear
-- Metaestabilidad calculada en tiempo real
+- Metaestabilidad calculada en tiempo real (escala 0 a `field.max`)
 - Navegación anterior/siguiente + guardar
 
 #### Tab Calificación detallada
-- Mismo sidebar que Cal. básica (películas pendientes / calificadas)
+- Sidebar: buscador por título + secciones colapsables PENDIENTES / CALIFICADAS (igual que Cal. general)
 - Cronómetro por película: ▶ Reanudar / ⏸ Pausar / ↺ Reiniciar; muestra tiempo acumulado en mm:ss
 - Flujo de períodos por diferencial:
-  - Al pausar, en cada diferencial expandido aparece el panel de creación de período
-  - **Fase 1** ("Nuevo período"): muestra el minuto actual como inicio; botón "Crear período" abre el período (guarda el `from`) y transiciona a Fase 2
-  - **Fase 2** ("Período abierto"): muestra `from` → `to` (actualizado al pausar), slider de valor. "Cerrar período" inserta el período. "Cancelar" descarta
-  - Mientras el cronómetro corre, los paneles se muestran pero los botones de acción quedan deshabilitados (los inputs de inicio/fin/valor sí son editables)
+  - Al pausar, en cada diferencial expandido aparece el panel de creación de período, **de forma independiente por diferencial** (crear un período en un diferencial no afecta los paneles de los demás)
+  - El panel muestra `from` (último `to` de los períodos existentes en ESE diferencial, o 0) → `to` (minuto actual del cronómetro), slider de valor
+  - Mientras el cronómetro corre, los botones de acción quedan deshabilitados (los inputs sí son editables)
   - El campo "fin" se marca en rojo si ≤ inicio
-  - No se muestra panel si el minuto actual ya está cubierto por un período existente
-  - Cada diferencial puede tener su propio período abierto simultáneamente
+  - No se muestra panel si los períodos de ESE diferencial ya cubren hasta el minuto actual
 - **Agregar manual**: siempre disponible; abre un panel con campos de inicio/fin/valor para insertar un período arbitrario
 - Los períodos se muestran como filas editables con mini-timeline visual; se pueden borrar o editar sus límites (modal si hay solapamiento con el período adyacente)
 - Botón "Cerrar diferencial": extiende el último período hasta el runtime del film
 - Botón "Cerrar diferenciales": aplica lo anterior a todos los diferenciales de una vez
-- Botón "⊞ Ver mapa de calor": modal con vista de todos los períodos de todos los diferenciales
+- Botón "⊞ Ver mapa de calor": modal con:
+  - Gráfico de **metaestabilidad global** (área escalonada): segmentos cuya altura = `met/field.max`, coloreados con la paleta warm, línea punteada amber = índice global ponderado por tiempo
+  - **Tooltip** al hacer hover sobre el gráfico: minuto, índice en ese momento, valores de cada diferencial activo
+  - Filas de diferenciales (timeline de períodos coloreados)
+  - Eje Y relativo a `field.max`; leyenda con entrada para línea punteada
 - Cada diferencial tiene un textarea de descripción editable inline que auto-guarda al tipear
+- **Cal. detallada es completamente independiente de Cal. general**: `detailedRatings` no escribe en `film.ratings`, no afecta los sliders ni la metaestabilidad de Cal. general
 - La tab se oculta en mobile (sin soporte responsive)
 
 #### Tab Análisis
@@ -206,6 +209,8 @@ appState = {
   detailManualCreate: {},     // { [diffId]: boolean } — panel "Agregar manual" abierto
   detailChronoFilmId: null,   // id de la película cuyo cronómetro está corriendo
   detailOpenPeriods: {},      // { [diffId]: { filmId, from, value } } — períodos abiertos por diferencial
+  detFilter: '',              // filtro de búsqueda sidebar Cal. detallada
+  detCollapsed: { pending: false, done: false },
 }
 ```
 
@@ -226,6 +231,7 @@ appState = {
   universeTotal: number,
   minSuggested: number,
   sampleSize: number,
+  max: number,            // rango ± de los diferenciales; default 3, máximo 20; aplica a todos los diffs del campo
   cache: {                // snapshot del universo al momento de crear el campo
     decadesCounts: [],    // conteo de películas por década (escala real)
     ratingBuckets: [],
@@ -244,19 +250,19 @@ appState = {
       revenue: number,
       country: string,
       genreIds: [],
-      ratings: {},        // { diffId: value } — populated by Calificación; overwritten by detailedRatings when complete
-      activeRatings: {},  // { diffId: boolean } — which diffs count toward metaestability; absent = legacy (all rated diffs count)
-      detailedRatings: {  // populated by Calificación detallada
+      ratings: {},        // { diffId: value } — poblado por Cal. general; Cal. detallada NO escribe aquí
+      activeRatings: {},  // { diffId: boolean } — qué diffs cuentan hacia la metaestabilidad; ausente = legacy (todos los rateados cuentan)
+      detailedRatings: {  // poblado por Cal. detallada — completamente independiente de ratings
         // key: diffId
         'd_xxx': {
-          periods: [{ id: 'p_'+Date.now(), from: 0, to: 50, value: null }], // from/to in minutes
-          weightedValue: null,  // Σ(value×(to-from))/runtime rounded to 1 decimal; null if any period unrated
-          complete: false,      // true when all periods have non-null values (no full-coverage requirement)
+          periods: [{ id: 'p_'+Date.now(), from: 0, to: 50, value: null }], // from/to en minutos
+          weightedValue: null,  // Σ(value×(to-from))/runtime redondeado a 1 decimal; null si algún período sin calificar
+          complete: false,      // true cuando todos los períodos tienen valor non-null (no requiere cobertura total)
         }
       },
-      chronoTime: 0,      // seconds accumulated for this film's chronometer in Calificación detallada
-      runtime: null,      // minutes, from TMDB GET /movie/{id} → runtime; settable manually
-      _detailPosterPath: string,  // poster_path from TMDB, fetched on first open in Cal. detallada
+      chronoTime: 0,      // segundos acumulados del cronómetro en Cal. detallada
+      runtime: null,      // minutos, de TMDB GET /movie/{id} → runtime; configurable manualmente
+      _detailPosterPath: string,  // poster_path de TMDB, buscado al abrir por primera vez en Cal. detallada
       manual: boolean,
       manualReason: string,
     }
@@ -267,14 +273,14 @@ appState = {
       name: string,
       negPole: string,
       posPole: string,
-      desc: string,       // descripción editable inline en Cal. básica y Cal. detallada
-      negMax: number,     // máximo valor polo negativo (default 3)
-      posMax: number,     // máximo valor polo positivo (default 3)
+      desc: string,       // descripción editable inline en Cal. general y Cal. detallada
     }
   ],
   createdAt: string,
 }
 ```
+
+**Migración de campos viejos:** al cargar el estado, `_migrateFields` asigna `f.max` desde `f.differentials[0].negMax` si no existe (compatibilidad con campos creados antes de v6.33).
 
 ---
 
@@ -314,6 +320,21 @@ sizeFactor = min(1, n_muestra / minSuggested)
 El `sizeFactor` penaliza muestras pequeñas aunque accidentalmente tengan buena distribución. Con 1 película de 11 décadas posibles, el índice da ~1.8% (no ~9%), porque la penalización por tamaño es proporcional.
 
 El índice global es el promedio de los 6 índices penalizados (décadas, rating, votos, géneros, países, taquilla).
+
+---
+
+## Escala de colores (mapas de calor)
+
+La función `warmCell(intensity)` mapea un valor 0→1 a un color RGB:
+- 0.00 → gris `rgb(34,34,38)`
+- 0.33 → amber `rgb(212,130,32)`
+- 0.67 → naranja-rojo `rgb(190,60,18)`
+- 1.00 → rojo oscuro `rgb(122,14,8)`
+
+Se usa siempre con `Math.abs(val) / 3` como entrada (hardcodeado a 3, no a `field.max`), para que la escala de colores sea consistente entre campos con distintos rangos. Aplica en:
+- Tab Análisis: mapa de calor diferenciales × décadas
+- Cal. detallada: mini-timeline y filas de períodos en el mapa de calor modal
+- Cal. detallada: gráfico de metaestabilidad global en el mapa de calor modal
 
 ---
 
@@ -372,6 +393,10 @@ El índice global es el promedio de los 6 índices penalizados (décadas, rating
 
 9. **Períodos en Cal. detallada no requieren cobertura completa.** Un diferencial queda `complete = true` cuando todos sus períodos tienen valor asignado, sin importar si cubren el runtime total. Pueden existir franjas sin período.
 
+10. **Cal. detallada no impacta Cal. general.** `detailedRatings` es completamente independiente de `ratings`. Los sliders, metaestabilidad y análisis de Cal. general se basan exclusivamente en `film.ratings`.
+
+11. **`field.max` es único por campo.** Todos los diferenciales del campo comparten el mismo rango ±max. No hay escala por diferencial. Campos viejos (con `negMax`/`posMax` por diferencial) se migran automáticamente al cargar.
+
 ---
 
 ## Proceso pre-push
@@ -401,8 +426,8 @@ El índice global es el promedio de los 6 índices penalizados (décadas, rating
 | `crear-campo` | Campos | Pantalla nuevo campo: formulario, vista previa, gráficos de preview |
 | `descripcion` | Campos | Tab Descripción: stat cards, gráficos de distribución |
 | `muestra` | Campos | Tab Muestra: slider, tabla, generar, agregar película, índice de representatividad |
-| `diferenciales` | Campos | Tab Diferenciales: lista, editor, importar de otro campo |
-| `calificacion` | Campos | Tab Calificación (sliders, metaestabilidad) + Tab Calificación detallada (cronómetro, períodos) |
+| `diferenciales` | Campos | Tab Diferenciales: lista, editor, RANGO ±, importar de otro campo |
+| `calificacion` | Campos | Tab Calificación (sliders, metaestabilidad) + Tab Calificación detallada (cronómetro, períodos, mapa de calor) |
 | `peliculas` | Películas | Sección Películas: formulario de búsqueda, tabla de resultados, detalle, distribución |
 | `usuario` | General | Menú de usuario: avatar, listado de usuarios, historial de actividad |
 | `mobile` | General | Versión mobile: header, navegación, pantallas |
