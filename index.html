@@ -853,7 +853,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.39</span>
+    <span class="footer-txt">Genealogía del Cine v6.40</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1016,7 +1016,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.39</span>
+    <span class="footer-txt">Genealogía del Cine v6.40</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1161,7 +1161,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.39</span>
+    <span class="footer-txt">Genealogía del Cine v6.40</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1492,7 +1492,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.39</span>
+    <span class="footer-txt">Genealogía del Cine v6.40</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -4171,11 +4171,15 @@ function renderCreatePeriodPanelHTML(film, d, runtime) {
   }
 
   const thisPeriods = ((film.detailedRatings || {})[d.id] || {}).periods || [];
-  const maxTo = thisPeriods.length ? Math.max(...thisPeriods.map(p => p.to)) : 0;
+  const thisMaxTo = thisPeriods.length ? Math.max(...thisPeriods.map(p => p.to)) : 0;
 
-  if (maxTo >= currentMin) return '';
+  if (thisMaxTo >= currentMin) return '';
 
-  return _renderChronoPeriodPanel(film, d, maxTo, currentMin, 0, isRunning);
+  const allPeriods = Object.values(film.detailedRatings || {}).flatMap(dr => dr.periods || []);
+  const globalMaxTo = allPeriods.length ? Math.max(...allPeriods.map(p => p.to)) : 0;
+  const fromVal = (globalMaxTo > 0 && globalMaxTo < currentMin) ? globalMaxTo : thisMaxTo;
+
+  return _renderChronoPeriodPanel(film, d, fromVal, currentMin, 0, isRunning);
 }
 
 function _renderChronoPeriodPanel(film, d, fromVal, toVal, storedVal, isRunning) {

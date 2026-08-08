@@ -361,17 +361,21 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <ul>
         <li><strong>Nombre:</strong> etiqueta del diferencial (ej: "Naturaleza/Técnica").</li>
         <li><strong>Polo − y Polo +:</strong> los dos extremos del eje de análisis.</li>
-        <li><strong>Rango:</strong> rango de valores posibles para el slider de calificación.</li>
+        <li><strong>Rango:</strong> rango de valores posibles para el slider de calificación (ver RANGO ± más abajo).</li>
         <li><strong>Calificadas:</strong> fracción de películas de la muestra que ya tienen asignado un valor para ese diferencial.</li>
       </ul>
       <p>El handle a la izquierda de cada fila permite reordenarlos mediante drag & drop. Desde la lista se puede acceder a la opción editar para modificar cualquier diferencial existente.</p>
+
+      <h2>RANGO ±</h2>
+      <p>El <strong>RANGO ±</strong> es un valor único que define el límite máximo de los sliders de calificación para <strong>todos los diferenciales del campo</strong>. Si el rango es 3, los sliders van de −3 a +3; si es 5, van de −5 a +5.</p>
+      <p>Se configura desde el panel lateral de edición y aplica a todos los diferenciales por igual. El valor por defecto es 3 y puede ajustarse hasta 20.</p>
+      <div class="callout">Cambiar el RANGO ± afecta cómo se interpreta la metaestabilidad: el resultado siempre escala de 0 al valor de RANGO ± configurado. Comparar metaestabilidades entre campos con distinto rango requiere tener esto en cuenta.</div>
 
       <h2>Crear un diferencial</h2>
       <p>Al hacer clic en <strong>+ Nuevo diferencial</strong> se abre el panel lateral de edición con los siguientes campos:</p>
       <ul>
         <li><strong>Nombre:</strong> etiqueta del diferencial.</li>
         <li><strong>Polo − y Polo +:</strong> nombre de cada extremo del eje.</li>
-        <li><strong>Máx. polo − y Máx. polo +:</strong> valor máximo del slider en cada dirección (por defecto 3).</li>
         <li><strong>Descripción:</strong> campo libre para documentar qué mide el diferencial y cómo interpretarlo.</li>
       </ul>
 
@@ -397,13 +401,15 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <h2>Estructura de la pantalla</h2>
       <p>La sección se divide en dos zonas:</p>
       <ul>
-        <li><strong>Sidebar izquierdo:</strong> lista de películas de la muestra, dividida en tres grupos: Pendientes, En proceso y Calificadas. Permite navegar directamente a cualquier película.</li>
+        <li><strong>Sidebar izquierdo:</strong> lista de películas de la muestra con un buscador por título en la parte superior y tres grupos colapsables: Pendientes, En proceso y Calificadas. Cada película muestra el avance de calificación junto a su nombre.</li>
         <li><strong>Área principal:</strong> muestra la película activa con su póster, metadata (año, votos, rating, géneros secundarios, presupuesto, taquilla) y sinopsis.</li>
       </ul>
 
       <h2>Calificar una película</h2>
-      <p>Para cada película activa, la sección Diferenciales muestra un slider por cada diferencial definido. Al mover los sliders, la <strong>metaestabilidad</strong> se actualiza en tiempo real en la parte inferior de la pantalla.</p>
-      <p>La metaestabilidad se calcula como el promedio de los valores absolutos de las calificaciones <strong>activas</strong>, dividido por el valor máximo del rango. Una metaestabilidad alta indica que la película tensiona fuertemente los diferenciales del género; una baja indica que los reproduce de forma estable.</p>
+      <p>Para cada película activa, la sección Diferenciales muestra un slider por cada diferencial definido. El rango de cada slider va de <strong>−max a +max</strong>, donde max es el <strong>RANGO ±</strong> configurado en la sección Diferenciales del campo (por defecto 3). Al mover los sliders, la <strong>metaestabilidad</strong> se actualiza en tiempo real en la parte inferior de la pantalla.</p>
+      <p>La metaestabilidad se calcula como el <strong>promedio de los valores absolutos</strong> de las calificaciones activas:</p>
+      <p style="font-family:'DM Mono',monospace;background:var(--bg3);padding:8px 12px;border-radius:var(--radius);font-size:12px;">Metaestabilidad = promedio( |valor| ) sobre diferenciales activos</p>
+      <p>El resultado escala de 0 a max. Una metaestabilidad alta indica que la película tensiona fuertemente los diferenciales del género; una baja indica que los reproduce de forma estable.</p>
 
       <h2>Activación de diferenciales</h2>
       <p>Cada diferencial tiene un toggle <strong>●</strong> a su izquierda que indica si está activo (ámbar) o inactivo (gris). Solo los diferenciales activos contribuyen a la metaestabilidad y aparecen en el mapa de calor y la comparación de películas en la sección Análisis.</p>
@@ -414,6 +420,10 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       </ul>
       <p>El header de la sección Diferenciales muestra el conteo de activos en formato <strong>x/y · %</strong>, donde x es la cantidad de diferenciales activos para esa película e y es el total. El mismo indicador aparece en el sidebar junto al nombre de cada película.</p>
       <div class="callout">Un diferencial inactivo no se pierde: al reactivarlo, recupera el valor que tenía antes.</div>
+
+      <h2>Relaciones entre diferenciales</h2>
+      <p>Dentro de cada diferencial hay un selector <strong>Relaciones</strong> que permite vincular ese diferencial con otros del mismo campo. Las relaciones son anotaciones interpretativas: sirven para registrar qué diferenciales se perciben como interrelacionados o interdependientes en una película específica.</p>
+      <p>Las relaciones asignadas en Calificación general son independientes de las de Calificación detallada — cada sección guarda las suyas por separado.</p>
 
       <figure>
         <img src="/help-img/image16.png" alt="Sección Calificación: película activa y sliders">
@@ -651,6 +661,11 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
     <div id="art-release-notes" class="article">
       <div class="article-title">Release Notes</div>
       <div class="article-meta">Más</div>
+
+      <h2>v6.40 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Agosto 2026</span></h2>
+      <ul>
+        <li>Cal. detallada: al crear un período, el campo de inicio se precarga con el último minuto calificado en cualquier diferencial (no solo en el diferencial actual).</li>
+      </ul>
 
       <h2>v6.39 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Agosto 2026</span></h2>
       <ul>
