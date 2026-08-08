@@ -263,6 +263,9 @@ appState = {
       chronoTime: 0,      // segundos acumulados del cronómetro en Cal. detallada
       runtime: null,      // minutos, de TMDB GET /movie/{id} → runtime; configurable manualmente
       _detailPosterPath: string,  // poster_path de TMDB, buscado al abrir por primera vez en Cal. detallada
+      calRelations: {},   // { diffId: [diffId, ...] } — relaciones entre diferenciales en Cal. general
+      detailRelations: {},// { diffId: [diffId, ...] } — relaciones entre diferenciales en Cal. detallada
+      detailNotes: {},    // { diffId: string } — notas por diferencial en Cal. detallada (textarea inline)
       manual: boolean,
       manualReason: string,
     }
