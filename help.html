@@ -164,6 +164,7 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <a class="sidebar-item" data-article="muestra" onclick="showArticle('muestra')">Sección Muestra</a>
       <a class="sidebar-item" data-article="diferenciales" onclick="showArticle('diferenciales')">Sección Diferenciales</a>
       <a class="sidebar-item" data-article="calificacion" onclick="showArticle('calificacion')">Sección Calificación</a>
+      <a class="sidebar-item" data-article="cal-detallada" onclick="showArticle('cal-detallada')">Cal. detallada</a>
     </div>
 
     <div class="sidebar-group">
@@ -432,37 +433,87 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <h2>Navegación y guardado</h2>
       <p>Los botones <strong>Anterior</strong> y <strong>Siguiente</strong> permiten moverse entre películas sin volver al sidebar. El botón <strong>Guardar</strong> registra los valores asignados.</p>
       <p>Las películas con al menos un diferencial calificado pasan al grupo <strong>En proceso</strong>; cuando todos los diferenciales tienen valor asignado (o han sido explícitamente activados), pasan a <strong>Calificadas</strong>.</p>
+    </div>
 
-      <h2>Calificación detallada</h2>
-      <p>La pestaña <strong>Calificación detallada</strong> extiende el flujo anterior con un cronómetro por película que permite registrar cómo varía cada diferencial a lo largo de la duración de la película.</p>
-      <h3>Cronómetro</h3>
+    <!-- CALIFICACIÓN DETALLADA -->
+    <div id="art-cal-detallada" class="article">
+      <div class="article-title">Cal. detallada</div>
+      <div class="article-meta">Campos</div>
+
+      <p>La pestaña <strong>Calificación detallada</strong> permite registrar cómo varía cada diferencial a lo largo de la duración de la película, usando un cronómetro y un sistema de períodos temporales. Es completamente independiente de la tab Calificación: los datos que se cargan aquí no afectan los sliders, la metaestabilidad ni el análisis de Calificación general.</p>
+
+      <h2>Barra lateral</h2>
+      <p>La barra izquierda funciona igual que en Calificación general: tiene un buscador por título y dos grupos colapsables, <strong>Pendientes</strong> y <strong>Calificadas</strong>. Una película pasa a Calificadas cuando todos sus diferenciales tienen al menos un período con valor asignado.</p>
+
+      <!-- TODO screenshot → help-img/det-a.png: vista general de Cal. detallada con cronómetro y diferenciales expandidos -->
+      <figure>
+        <img src="/help-img/det-a.png" alt="Cal. detallada: vista general">
+        <figcaption>Cal. detallada: cronómetro, barra lateral y diferenciales expandidos.</figcaption>
+      </figure>
+
+      <h2>Cronómetro</h2>
       <p>Cada película tiene su propio cronómetro, independiente del resto. El tiempo acumulado se guarda junto con la película. Los controles disponibles son:</p>
       <ul>
         <li><strong>▶ Reanudar / ⏸ Pausar:</strong> inicia o detiene el conteo.</li>
         <li><strong>↺ Reiniciar:</strong> vuelve el cronómetro a 00:00:00 sin borrar los períodos ya creados.</li>
       </ul>
-      <p>Mientras el cronómetro está corriendo, los paneles de períodos no están disponibles. Al pausarlo, se habilitan para todos los diferenciales expandidos.</p>
-      <h3>Períodos</h3>
-      <p>Un período es un segmento temporal de la película (de X' a Y' minutos) con un valor de diferencial asignado. Los períodos se identifican cuando <strong>inician</strong>: pausás el cronómetro al comienzo de un segmento significativo, lo abrís, reanudás la película, y al pausar de nuevo lo cerrás asignándole un valor.</p>
-      <p>Para crear un período con el cronómetro:</p>
+      <p>Mientras el cronómetro está corriendo, los paneles de creación de período no están disponibles. Al pausarlo, se habilitan en todos los diferenciales expandidos que todavía no estén cubiertos hasta el minuto actual.</p>
+
+      <h2>Períodos</h2>
+
+      <!-- TODO screenshot → help-img/det-b.png: panel de creación de período con campos de inicio/fin y slider -->
+      <figure>
+        <img src="/help-img/det-b.png" alt="Panel de creación de período">
+        <figcaption>Panel de creación de período: inicio precargado desde el último minuto calificado, fin en el minuto actual.</figcaption>
+      </figure>
+
+      <p>Un período es un segmento temporal de la película (de X' a Y' minutos) con un valor de diferencial asignado. Para crear uno con el cronómetro:</p>
       <ol>
-        <li>Pausá el cronómetro cuando quieras marcar el <strong>inicio</strong> del período.</li>
-        <li>Expandí el diferencial y presioná <strong>Crear período</strong> — el período queda abierto desde ese minuto.</li>
-        <li>Reanudá el cronómetro y continuá mirando la película.</li>
-        <li>Pausá el cronómetro cuando quieras marcar el <strong>final</strong> del período.</li>
-        <li>Ajustá el slider al valor (−3 a +3) del segmento y presioná <strong>Cerrar período</strong>.</li>
+        <li>Mirá la película con el cronómetro corriendo.</li>
+        <li>Pausá el cronómetro al <strong>final</strong> del segmento que querés registrar.</li>
+        <li>Expandí el diferencial. El panel de nuevo período aparece con el campo <strong>inicio</strong> precargado con el último minuto calificado en cualquier diferencial de la película, y el campo <strong>fin</strong> con el minuto actual del cronómetro.</li>
+        <li>Ajustá los límites si hace falta y mové el slider al valor del segmento.</li>
+        <li>Presioná <strong>Agregar período</strong>.</li>
       </ol>
-      <p>Solo puede haber un período abierto por vez. Mientras uno esté abierto, el panel de los demás diferenciales indica qué diferencial está ocupado. El período abierto queda indicado en el hint del cronómetro.</p>
-      <p>Para crear períodos con rangos específicos sin usar el cronómetro, usá el botón <strong>Agregar manual</strong> del header de cada diferencial — permite ingresar inicio, fin y valor libremente.</p>
-      <p>Cada período creado aparece como una fila con su rango de minutos, duración, slider de valor y un botón de eliminación.</p>
-      <h3>Valor ponderado y propagación</h3>
-      <p>Cuando todos los períodos de un diferencial tienen valor asignado y la suma de sus duraciones cubre el runtime completo de la película, se calcula automáticamente el <strong>valor ponderado</strong>:</p>
+      <p>El panel de cada diferencial evalúa sus propios períodos de forma independiente: si un diferencial ya está cubierto hasta el minuto actual, su panel se oculta aunque otros todavía no lo estén.</p>
+      <p>Para crear períodos con rangos arbitrarios sin usar el cronómetro, usá el botón <strong>Agregar manual</strong> disponible en el header de cada diferencial — permite ingresar inicio, fin y valor libremente, con validación de superposición.</p>
+      <p>Cada período creado aparece como una fila editable con su rango de minutos, duración, slider de valor y un botón de eliminación.</p>
+      <div class="callout">El runtime de la película se obtiene automáticamente de TMDB al abrir la película. Si no está disponible, podés ingresarlo manualmente en el campo junto al título.</div>
+
+      <h2>Valor ponderado</h2>
+      <p>Cuando todos los períodos de un diferencial tienen valor asignado, se calcula automáticamente el <strong>valor ponderado</strong> de ese diferencial para la película:</p>
       <p style="font-family:'DM Mono',monospace;background:var(--bg3);padding:8px 12px;border-radius:var(--radius);font-size:12px;">Valor = Σ(valor × duración) / runtime total</p>
-      <p>Este valor se propaga a la calificación general de la película (tab Calificación) reemplazando el valor anterior. Si el diferencial no está completo, se muestra un valor parcial con asterisco (*) que no se propaga.</p>
-      <h3>Mini timeline y mapa de calor</h3>
-      <p>Cada diferencial expandido muestra una barra de color horizontal (mini timeline) con los segmentos coloreados según su valor: verde para positivos, rojo para negativos. Los segmentos sin calificar y las zonas no cubiertas se muestran punteados.</p>
-      <p>El botón <strong>⊞ Ver mapa de calor</strong> abre un modal con todos los diferenciales en el eje vertical y el tiempo de la película en el eje horizontal. Una línea ámbar vertical marca la posición actual del cronómetro.</p>
-      <div class="callout">El runtime de la película se obtiene automáticamente de TMDB al abrir la película. Si no está disponible, podés ingresarlo manualmente en el campo que aparece junto al título.</div>
+      <p>No es necesario que los períodos cubran el runtime completo — el diferencial queda completo en cuanto todos sus períodos tienen un valor asignado. Las franjas sin período no bloquean el cálculo.</p>
+      <p>Este valor es exclusivo de Calificación detallada y no se transfiere a la tab Calificación.</p>
+
+      <h2>Relaciones entre diferenciales</h2>
+
+      <!-- TODO screenshot → help-img/det-c.png: selector de relaciones entre diferenciales en Cal. detallada -->
+      <figure>
+        <img src="/help-img/det-c.png" alt="Relaciones entre diferenciales en Cal. detallada">
+        <figcaption>Selector de relaciones entre diferenciales en Cal. detallada.</figcaption>
+      </figure>
+
+      <p>Al igual que en Calificación general, cada diferencial tiene un selector <strong>Relaciones</strong> para vincular ese diferencial con otros del mismo campo. Las relaciones registradas en Cal. detallada son independientes de las de Cal. general — cada tab guarda las suyas por separado.</p>
+
+      <h2>Notas</h2>
+      <p>Cada diferencial tiene un campo de notas editable que se auto-guarda al tipear. Las notas son por película y por diferencial, e independientes de las de Cal. general.</p>
+
+      <h2>Mini timeline y mapa de calor</h2>
+
+      <!-- TODO screenshot → help-img/det-d.png: modal de mapa de calor con gráfico de metaestabilidad global y filas de diferenciales -->
+      <figure>
+        <img src="/help-img/det-d.png" alt="Mapa de calor Cal. detallada">
+        <figcaption>Mapa de calor: metaestabilidad global (área escalonada) y períodos por diferencial (filas de color).</figcaption>
+      </figure>
+
+      <p>Cada diferencial expandido muestra una <strong>mini timeline</strong>: una barra horizontal con los períodos coloreados según su valor. Los períodos sin calificar y las zonas sin cobertura se muestran punteados.</p>
+      <p>El botón <strong>⊞ Ver mapa de calor</strong> abre un modal con dos vistas:</p>
+      <ul>
+        <li><strong>Metaestabilidad global:</strong> gráfico de área escalonada donde cada segmento temporal tiene una altura proporcional al promedio de |valores| de los diferenciales activos en ese intervalo. Una línea punteada ámbar marca el índice global ponderado por tiempo. Al hacer hover sobre el gráfico, un tooltip muestra el minuto, el índice en ese momento y el valor de cada diferencial activo.</li>
+        <li><strong>Filas de diferenciales:</strong> una fila por diferencial con los períodos coloreados, alineados en el mismo eje temporal.</li>
+      </ul>
+      <p>El eje Y del gráfico es relativo al RANGO ± del campo.</p>
     </div>
 
     <!-- BUSCADOR AVANZADO -->
@@ -1032,6 +1083,7 @@ const articles = {
   'muestra':         { title: 'Sección Muestra', text: 'muestra slider generar agregar película representatividad distribución índice excel exportar' },
   'diferenciales':   { title: 'Sección Diferenciales', text: 'diferenciales tensiones narrativas polo drag drop importar crear editar slider rango' },
   'calificacion':    { title: 'Sección Calificación', text: 'calificación película metaestabilidad slider pendientes en proceso calificadas guardar anterior siguiente sidebar' },
+  'cal-detallada':   { title: 'Cal. detallada', text: 'calificación detallada cronómetro períodos segmentos temporales valor ponderado mapa de calor mini timeline metaestabilidad global relaciones notas runtime' },
   'mobile':          { title: 'Versión mobile', text: 'mobile celular dispositivo móvil responsive pantalla pequeña' },
   'indicadores':     { title: 'Cómo se calculan los indicadores', text: 'indicadores fórmula cálculo factor escala mínimo sugerido representatividad coseno solapamiento décadas' },
   'release-notes':   { title: 'Release Notes', text: 'versiones cambios novedades historial release notes v3' },
