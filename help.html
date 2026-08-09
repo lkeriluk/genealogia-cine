@@ -160,11 +160,11 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <a class="sidebar-item" data-article="crear-campo" onclick="showArticle('crear-campo')">Crear un campo</a>
       <a class="sidebar-item sub" data-article="crear-campo" onclick="showArticle('crear-campo')">El formulario de configuración</a>
       <a class="sidebar-item sub" data-article="crear-campo" onclick="showArticle('crear-campo')">La vista previa</a>
-      <a class="sidebar-item" data-article="descripcion" onclick="showArticle('descripcion')">Sección Descripción</a>
-      <a class="sidebar-item" data-article="muestra" onclick="showArticle('muestra')">Sección Muestra</a>
-      <a class="sidebar-item" data-article="diferenciales" onclick="showArticle('diferenciales')">Sección Diferenciales</a>
-      <a class="sidebar-item" data-article="calificacion" onclick="showArticle('calificacion')">Sección Calificación</a>
-      <a class="sidebar-item" data-article="cal-detallada" onclick="showArticle('cal-detallada')">Cal. detallada</a>
+      <a class="sidebar-item" data-article="descripcion" onclick="showArticle('descripcion')">Descripción</a>
+      <a class="sidebar-item" data-article="muestra" onclick="showArticle('muestra')">Muestra</a>
+      <a class="sidebar-item" data-article="diferenciales" onclick="showArticle('diferenciales')">Diferenciales</a>
+      <a class="sidebar-item" data-article="calificacion" onclick="showArticle('calificacion')">Calificación</a>
+      <a class="sidebar-item" data-article="cal-detallada" onclick="showArticle('cal-detallada')">Calificación detallada</a>
     </div>
 
     <div class="sidebar-group">
@@ -423,8 +423,18 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <div class="callout">Un diferencial inactivo no se pierde: al reactivarlo, recupera el valor que tenía antes.</div>
 
       <h2>Relaciones entre diferenciales</h2>
-      <p>Dentro de cada diferencial hay un selector <strong>Relaciones</strong> que permite vincular ese diferencial con otros del mismo campo. Las relaciones son anotaciones interpretativas: sirven para registrar qué diferenciales se perciben como interrelacionados o interdependientes en una película específica.</p>
-      <p>Las relaciones asignadas en Calificación general son independientes de las de Calificación detallada — cada sección guarda las suyas por separado.</p>
+      <p>Dentro de cada diferencial hay un selector <strong>Relaciones</strong> que permite vincular ese diferencial con otros del mismo campo. Las relaciones son anotaciones interpretativas: sirven para registrar qué diferenciales se perciben como interrelacionados o interdependientes en una película específica. Al seleccionar una relación, esta se registra automáticamente en ambas direcciones: si A relaciona con B, B queda vinculado con A sin necesidad de configurarlo manualmente.</p>
+      <p>El botón <strong>⊞ Ver relaciones</strong> abre un modal con dos visualizaciones del grafo de relaciones para la película activa:</p>
+      <ul>
+        <li><strong>Grafo de fuerzas:</strong> nodos posicionados con un algoritmo force-directed. El tamaño de cada nodo es proporcional a la cantidad de relaciones; el color refleja la metaestabilidad del diferencial para esa película. Al hacer hover se resalta el nodo junto a sus conexiones y aparece un tooltip con nombre completo, metaestabilidad y lista de diferenciales relacionados. Los nodos son arrastrables.</li>
+        <li><strong>Chord diagram:</strong> arcos externos proporcionales al grado de cada diferencial, coloreados por metaestabilidad. Las cuerdas internas representan cada relación. El hover sobre un arco resalta el diferencial y sus conexiones.</li>
+      </ul>
+
+      <!-- TODO screenshot → help-img/cal-rel-graph.png: modal de grafo de relaciones con nodos coloreados por metaestabilidad -->
+      <figure>
+        <img src="/help-img/cal-rel-graph.png" alt="Grafo de relaciones entre diferenciales">
+        <figcaption>Modal Ver relaciones: grafo de fuerzas con nodos coloreados por metaestabilidad.</figcaption>
+      </figure>
 
       <figure>
         <img src="/help-img/image16.png" alt="Sección Calificación: película activa y sliders">
@@ -437,10 +447,10 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
 
     <!-- CALIFICACIÓN DETALLADA -->
     <div id="art-cal-detallada" class="article">
-      <div class="article-title">Cal. detallada</div>
+      <div class="article-title">Calificación detallada</div>
       <div class="article-meta">Campos</div>
 
-      <p>La pestaña <strong>Calificación detallada</strong> permite registrar cómo varía cada diferencial a lo largo de la duración de la película, usando un cronómetro y un sistema de períodos temporales. Es completamente independiente de la tab Calificación: los datos que se cargan aquí no afectan los sliders, la metaestabilidad ni el análisis de Calificación general.</p>
+      <p>La pestaña <strong>Calificación detallada</strong> es una herramienta piloto que permite registrar cómo varía cada diferencial a lo largo de la duración de la película, usando un cronómetro y un sistema de períodos temporales. Por tratarse de una fase experimental, sus datos son independientes del resto del análisis y no se integran con otras secciones.</p>
 
       <h2>Barra lateral</h2>
       <p>La barra izquierda funciona igual que en Calificación general: tiene un buscador por título y dos grupos colapsables, <strong>Pendientes</strong> y <strong>Calificadas</strong>. Una película pasa a Calificadas cuando todos sus diferenciales tienen al menos un período con valor asignado.</p>
@@ -484,7 +494,7 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <p>Cuando todos los períodos de un diferencial tienen valor asignado, se calcula automáticamente el <strong>valor ponderado</strong> de ese diferencial para la película:</p>
       <p style="font-family:'DM Mono',monospace;background:var(--bg3);padding:8px 12px;border-radius:var(--radius);font-size:12px;">Valor = Σ(valor × duración) / runtime total</p>
       <p>No es necesario que los períodos cubran el runtime completo — el diferencial queda completo en cuanto todos sus períodos tienen un valor asignado. Las franjas sin período no bloquean el cálculo.</p>
-      <p>Este valor es exclusivo de Calificación detallada y no se transfiere a la tab Calificación.</p>
+      <p>El valor ponderado refleja la variación del diferencial a lo largo del tiempo de la película.</p>
 
       <h2>Relaciones entre diferenciales</h2>
 
@@ -494,10 +504,17 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
         <figcaption>Selector de relaciones entre diferenciales en Cal. detallada.</figcaption>
       </figure>
 
-      <p>Al igual que en Calificación general, cada diferencial tiene un selector <strong>Relaciones</strong> para vincular ese diferencial con otros del mismo campo. Las relaciones registradas en Cal. detallada son independientes de las de Cal. general — cada tab guarda las suyas por separado.</p>
+      <p>Al igual que en Calificación general, cada diferencial tiene un selector <strong>Relaciones</strong> para vincular ese diferencial con otros del mismo campo. Al seleccionar una relación, esta se registra automáticamente en ambas direcciones.</p>
+      <p>El botón <strong>⊞ Ver relaciones</strong> abre el mismo modal de visualización disponible en Calificación: grafo de fuerzas y chord diagram, usando los datos de relaciones propios de esta pestaña.</p>
+
+      <!-- TODO screenshot → help-img/det-rel-graph.png: modal de grafo de relaciones en Cal. detallada -->
+      <figure>
+        <img src="/help-img/det-rel-graph.png" alt="Grafo de relaciones en Calificación detallada">
+        <figcaption>Modal Ver relaciones en Calificación detallada.</figcaption>
+      </figure>
 
       <h2>Notas</h2>
-      <p>Cada diferencial tiene un campo de notas editable que se auto-guarda al tipear. Las notas son por película y por diferencial, e independientes de las de Cal. general.</p>
+      <p>Cada diferencial tiene un campo de notas editable que se auto-guarda al tipear. Las notas son por película y por diferencial.</p>
 
       <h2>Mini timeline y mapa de calor</h2>
 
