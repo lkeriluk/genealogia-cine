@@ -853,7 +853,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.40</span>
+    <span class="footer-txt">Genealogía del Cine v6.41</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1016,7 +1016,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.40</span>
+    <span class="footer-txt">Genealogía del Cine v6.41</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1161,7 +1161,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.40</span>
+    <span class="footer-txt">Genealogía del Cine v6.41</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1492,7 +1492,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.40</span>
+    <span class="footer-txt">Genealogía del Cine v6.41</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1507,6 +1507,35 @@ input[type=number] {
   <div id="det-hm-tt-met" style="font-size:18px;font-weight:300;font-family:'DM Mono',monospace;color:var(--amber);margin-bottom:8px;"></div>
   <div style="height:0.5px;background:var(--border2);margin-bottom:6px;"></div>
   <div id="det-hm-tt-diffs"></div>
+</div>
+
+<div style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;align-items:center;justify-content:center;" id="modal-relations" onclick="if(event.target===this)closeRelationsModal()">
+  <div style="background:var(--bg2);border:0.5px solid var(--border2);border-radius:12px;overflow:hidden;width:min(900px,96vw);max-height:92vh;display:flex;flex-direction:column;" id="rel-modal-inner">
+    <div style="padding:14px 18px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div>
+        <div style="font-size:14px;font-weight:500;" id="rel-modal-title">Relaciones entre diferenciales</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;" id="rel-modal-sub"></div>
+      </div>
+      <button class="btn" onclick="closeRelationsModal()">✕ Cerrar</button>
+    </div>
+    <div style="display:flex;gap:0;border-bottom:0.5px solid var(--border);flex-shrink:0;">
+      <button id="rel-tab-graph" onclick="switchRelTab('graph')" style="padding:8px 16px;font-size:12px;border:none;cursor:pointer;background:var(--bg3);color:var(--text);border-right:0.5px solid var(--border);">Grafo de fuerzas</button>
+      <button id="rel-tab-chord" onclick="switchRelTab('chord')" style="padding:8px 16px;font-size:12px;border:none;cursor:pointer;background:transparent;color:var(--text2);border-right:none;">Chord diagram</button>
+    </div>
+    <div style="padding:14px 18px 4px;flex-shrink:0;" id="rel-legend-row"></div>
+    <div style="overflow-y:auto;flex:1;display:flex;align-items:center;justify-content:center;padding:0 18px 18px;" id="rel-modal-body">
+      <canvas id="rel-graph-canvas" style="display:block;border-radius:8px;background:var(--bg);cursor:grab;width:100%;"></canvas>
+      <svg id="rel-chord-svg" style="display:none;"></svg>
+      <div id="rel-empty" style="display:none;font-size:13px;color:var(--text3);text-align:center;padding:40px;">Esta película no tiene relaciones registradas todavía.</div>
+    </div>
+  </div>
+</div>
+<div id="rel-tooltip" style="position:fixed;display:none;background:var(--bg);border:0.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:11px;z-index:700;min-width:190px;max-width:240px;box-shadow:0 4px 24px rgba(0,0,0,.6);pointer-events:none;">
+  <div id="rel-tt-name" style="font-size:12px;font-weight:500;margin-bottom:3px;line-height:1.4;"></div>
+  <div id="rel-tt-meta" style="font-size:10px;color:var(--text3);margin-bottom:7px;font-family:'DM Mono',monospace;"></div>
+  <div style="height:0.5px;background:var(--border2);margin-bottom:6px;"></div>
+  <div style="font-size:9px;color:var(--text3);letter-spacing:.04em;margin-bottom:4px;">RELACIONADO CON</div>
+  <div id="rel-tt-rels"></div>
 </div>
 
 <!-- MODAL: EDITAR RANGO DE PERÍODO -->
@@ -3481,6 +3510,28 @@ function toggleFilmDiffRelItem(filmId, diffId, relId, tab) {
   if (idx >= 0) arr.splice(idx, 1);
   else arr.push(relId);
   film[relKey][diffId] = arr;
+  // Bidireccional: espejo en relId
+  const mirror = [...(film[relKey][relId] || [])];
+  const mIdx = mirror.indexOf(diffId);
+  if (idx >= 0) { if (mIdx >= 0) mirror.splice(mIdx, 1); }
+  else { if (mIdx < 0) mirror.push(diffId); }
+  film[relKey][relId] = mirror;
+  // Re-render el picker del diff espejo si está en el DOM
+  const mirrorDisplay = document.getElementById('film-rel-display-' + tab + '-' + relId);
+  const mirrorDropdown = document.getElementById('film-rel-dd-' + tab + '-' + relId);
+  if (mirrorDisplay && mirrorDropdown) {
+    const others2 = (f.differentials || []).filter(d => d.id !== relId);
+    mirrorDisplay.innerHTML = mirror.length === 0
+      ? `<span style="color:var(--text3);font-size:11px;font-style:italic;flex:1;">Ninguno</span><span style="color:var(--text3);font-size:10px;">▾</span>`
+      : mirror.map(sid => { const od = others2.find(x => x.id === sid); return od ? `<span style="background:var(--bg4);border:0.5px solid var(--border2);border-radius:3px;padding:1px 6px;font-size:10px;color:var(--text2);white-space:nowrap;">${od.name}</span>` : ''; }).join('') + `<span style="margin-left:auto;color:var(--text3);font-size:10px;flex-shrink:0;">▾</span>`;
+    mirrorDropdown.innerHTML = others2.map(od => {
+      const sel = mirror.includes(od.id);
+      return `<div onclick="toggleFilmDiffRelItem('${filmId}','${relId}','${od.id}','${tab}')" style="display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;font-size:11px;color:${sel ? 'var(--text)' : 'var(--text2)'};background:${sel ? 'var(--bg3)' : 'transparent'};">
+        <span style="width:12px;height:12px;border-radius:2px;border:1px solid ${sel ? 'var(--green)' : 'var(--border2)'};background:${sel ? 'var(--green)' : 'transparent'};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;color:var(--bg);">${sel ? '✓' : ''}</span>
+        ${od.name}
+      </div>`;
+    }).join('');
+  }
   saveState();
   const others = (f.differentials || []).filter(d => d.id !== diffId);
   const display = document.getElementById('film-rel-display-' + tab + '-' + diffId);
@@ -3668,6 +3719,7 @@ async function selectCalFilm(filmId) {
       <div style="display:flex;gap:8px;flex-shrink:0;margin-left:12px;">
         ${prevId ? `<button class="btn" onclick="selectCalFilm(${prevId})">← Anterior</button>` : ''}
         ${nextId ? `<button class="btn" onclick="selectCalFilm(${nextId})">Siguiente →</button>` : ''}
+        <button class="btn" style="font-size:11px;" onclick="showRelationsModal(${film.id},'cal')">⊞ Ver relaciones</button>
         <button class="btn-primary" onclick="saveCalFilm(${film.id})">Guardar</button>
       </div>
     </div>`;
@@ -4019,6 +4071,7 @@ function renderDetailMain(film, f) {
         <div style="margin-left:auto;display:flex;gap:6px;">
           <button class="btn" style="font-size:11px;" onclick="closeAllDiffs(${film.id})">Cerrar diferenciales</button>
           <button class="btn" style="font-size:11px;" onclick="showDetailHeatmap(${film.id})">⊞ Ver mapa de calor</button>
+          <button class="btn" style="font-size:11px;" onclick="showRelationsModal(${film.id},'detail')">⊞ Ver relaciones</button>
         </div>
       </div>
       <div class="det-chrono-hint" id="det-chrono-hint">${chronoHint}</div>
@@ -5010,6 +5063,488 @@ function closeDetailHeatmap() {
   document.getElementById('modal-detail-heatmap').style.display = 'none';
   const tt = document.getElementById('det-hm-tooltip');
   if (tt) tt.style.display = 'none';
+}
+
+// ── MODAL RELACIONES ─────────────────────────────────────────────────────────
+
+let _relState = null; // { filmId, tab, diffs, edgeList, degree, adj, nodes, hoveredId, dragging, ox, oy, rafId, currentTab }
+
+function showRelationsModal(filmId, tab) {
+  const f = currentField();
+  const film = f.sample.find(m => m.id === +filmId);
+  if (!film) return;
+  const diffs = f.differentials || [];
+  const fMax = f.max || 3;
+  const relKey = tab === 'detail' ? 'detailRelations' : 'calRelations';
+  const relMap = film[relKey] || {};
+
+  // Build undirected edges
+  const seen = new Set(), edgeList = [];
+  for (const [src, targets] of Object.entries(relMap)) {
+    for (const tgt of (targets || [])) {
+      const key = [src, tgt].sort().join('|');
+      if (!seen.has(key) && diffs.find(d => d.id === src) && diffs.find(d => d.id === tgt)) {
+        seen.add(key); edgeList.push([src, tgt]);
+      }
+    }
+  }
+
+  // Degree and adjacency
+  const degree = {};
+  diffs.forEach(d => degree[d.id] = 0);
+  edgeList.forEach(([a, b]) => { degree[a]++; degree[b]++; });
+  const adj = {};
+  diffs.forEach(d => adj[d.id] = []);
+  edgeList.forEach(([a, b]) => { adj[a].push(b); adj[b].push(a); });
+
+  // Color
+  function nodeColor(diffId) {
+    const val = (film.ratings || {})[diffId];
+    if (val === undefined || val === null) return '#222226';
+    return warmCell(Math.abs(+val) / fMax);
+  }
+
+  const totalRel = edgeList.length;
+  document.getElementById('rel-modal-title').textContent = 'Relaciones entre diferenciales';
+  document.getElementById('rel-modal-sub').textContent = `${film.title} · ${diffs.length} diferenciales · ${totalRel} relación${totalRel !== 1 ? 'es' : ''}`;
+
+  _relState = { filmId, tab, diffs, edgeList, degree, adj, nodeColor, fMax, film, f,
+    hoveredId: null, dragging: null, ox: 0, oy: 0, rafId: null, currentTab: 'graph' };
+
+  document.getElementById('modal-relations').style.display = 'flex';
+  switchRelTab('graph');
+}
+
+function closeRelationsModal() {
+  document.getElementById('modal-relations').style.display = 'none';
+  document.getElementById('rel-tooltip').style.display = 'none';
+  if (_relState?.rafId) cancelAnimationFrame(_relState.rafId);
+  _relState = null;
+}
+
+function switchRelTab(tabId) {
+  if (!_relState) return;
+  _relState.currentTab = tabId;
+  const graphBtn = document.getElementById('rel-tab-graph');
+  const chordBtn = document.getElementById('rel-tab-chord');
+  const canvas = document.getElementById('rel-graph-canvas');
+  const svgEl = document.getElementById('rel-chord-svg');
+  const emptyEl = document.getElementById('rel-empty');
+
+  graphBtn.style.background = tabId === 'graph' ? 'var(--bg3)' : 'transparent';
+  graphBtn.style.color = tabId === 'graph' ? 'var(--text)' : 'var(--text2)';
+  chordBtn.style.background = tabId === 'chord' ? 'var(--bg3)' : 'transparent';
+  chordBtn.style.color = tabId === 'chord' ? 'var(--text)' : 'var(--text2)';
+
+  canvas.style.display = 'none';
+  svgEl.style.display = 'none';
+  emptyEl.style.display = 'none';
+
+  if (_relState.edgeList.length === 0 && _relState.diffs.every(d => _relState.degree[d.id] === 0)) {
+    emptyEl.style.display = 'block';
+    document.getElementById('rel-legend-row').innerHTML = '';
+    return;
+  }
+
+  if (tabId === 'graph') {
+    canvas.style.display = 'block';
+    renderRelGraph();
+  } else {
+    svgEl.style.display = 'block';
+    renderRelChord();
+  }
+
+  // Legend
+  document.getElementById('rel-legend-row').innerHTML = `
+    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;border-radius:50%;background:rgb(122,14,8);flex-shrink:0;"></div>met. alta</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;border-radius:50%;background:rgb(190,60,18);flex-shrink:0;"></div>met. media</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;border-radius:50%;background:rgb(212,130,32);flex-shrink:0;"></div>met. baja</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;border-radius:50%;background:#222226;border:1.5px solid rgba(255,255,255,.2);flex-shrink:0;"></div>sin met.</div>
+      ${tabId === 'graph' ? '<div style="width:1px;height:12px;background:rgba(255,255,255,.12);"></div><div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:20px;height:1.5px;background:rgba(255,255,255,.18);"></div>relación</div><div style="font-size:10px;color:var(--text3);">· hover · arrastrá nodos</div>' : '<div style="font-size:10px;color:var(--text3);">· arcos = relaciones · hover para detalle</div>'}
+    </div>`;
+}
+
+// ── GRAPH ────────────────────────────────────────────────────────────────────
+
+function renderRelGraph() {
+  const s = _relState;
+  const container = document.getElementById('rel-modal-body');
+  const canvas = document.getElementById('rel-graph-canvas');
+
+  const W = Math.min(860, container.clientWidth - 36);
+  const H = Math.round(W * 0.55);
+  canvas.width = W * 2; canvas.height = H * 2;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  function nodeRadius(id) { return 9 + (s.degree[id] || 0) * 2.8; }
+
+  // Initial positions
+  const nodes = {};
+  const sorted = [...s.diffs].sort((a, b) => (s.degree[b.id] || 0) - (s.degree[a.id] || 0));
+  sorted.forEach((d, i) => {
+    let r, angle;
+    if (i < 4) { r = H * 0.18 + i * H * 0.04; angle = (i / 4) * Math.PI * 2 + 0.3; }
+    else if (i < 9) { r = H * 0.37; angle = ((i - 4) / 5) * Math.PI * 2 + 0.8; }
+    else { r = H * 0.52; angle = ((i - 9) / Math.max(1, sorted.length - 9)) * Math.PI * 2 + 1.2; }
+    nodes[d.id] = { x: W / 2 + r * Math.cos(angle), y: H / 2 + r * Math.sin(angle), vx: 0, vy: 0 };
+  });
+  s.nodes = nodes;
+
+  // Force simulation
+  const k = Math.sqrt((W * H) / Math.max(1, s.diffs.length)) * 0.85;
+  for (let step = 0; step < 700; step++) {
+    const cool = Math.max(0.02, 1 - step / 700);
+    s.diffs.forEach(a => {
+      s.diffs.forEach(b => {
+        if (a.id === b.id) return;
+        const na = nodes[a.id], nb = nodes[b.id];
+        const dx = na.x - nb.x, dy = na.y - nb.y;
+        const dist = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+        const minDist = nodeRadius(a.id) + nodeRadius(b.id) + 8;
+        if (dist < minDist * 3) {
+          const force = (k * k) / dist * 1.2;
+          na.vx += (dx / dist) * force * 0.08; na.vy += (dy / dist) * force * 0.08;
+        }
+      });
+    });
+    s.edgeList.forEach(([aid, bid]) => {
+      const na = nodes[aid], nb = nodes[bid];
+      const dx = nb.x - na.x, dy = nb.y - na.y;
+      const dist = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+      const ideal = 80 + (8 - (s.degree[aid] || 0) - (s.degree[bid] || 0)) * 4;
+      const force = (dist - ideal) * 0.03;
+      const fx = (dx / dist) * force, fy = (dy / dist) * force;
+      na.vx += fx; na.vy += fy; nb.vx -= fx; nb.vy -= fy;
+    });
+    s.diffs.forEach(d => {
+      const n = nodes[d.id];
+      n.vx += (W / 2 - n.x) * 0.008; n.vy += (H / 2 - n.y) * 0.008;
+    });
+    s.diffs.forEach(d => {
+      const n = nodes[d.id];
+      const speed = Math.sqrt(n.vx * n.vx + n.vy * n.vy);
+      const maxSpeed = 15 * cool + 0.5;
+      if (speed > maxSpeed) { n.vx = n.vx / speed * maxSpeed; n.vy = n.vy / speed * maxSpeed; }
+      const r = nodeRadius(d.id);
+      n.x = Math.max(r + 6, Math.min(W - r - 6, n.x + n.vx));
+      n.y = Math.max(r + 6, Math.min(H - r - 6, n.y + n.vy));
+      n.vx *= 0.75; n.vy *= 0.75;
+    });
+  }
+
+  function drawGraph(highlightId) {
+    ctx.clearRect(0, 0, W, H);
+    s.edgeList.forEach(([aid, bid]) => {
+      const na = nodes[aid], nb = nodes[bid];
+      const isH = highlightId && (aid === highlightId || bid === highlightId);
+      ctx.beginPath(); ctx.moveTo(na.x, na.y); ctx.lineTo(nb.x, nb.y);
+      ctx.strokeStyle = isH ? 'rgba(239,159,39,0.65)' : 'rgba(255,255,255,0.10)';
+      ctx.lineWidth = isH ? 2 : 1.2; ctx.stroke();
+    });
+    s.diffs.forEach(d => {
+      const n = nodes[d.id], r = nodeRadius(d.id);
+      const col = s.nodeColor(d.id);
+      const isH = highlightId === d.id;
+      const isC = highlightId && s.adj[highlightId].includes(d.id);
+      if (s.degree[d.id] >= 5) {
+        const grad = ctx.createRadialGradient(n.x, n.y, r * 0.6, n.x, n.y, r + 10);
+        grad.addColorStop(0, col.replace('rgb', 'rgba').replace(')', ',0.15)'));
+        grad.addColorStop(1, 'transparent');
+        ctx.beginPath(); ctx.arc(n.x, n.y, r + 10, 0, Math.PI * 2); ctx.fillStyle = grad; ctx.fill();
+      }
+      if (isH) {
+        ctx.beginPath(); ctx.arc(n.x, n.y, r + 4, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 2; ctx.stroke();
+      } else if (isC) {
+        ctx.beginPath(); ctx.arc(n.x, n.y, r + 3, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(239,159,39,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+      }
+      ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = highlightId && !isH && !isC ? col.replace('rgb', 'rgba').replace(')', ',0.35)') : col;
+      ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1; ctx.stroke();
+      const opacity = highlightId && !isH && !isC ? 0.3 : 1;
+      ctx.globalAlpha = opacity;
+      const parts = d.name.split('/');
+      const l1 = parts[0].trim(), l2 = parts[1] ? '/ ' + parts[1].trim() : '';
+      const textCol = col === '#222226' ? '#888480' : '#F0EDE8';
+      ctx.fillStyle = textCol; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      if (r >= 22) {
+        ctx.font = "500 10px 'DM Sans'"; ctx.fillText(l1, n.x, n.y - (l2 ? 5 : 0));
+        if (l2) { ctx.font = "400 9px 'DM Sans'"; ctx.fillText(l2, n.x, n.y + 7); }
+      } else if (r >= 14) {
+        ctx.font = "400 9px 'DM Sans'"; ctx.fillText(l1.slice(0, 10), n.x, n.y);
+      } else {
+        ctx.font = "400 8px 'DM Sans'"; ctx.fillText(l1.slice(0, 6), n.x, n.y);
+      }
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  drawGraph(null);
+
+  // Remove old listeners by replacing canvas
+  const newCanvas = canvas.cloneNode(true);
+  canvas.parentNode.replaceChild(newCanvas, canvas);
+  const c2 = document.getElementById('rel-graph-canvas');
+  const ctx2 = c2.getContext('2d');
+  ctx2.scale(2, 2);
+
+  function getNodeAt(mx, my) {
+    return s.diffs.find(d => {
+      const n = nodes[d.id], r = nodeRadius(d.id);
+      return Math.sqrt((mx - n.x) ** 2 + (my - n.y) ** 2) < r + 2;
+    });
+  }
+
+  function showRelTT(d, e) {
+    const tt = document.getElementById('rel-tooltip');
+    document.getElementById('rel-tt-name').textContent = d.name;
+    const met = (film.ratings || {})[d.id];
+    const metStr = met !== undefined ? Math.abs(+met).toFixed(2) : '—';
+    document.getElementById('rel-tt-meta').textContent = `Met. ${metStr} · ${s.degree[d.id]} relaciones`;
+    const rels = s.adj[d.id].map(id => s.diffs.find(x => x.id === id)?.name).filter(Boolean);
+    document.getElementById('rel-tt-rels').innerHTML = rels.length
+      ? rels.map(r => `<div style="font-size:11px;color:var(--text2);padding:2px 0;line-height:1.4;">• ${r}</div>`).join('')
+      : '<div style="font-size:11px;color:var(--text3);font-style:italic;">Sin relaciones</div>';
+    tt.style.display = 'block';
+    moveRelTT(e);
+  }
+
+  function moveRelTT(e) {
+    const tt = document.getElementById('rel-tooltip');
+    let left = e.clientX + 14;
+    if (left + 240 > window.innerWidth) left = e.clientX - 240 - 14;
+    tt.style.left = left + 'px'; tt.style.top = (e.clientY - 10) + 'px';
+  }
+
+  const film = s.film;
+  let hovId = null, drag = null, ox = 0, oy = 0;
+
+  function redraw(hid) {
+    ctx2.clearRect(0, 0, W, H);
+    // re-draw using ctx2 — replicate drawGraph
+    s.edgeList.forEach(([aid, bid]) => {
+      const na = nodes[aid], nb = nodes[bid];
+      const isH2 = hid && (aid === hid || bid === hid);
+      ctx2.beginPath(); ctx2.moveTo(na.x, na.y); ctx2.lineTo(nb.x, nb.y);
+      ctx2.strokeStyle = isH2 ? 'rgba(239,159,39,0.65)' : 'rgba(255,255,255,0.10)';
+      ctx2.lineWidth = isH2 ? 2 : 1.2; ctx2.stroke();
+    });
+    s.diffs.forEach(d => {
+      const n = nodes[d.id], r = nodeRadius(d.id);
+      const col = s.nodeColor(d.id);
+      const isH2 = hid === d.id, isC2 = hid && s.adj[hid].includes(d.id);
+      if (s.degree[d.id] >= 5) {
+        const grad = ctx2.createRadialGradient(n.x, n.y, r * 0.6, n.x, n.y, r + 10);
+        grad.addColorStop(0, col.replace('rgb', 'rgba').replace(')', ',0.15)'));
+        grad.addColorStop(1, 'transparent');
+        ctx2.beginPath(); ctx2.arc(n.x, n.y, r + 10, 0, Math.PI * 2); ctx2.fillStyle = grad; ctx2.fill();
+      }
+      if (isH2) {
+        ctx2.beginPath(); ctx2.arc(n.x, n.y, r + 4, 0, Math.PI * 2);
+        ctx2.strokeStyle = 'rgba(255,255,255,0.6)'; ctx2.lineWidth = 2; ctx2.stroke();
+      } else if (isC2) {
+        ctx2.beginPath(); ctx2.arc(n.x, n.y, r + 3, 0, Math.PI * 2);
+        ctx2.strokeStyle = 'rgba(239,159,39,0.5)'; ctx2.lineWidth = 1.5; ctx2.stroke();
+      }
+      ctx2.beginPath(); ctx2.arc(n.x, n.y, r, 0, Math.PI * 2);
+      ctx2.fillStyle = hid && !isH2 && !isC2 ? col.replace('rgb', 'rgba').replace(')', ',0.35)') : col;
+      ctx2.fill(); ctx2.strokeStyle = 'rgba(255,255,255,0.12)'; ctx2.lineWidth = 1; ctx2.stroke();
+      const opacity = hid && !isH2 && !isC2 ? 0.3 : 1;
+      ctx2.globalAlpha = opacity;
+      const parts = d.name.split('/');
+      const l1 = parts[0].trim(), l2 = parts[1] ? '/ ' + parts[1].trim() : '';
+      const textCol = col === '#222226' ? '#888480' : '#F0EDE8';
+      ctx2.fillStyle = textCol; ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+      if (r >= 22) {
+        ctx2.font = "500 10px 'DM Sans'"; ctx2.fillText(l1, n.x, n.y - (l2 ? 5 : 0));
+        if (l2) { ctx2.font = "400 9px 'DM Sans'"; ctx2.fillText(l2, n.x, n.y + 7); }
+      } else if (r >= 14) {
+        ctx2.font = "400 9px 'DM Sans'"; ctx2.fillText(l1.slice(0, 10), n.x, n.y);
+      } else {
+        ctx2.font = "400 8px 'DM Sans'"; ctx2.fillText(l1.slice(0, 6), n.x, n.y);
+      }
+      ctx2.globalAlpha = 1;
+    });
+  }
+  redraw(null);
+
+  c2.addEventListener('mousemove', e => {
+    const rect = c2.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (W / rect.width);
+    const my = (e.clientY - rect.top) * (H / rect.height);
+    if (drag) {
+      const r = nodeRadius(drag);
+      nodes[drag].x = Math.max(r + 6, Math.min(W - r - 6, mx - ox));
+      nodes[drag].y = Math.max(r + 6, Math.min(H - r - 6, my - oy));
+      redraw(hovId); return;
+    }
+    const found = getNodeAt(mx, my);
+    const fid = found?.id || null;
+    if (fid !== hovId) {
+      hovId = fid; redraw(fid);
+      if (fid) showRelTT(found, e);
+      else document.getElementById('rel-tooltip').style.display = 'none';
+    }
+    if (fid) moveRelTT(e);
+  });
+  c2.addEventListener('mouseleave', () => {
+    hovId = null; redraw(null);
+    document.getElementById('rel-tooltip').style.display = 'none';
+  });
+  c2.addEventListener('mousedown', e => {
+    const rect = c2.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (W / rect.width);
+    const my = (e.clientY - rect.top) * (H / rect.height);
+    const found = getNodeAt(mx, my);
+    if (found) { drag = found.id; ox = mx - nodes[found.id].x; oy = my - nodes[found.id].y; c2.style.cursor = 'grabbing'; }
+  });
+  c2.addEventListener('mouseup', () => { drag = null; c2.style.cursor = 'grab'; });
+}
+
+// ── CHORD ────────────────────────────────────────────────────────────────────
+
+function renderRelChord() {
+  const s = _relState;
+  const container = document.getElementById('rel-modal-body');
+  const svgEl = document.getElementById('rel-chord-svg');
+  const size = Math.min(680, container.clientWidth - 36);
+  svgEl.setAttribute('width', size); svgEl.setAttribute('height', size);
+  const CX = size / 2, CY = size / 2;
+  const R_outer = size * 0.252, R_inner = size * 0.226, R_label = size * 0.269;
+
+  const { diffs, edgeList, adj, degree, nodeColor, film } = s;
+
+  // Build adjacency as Set
+  const adjSet = {};
+  diffs.forEach(d => adjSet[d.id] = new Set());
+  edgeList.forEach(([a, b]) => { adjSet[a].add(b); adjSet[b].add(a); });
+
+  const GAP = 0.014, TWO_PI = Math.PI * 2;
+  const totalEff = diffs.reduce((sum, d) => sum + Math.max(1, degree[d.id] || 0), 0);
+  let cur = -Math.PI / 2;
+  const segA = {};
+  diffs.forEach(d => {
+    const span = (Math.max(1, degree[d.id] || 0) / totalEff) * TWO_PI - GAP;
+    segA[d.id] = { start: cur, end: cur + span, mid: cur + span / 2 };
+    cur += span + GAP;
+  });
+
+  const subA = {};
+  diffs.forEach(d => {
+    const conns = [...adjSet[d.id]];
+    const { start, end } = segA[d.id];
+    const span = end - start;
+    subA[d.id] = {};
+    conns.forEach((cid, i) => { subA[d.id][cid] = start + (i + 0.5) / conns.length * span; });
+  });
+
+  const seenC = new Set(), chords = [];
+  diffs.forEach(d => {
+    [...adjSet[d.id]].forEach(cid => {
+      const key = [d.id, cid].sort().join('|');
+      if (!seenC.has(key)) {
+        seenC.add(key);
+        const hw = 0.013;
+        chords.push({ a: d.id, b: cid,
+          a1: subA[d.id][cid] - hw, a2: subA[d.id][cid] + hw,
+          b1: subA[cid][d.id] - hw, b2: subA[cid][d.id] + hw });
+      }
+    });
+  });
+
+  function px(angle, r) { return CX + r * Math.cos(angle); }
+  function py(angle, r) { return CY + r * Math.sin(angle); }
+  function chordPath(a1, a2, b1, b2) {
+    return `M ${px(a1,R_inner)} ${py(a1,R_inner)} A ${R_inner} ${R_inner} 0 0 1 ${px(a2,R_inner)} ${py(a2,R_inner)} Q ${CX} ${CY} ${px(b1,R_inner)} ${py(b1,R_inner)} A ${R_inner} ${R_inner} 0 0 1 ${px(b2,R_inner)} ${py(b2,R_inner)} Q ${CX} ${CY} ${px(a1,R_inner)} ${py(a1,R_inner)} Z`;
+  }
+  function segPath(start, end) {
+    const lf = (end - start) > Math.PI ? 1 : 0;
+    return `M ${px(start,R_inner)} ${py(start,R_inner)} A ${R_inner} ${R_inner} 0 ${lf} 1 ${px(end,R_inner)} ${py(end,R_inner)} L ${px(end,R_outer)} ${py(end,R_outer)} A ${R_outer} ${R_outer} 0 ${lf} 0 ${px(start,R_outer)} ${py(start,R_outer)} Z`;
+  }
+  function el(tag, attrs, parent) {
+    const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function warmCellA(met, a) {
+    const c = warmCell(met);
+    return c === '#222226' ? `rgba(34,34,38,${a})` : c.replace('rgb', 'rgba').replace(')', `,${a})`);
+  }
+
+  let hoveredChordId = null;
+
+  function render(hid) {
+    svgEl.innerHTML = '';
+    chords.forEach(c => {
+      const isRel = hid && (c.a === hid || c.b === hid);
+      const da = diffs.find(x => x.id === c.a), db = diffs.find(x => x.id === c.b);
+      const rawA = (film.ratings || {})[c.a], rawB = (film.ratings || {})[c.b];
+      const mA = rawA !== undefined ? Math.abs(+rawA) / s.fMax : 0;
+      const mB = rawB !== undefined ? Math.abs(+rawB) / s.fMax : 0;
+      const met = Math.max(mA, mB);
+      const alpha = hid ? (isRel ? 0.55 : 0.03) : 0.2;
+      el('path', { d: chordPath(c.a1, c.a2, c.b1, c.b2), fill: warmCellA(met, alpha), stroke: 'none' }, svgEl);
+    });
+    diffs.forEach(d => {
+      const { start, end, mid } = segA[d.id];
+      const isH = d.id === hid, isC = hid && adjSet[hid].has(d.id);
+      const fade = hid && !isH && !isC;
+      const g = el('g', {}, svgEl);
+      if (fade) g.setAttribute('opacity', '0.25');
+      el('path', { d: segPath(start, end), fill: nodeColor(d.id),
+        stroke: isH ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.3)',
+        'stroke-width': isH ? '2' : '0.5', cursor: 'pointer' }, g);
+      const hit = el('path', { d: segPath(start, end), fill: 'transparent', cursor: 'pointer' }, g);
+      hit.addEventListener('mouseenter', e => {
+        hoveredChordId = d.id; render(d.id);
+        const tt = document.getElementById('rel-tooltip');
+        document.getElementById('rel-tt-name').textContent = d.name;
+        const met2 = (film.ratings || {})[d.id];
+        const metStr = met2 !== undefined ? Math.abs(+met2).toFixed(2) : '—';
+        document.getElementById('rel-tt-meta').textContent = `Met. ${metStr} · ${adjSet[d.id].size} relaciones`;
+        const rels = [...adjSet[d.id]].map(cid => diffs.find(x => x.id === cid)?.name).filter(Boolean);
+        document.getElementById('rel-tt-rels').innerHTML = rels.length
+          ? rels.map(r => `<div style="font-size:11px;color:var(--text2);padding:2px 0;">• ${r}</div>`).join('')
+          : '<div style="font-size:11px;color:var(--text3);font-style:italic;">Sin relaciones</div>';
+        tt.style.display = 'block';
+        let left = e.clientX + 14;
+        if (left + 240 > window.innerWidth) left = e.clientX - 240 - 14;
+        tt.style.left = left + 'px'; tt.style.top = (e.clientY - 10) + 'px';
+      });
+      hit.addEventListener('mousemove', e => {
+        let left = e.clientX + 14;
+        if (left + 240 > window.innerWidth) left = e.clientX - 240 - 14;
+        document.getElementById('rel-tooltip').style.left = left + 'px';
+        document.getElementById('rel-tooltip').style.top = (e.clientY - 10) + 'px';
+      });
+      hit.addEventListener('mouseleave', () => {
+        hoveredChordId = null; render(null);
+        document.getElementById('rel-tooltip').style.display = 'none';
+      });
+      const parts = d.name.split('/');
+      const l1 = parts[0].trim(), l2 = parts[1] ? '/ ' + parts[1].trim() : '';
+      const isRight = Math.cos(mid) > 0;
+      const anchor = isRight ? 'start' : 'end';
+      const lx = px(mid, R_label), ly = py(mid, R_label);
+      const rot = (mid * 180 / Math.PI) + (isRight ? 0 : 180);
+      const textCol = fade ? 'rgba(90,87,84,0.4)' : (isH || isC ? '#F0EDE8' : '#9A9690');
+      const fw = isH || isC ? '500' : '400';
+      const tg = el('g', { transform: `rotate(${rot},${lx},${ly})` }, g);
+      const fontSize = size < 500 ? '8' : '10';
+      if (l2) {
+        el('text', { x: lx, y: ly - 6, 'font-size': fontSize, 'font-family': 'DM Sans,sans-serif', fill: textCol, 'font-weight': fw, 'text-anchor': anchor, 'dominant-baseline': 'middle' }, tg).textContent = l1;
+        el('text', { x: lx, y: ly + 7, 'font-size': fontSize, 'font-family': 'DM Sans,sans-serif', fill: textCol, 'font-weight': '300', 'text-anchor': anchor, 'dominant-baseline': 'middle' }, tg).textContent = l2;
+      } else {
+        el('text', { x: lx, y: ly, 'font-size': fontSize, 'font-family': 'DM Sans,sans-serif', fill: textCol, 'font-weight': fw, 'text-anchor': anchor, 'dominant-baseline': 'middle' }, tg).textContent = l1;
+      }
+    });
+  }
+  render(null);
 }
 
 // ── TAB: ANÁLISIS ──
