@@ -524,11 +524,11 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
         <figcaption>Figura 29. Mapa de calor: metaestabilidad global (área escalonada) y períodos por diferencial (filas de color).</figcaption>
       </figure>
 
-      <p>Cada diferencial expandido muestra una <strong>mini timeline</strong>: una barra horizontal con los períodos coloreados según su valor. Los períodos sin calificar y las zonas sin cobertura se muestran punteados.</p>
+      <p>Cada diferencial expandido muestra una <strong>mini timeline</strong>: una barra horizontal con los períodos coloreados según su valor: verde para los positivos y rojo-naranja para los negativos, más intenso cuanto mayor es la magnitud. Los períodos sin calificar y las zonas sin cobertura se muestran punteados.</p>
       <p>El botón <strong>⊞ Ver mapa de calor</strong> abre un modal con dos vistas:</p>
       <ul>
         <li><strong>Metaestabilidad global:</strong> gráfico de área escalonada donde cada segmento temporal tiene una altura proporcional al promedio de |valores| de los diferenciales activos en ese intervalo. Una línea punteada ámbar marca el índice global ponderado por tiempo. Al hacer hover sobre el gráfico, un tooltip muestra el minuto, el índice en ese momento y el valor de cada diferencial activo.</li>
-        <li><strong>Filas de diferenciales:</strong> una fila por diferencial con los períodos coloreados, alineados en el mismo eje temporal.</li>
+        <li><strong>Filas de diferenciales:</strong> una fila por diferencial con los períodos coloreados con el mismo criterio (verde positivo, rojo-naranja negativo), alineados en el mismo eje temporal.</li>
       </ul>
       <p>El eje Y del gráfico es relativo al RANGO ± del campo.</p>
     </div>
@@ -729,6 +729,15 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
     <div id="art-release-notes" class="article">
       <div class="article-title">Release Notes</div>
       <div class="article-meta">Más</div>
+
+      <h2>v6.42 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Octubre 2026</span></h2>
+      <ul>
+        <li>Análisis: el mapa de calor diferenciales × décadas vuelve a distinguir el signo — valores positivos en verde y negativos en rojo-naranja, con la intensidad según la magnitud.</li>
+        <li>Calificación y Calificación detallada: el relleno del slider positivo vuelve a ser verde (el negativo sigue en rojo).</li>
+        <li>Calificación detallada: la mini timeline y las filas de períodos del mapa de calor distinguen el signo con el mismo criterio (verde positivo, rojo-naranja negativo); la leyenda del modal muestra ambos lados. El gráfico de metaestabilidad global mantiene la gradiente cálida.</li>
+        <li>Calificación detallada: las etiquetas de los polos muestran el RANGO ± del campo en lugar de un ±3 fijo.</li>
+        <li>Análisis: los ejes del ranking, la evolución por década y la comparación de películas se ajustan al RANGO ± del campo; antes quedaban fijos en 3 y cortaban los valores mayores.</li>
+      </ul>
 
       <h2>v6.41 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Agosto 2026</span></h2>
       <ul>
