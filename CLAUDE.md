@@ -10,7 +10,7 @@ Contexto completo del proyecto para Claude Code. Leé este archivo antes de hace
 
 El método: el investigador selecciona una muestra representativa de películas de un género, define **diferenciales** (tensiones narrativas binarias, ej: Cuerpo/Máquina), asigna a cada película un valor dentro del rango ±max del campo en cada diferencial, y calcula la **metaestabilidad** (`promedio(|valores|)` de los diferenciales activos — escala 0 a `field.max`). Las películas con metaestabilidad alta son "transformadoras" del género; las de baja son "estables".
 
-La versión actual es **v6.42**.
+La versión actual es **v6.43**.
 
 ---
 
@@ -336,11 +336,12 @@ La función `warmCell(intensity)` mapea un valor 0→1 a un color RGB:
 
 Se usa siempre con `Math.abs(val) / 3` como entrada (hardcodeado a 3, no a `field.max`), para que la escala de colores sea consistente entre campos con distintos rangos. Aplica en:
 - Cal. detallada: gráfico de metaestabilidad global en el mapa de calor modal
-- Modal "Ver relaciones": color de nodos y cuerdas
 
 `warmCell` queda reservada para lo que no tiene signo (metaestabilidad). Donde se muestra el valor de un diferencial se usa `signCell(val)`, que distingue el signo: positivos en verde `rgba(29,158,117,α)` y negativos en rojo-naranja `rgba(216,90,48,α)`, con `α = (|val|/3) × 0.8 + 0.1` y 0 en `var(--bg4)`. Aplica en:
 - Tab Análisis: mapa de calor diferenciales × décadas
 - Cal. detallada: mini-timeline y filas de períodos en el mapa de calor modal (y su leyenda)
+
+El modal "Ver relaciones" usa `signNode(val, max)`, la variante opaca de `signCell` (mismos colores mezclados sobre el fondo, porque canvas/SVG dibujan nodos encima de las líneas). Ahí la intensidad es relativa a `field.max`, no a 3. Las líneas y cuerdas de relación son grises.
 
 Los rellenos de los sliders (Cal. general y Cal. detallada) siguen el mismo criterio: `--green` para positivos, `--red` para negativos.
 

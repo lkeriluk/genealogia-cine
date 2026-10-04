@@ -426,14 +426,14 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
       <p>Dentro de cada diferencial hay un selector <strong>Relaciones</strong> que permite vincular ese diferencial con otros del mismo campo. Las relaciones son anotaciones interpretativas: sirven para registrar qué diferenciales se perciben como interrelacionados o interdependientes en una película específica. Al seleccionar una relación, esta se registra automáticamente en ambas direcciones: si A relaciona con B, B queda vinculado con A sin necesidad de configurarlo manualmente.</p>
       <p>El botón <strong>⊞ Ver relaciones</strong> abre un modal con dos visualizaciones del grafo de relaciones para la película activa:</p>
       <ul>
-        <li><strong>Grafo de fuerzas:</strong> nodos posicionados con un algoritmo force-directed. El tamaño de cada nodo es proporcional a la cantidad de relaciones; el color refleja la metaestabilidad del diferencial para esa película. Al hacer hover se resalta el nodo junto a sus conexiones y aparece un tooltip con nombre completo, metaestabilidad y lista de diferenciales relacionados. Los nodos son arrastrables.</li>
-        <li><strong>Chord diagram:</strong> arcos externos proporcionales al grado de cada diferencial, coloreados por metaestabilidad. Las cuerdas internas representan cada relación. El hover sobre un arco resalta el diferencial y sus conexiones.</li>
+        <li><strong>Grafo de fuerzas:</strong> nodos posicionados con un algoritmo force-directed. El tamaño de cada nodo es proporcional a la cantidad de relaciones; el color refleja el valor del diferencial para esa película: verde si es positivo y rojo-naranja si es negativo, más intenso cuanto mayor el valor. Las líneas de relación son grises. Al hacer hover se resalta el nodo junto a sus conexiones y aparece un tooltip con nombre completo, valor y lista de diferenciales relacionados. Los nodos son arrastrables.</li>
+        <li><strong>Chord diagram:</strong> arcos externos proporcionales al grado de cada diferencial, coloreados con el mismo criterio (verde positivo, rojo-naranja negativo). Las cuerdas internas, en gris, representan cada relación. El hover sobre un arco resalta el diferencial y sus conexiones.</li>
       </ul>
 
       <!-- TODO screenshot → help-img/image24.png: modal de grafo de relaciones con nodos coloreados por metaestabilidad -->
       <figure>
         <img src="/help-img/image24.png" alt="Grafo de relaciones entre diferenciales">
-        <figcaption>Figura 24. Modal Ver relaciones: grafo de fuerzas con nodos coloreados por metaestabilidad.</figcaption>
+        <figcaption>Figura 24. Modal Ver relaciones: grafo de fuerzas con nodos coloreados según el valor de cada diferencial.</figcaption>
       </figure>
 
       <figure>
@@ -729,6 +729,12 @@ figcaption { font-size: 11px; color: var(--text3); margin-top: 8px; text-align: 
     <div id="art-release-notes" class="article">
       <div class="article-title">Release Notes</div>
       <div class="article-meta">Más</div>
+
+      <h2>v6.43 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Octubre 2026</span></h2>
+      <ul>
+        <li>Ver relaciones: los nodos (grafo) y los arcos (chord diagram) distinguen el signo del valor — verde positivo, rojo-naranja negativo, más intenso cuanto mayor el valor. El tooltip muestra el valor con su signo.</li>
+        <li>Ver relaciones: las líneas y cuerdas de relación pasan a ser grises.</li>
+      </ul>
 
       <h2>v6.42 <span style="font-size:12px;color:var(--text3);font-weight:400;">— Octubre 2026</span></h2>
       <ul>

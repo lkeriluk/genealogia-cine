@@ -853,7 +853,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.42</span>
+    <span class="footer-txt">Genealogía del Cine v6.43</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1016,7 +1016,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.42</span>
+    <span class="footer-txt">Genealogía del Cine v6.43</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1161,7 +1161,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.42</span>
+    <span class="footer-txt">Genealogía del Cine v6.43</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1492,7 +1492,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.42</span>
+    <span class="footer-txt">Genealogía del Cine v6.43</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -3886,6 +3886,13 @@ function signCell(val) {
   const a = Math.abs(val) / 3 * 0.8 + 0.1;
   return val > 0 ? `rgba(29,158,117,${a})` : val < 0 ? `rgba(216,90,48,${a})` : 'var(--bg4)';
 }
+// Variante opaca de signCell para canvas/SVG (mezcla sobre el fondo en vez de usar alpha)
+function signNode(val, max) {
+  if (val === undefined || val === null || !+val) return '#222226';
+  const a = Math.min(1, Math.abs(+val) / max) * 0.8 + 0.1;
+  const c = +val > 0 ? [29,158,117] : [216,90,48], bg = [34,34,38];
+  return `rgb(${c.map((x,i) => Math.round(bg[i] + (x - bg[i]) * a)).join(',')})`;
+}
 function detailPeriodBg(val) {
   if (val === null || val === undefined) return null;
   return signCell(val);
@@ -5102,9 +5109,7 @@ function showRelationsModal(filmId, tab) {
 
   // Color
   function nodeColor(diffId) {
-    const val = (film.ratings || {})[diffId];
-    if (val === undefined || val === null) return '#222226';
-    return warmCell(Math.abs(+val) / fMax);
+    return signNode((film.ratings || {})[diffId], fMax);
   }
 
   const totalRel = edgeList.length;
@@ -5160,10 +5165,10 @@ function switchRelTab(tabId) {
   // Legend
   document.getElementById('rel-legend-row').innerHTML = `
     <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;border-radius:50%;background:rgb(122,14,8);flex-shrink:0;"></div>met. alta</div>
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;border-radius:50%;background:rgb(190,60,18);flex-shrink:0;"></div>met. media</div>
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;border-radius:50%;background:rgb(212,130,32);flex-shrink:0;"></div>met. baja</div>
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;border-radius:50%;background:#222226;border:1.5px solid rgba(255,255,255,.2);flex-shrink:0;"></div>sin met.</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;border-radius:50%;background:${signNode(1,1)};flex-shrink:0;"></div>positivo</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;border-radius:50%;background:${signNode(-1,1)};flex-shrink:0;"></div>negativo</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:12px;height:12px;border-radius:50%;background:#222226;border:1.5px solid rgba(255,255,255,.2);flex-shrink:0;"></div>0 / sin valor</div>
+      <div style="font-size:10px;color:var(--text3);">más intenso = mayor valor</div>
       ${tabId === 'graph' ? '<div style="width:1px;height:12px;background:rgba(255,255,255,.12);"></div><div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);"><div style="width:20px;height:1.5px;background:rgba(255,255,255,.18);"></div>relación</div><div style="font-size:10px;color:var(--text3);">· hover · arrastrá nodos</div>' : '<div style="font-size:10px;color:var(--text3);">· arcos = relaciones · hover para detalle</div>'}
     </div>`;
 }
@@ -5244,7 +5249,7 @@ function renderRelGraph() {
       const na = nodes[aid], nb = nodes[bid];
       const isH = highlightId && (aid === highlightId || bid === highlightId);
       ctx.beginPath(); ctx.moveTo(na.x, na.y); ctx.lineTo(nb.x, nb.y);
-      ctx.strokeStyle = isH ? 'rgba(239,159,39,0.65)' : 'rgba(255,255,255,0.10)';
+      ctx.strokeStyle = isH ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.10)';
       ctx.lineWidth = isH ? 2 : 1.2; ctx.stroke();
     });
     s.diffs.forEach(d => {
@@ -5306,8 +5311,8 @@ function renderRelGraph() {
     const tt = document.getElementById('rel-tooltip');
     document.getElementById('rel-tt-name').textContent = d.name;
     const met = (film.ratings || {})[d.id];
-    const metStr = met !== undefined ? Math.abs(+met).toFixed(2) : '—';
-    document.getElementById('rel-tt-meta').textContent = `Met. ${metStr} · ${s.degree[d.id]} relaciones`;
+    const metStr = met !== undefined ? (+met > 0 ? '+' : '') + (+met) : '—';
+    document.getElementById('rel-tt-meta').textContent = `Valor ${metStr} · ${s.degree[d.id]} relaciones`;
     const rels = s.adj[d.id].map(id => s.diffs.find(x => x.id === id)?.name).filter(Boolean);
     document.getElementById('rel-tt-rels').innerHTML = rels.length
       ? rels.map(r => `<div style="font-size:11px;color:var(--text2);padding:2px 0;line-height:1.4;">• ${r}</div>`).join('')
@@ -5333,7 +5338,7 @@ function renderRelGraph() {
       const na = nodes[aid], nb = nodes[bid];
       const isH2 = hid && (aid === hid || bid === hid);
       ctx2.beginPath(); ctx2.moveTo(na.x, na.y); ctx2.lineTo(nb.x, nb.y);
-      ctx2.strokeStyle = isH2 ? 'rgba(239,159,39,0.65)' : 'rgba(255,255,255,0.10)';
+      ctx2.strokeStyle = isH2 ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.10)';
       ctx2.lineWidth = isH2 ? 2 : 1.2; ctx2.stroke();
     });
     s.diffs.forEach(d => {
@@ -5474,10 +5479,6 @@ function renderRelChord() {
     if (parent) parent.appendChild(e);
     return e;
   }
-  function warmCellA(met, a) {
-    const c = warmCell(met);
-    return c === '#222226' ? `rgba(34,34,38,${a})` : c.replace('rgb', 'rgba').replace(')', `,${a})`);
-  }
 
   let hoveredChordId = null;
 
@@ -5486,12 +5487,8 @@ function renderRelChord() {
     chords.forEach(c => {
       const isRel = hid && (c.a === hid || c.b === hid);
       const da = diffs.find(x => x.id === c.a), db = diffs.find(x => x.id === c.b);
-      const rawA = (film.ratings || {})[c.a], rawB = (film.ratings || {})[c.b];
-      const mA = rawA !== undefined ? Math.abs(+rawA) / s.fMax : 0;
-      const mB = rawB !== undefined ? Math.abs(+rawB) / s.fMax : 0;
-      const met = Math.max(mA, mB);
       const alpha = hid ? (isRel ? 0.55 : 0.03) : 0.2;
-      el('path', { d: chordPath(c.a1, c.a2, c.b1, c.b2), fill: warmCellA(met, alpha), stroke: 'none' }, svgEl);
+      el('path', { d: chordPath(c.a1, c.a2, c.b1, c.b2), fill: `rgba(184,179,173,${alpha})`, stroke: 'none' }, svgEl);
     });
     diffs.forEach(d => {
       const { start, end, mid } = segA[d.id];
@@ -5508,8 +5505,8 @@ function renderRelChord() {
         const tt = document.getElementById('rel-tooltip');
         document.getElementById('rel-tt-name').textContent = d.name;
         const met2 = (film.ratings || {})[d.id];
-        const metStr = met2 !== undefined ? Math.abs(+met2).toFixed(2) : '—';
-        document.getElementById('rel-tt-meta').textContent = `Met. ${metStr} · ${adjSet[d.id].size} relaciones`;
+        const metStr = met2 !== undefined ? (+met2 > 0 ? '+' : '') + (+met2) : '—';
+        document.getElementById('rel-tt-meta').textContent = `Valor ${metStr} · ${adjSet[d.id].size} relaciones`;
         const rels = [...adjSet[d.id]].map(cid => diffs.find(x => x.id === cid)?.name).filter(Boolean);
         document.getElementById('rel-tt-rels').innerHTML = rels.length
           ? rels.map(r => `<div style="font-size:11px;color:var(--text2);padding:2px 0;">• ${r}</div>`).join('')
