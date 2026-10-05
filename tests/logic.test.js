@@ -9,6 +9,9 @@ const {
   calcMet,
   calClassify,
   fmtRevenue,
+  relationPairs,
+  affinityOrder,
+  calcRelationStats,
 } = require('../lib/logic');
 
 // ── minSampleForTarget ──────────────────────────────────────────────────────
@@ -289,5 +292,93 @@ describe('fmtRevenue', () => {
 
   test('boundary 1B is formatted as B not M', () => {
     expect(fmtRevenue(1e9)).toBe('$1.0B');
+  });
+});
+
+// ── relaciones entre diferenciales ──────────────────────────────────────────
+
+describe('relationPairs', () => {
+  const diffs = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+
+  test('film without relations → empty', () => {
+    expect(relationPairs({}, diffs)).toEqual([]);
+    expect(relationPairs({ calRelations: { a: [] } }, diffs)).toEqual([]);
+  });
+  test('mirrored relations count once, as ordered index pairs', () => {
+    const film = { calRelations: { a: ['b'], b: ['a', 'c'], c: ['b'] } };
+    expect(relationPairs(film, diffs)).toEqual([[0, 1], [1, 2]]);
+  });
+  test('ignores unknown differentials and self relations', () => {
+    const film = { calRelations: { a: ['a', 'zzz'], zzz: ['b'] } };
+    expect(relationPairs(film, diffs)).toEqual([]);
+  });
+  test('reads detailRelations when asked', () => {
+    const film = { calRelations: { a: ['b'] }, detailRelations: { a: ['c'] } };
+    expect(relationPairs(film, diffs, 'detailRelations')).toEqual([[0, 2]]);
+  });
+});
+
+describe('affinityOrder', () => {
+  test('keeps strongly related differentials adjacent', () => {
+    // 0–2 y 1–3 muy relacionados; entre grupos casi nada
+    const counts = [
+      [0, 0, 9, 1],
+      [0, 0, 0, 9],
+      [9, 0, 0, 0],
+      [1, 9, 0, 0],
+    ];
+    const order = affinityOrder([0, 1, 2, 3], counts);
+    expect(order.slice().sort()).toEqual([0, 1, 2, 3]);
+    expect(Math.abs(order.indexOf(0) - order.indexOf(2))).toBe(1);
+    expect(Math.abs(order.indexOf(1) - order.indexOf(3))).toBe(1);
+  });
+  test('empty and single inputs', () => {
+    expect(affinityOrder([], [])).toEqual([]);
+    expect(affinityOrder([2], [[0, 0, 0], [0, 0, 0], [0, 0, 0]])).toEqual([2]);
+  });
+});
+
+describe('calcRelationStats', () => {
+  const diffs = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+  const films = [
+    { id: 1, ratings: { a: 2, b: -1, c: 0 }, calRelations: { a: ['b', 'c'], b: ['a'], c: ['a'] } },
+    { id: 2, ratings: { a: 3, b: 2 }, activeRatings: { a: true, b: false }, calRelations: { a: ['b'], b: ['a'] } },
+    { id: 3, ratings: { a: -3, b: -3, c: -3 } },
+  ];
+
+  test('only films with relations form the base', () => {
+    const r = calcRelationStats(films, diffs);
+    expect(r.n).toBe(2);
+    expect(r.base.map(b => b.film.id)).toEqual([1, 2]);
+  });
+  test('counts films per pair and sorts pairs by frequency', () => {
+    const r = calcRelationStats(films, diffs);
+    expect(r.counts[0][1]).toBe(2);
+    expect(r.counts[1][0]).toBe(2);
+    expect(r.counts[0][2]).toBe(1);
+    expect(r.counts[1][2]).toBe(0);
+    expect(r.pairs).toEqual([{ a: 0, b: 1, n: 2, pct: 1 }, { a: 0, b: 2, n: 1, pct: 0.5 }]);
+  });
+  test('sign split per differential; inactive or missing counts as na', () => {
+    const r = calcRelationStats(films, diffs);
+    expect(r.sign[0]).toEqual({ pos: 2, neg: 0, zero: 0, na: 0 });
+    expect(r.sign[1]).toEqual({ pos: 0, neg: 1, zero: 0, na: 1 });
+    expect(r.sign[2]).toEqual({ pos: 0, neg: 0, zero: 1, na: 1 });
+  });
+  test('strength is the sum of pair counts of each differential', () => {
+    const r = calcRelationStats(films, diffs);
+    expect(r.strength).toEqual([3, 2, 1]);
+  });
+  test('hidden differentials drop out of pairs, strength and visible', () => {
+    const r = calcRelationStats(films, diffs, ['a']);
+    expect(r.visible).toEqual([1, 2]);
+    expect(r.pairs).toEqual([]);
+    expect(r.strength).toEqual([3, 0, 0]);
+    expect(r.n).toBe(2);
+  });
+  test('no relations at all', () => {
+    const r = calcRelationStats([films[2]], diffs);
+    expect(r.n).toBe(0);
+    expect(r.pairs).toEqual([]);
   });
 });

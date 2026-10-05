@@ -613,6 +613,64 @@ table.tbl tr:hover td { background: var(--bg3); }
 .analysis-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
 .analysis-card { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
 .analysis-card-title { font-size: 11px; color: var(--text3); margin-bottom: 10px; letter-spacing: .04em; }
+.rel-an-filters { display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: flex-end; padding: 12px 14px; background: var(--bg3); border: 0.5px solid var(--border); border-radius: var(--radius); }
+.rel-an-f { display: flex; flex-direction: column; gap: 6px; }
+.rel-an-lbl { font-size: 10px; color: var(--text3); letter-spacing: .06em; }
+.rel-an-seg { display: flex; flex-wrap: wrap; gap: 4px; }
+.rel-an-seg button { font-family: inherit; font-size: 12px; color: var(--text2); background: var(--bg2); border: 0.5px solid var(--border2); border-radius: 6px; padding: 4px 9px; cursor: pointer; }
+.rel-an-seg button span { color: var(--text3); font-size: 10px; margin-left: 4px; font-family: 'DM Mono', monospace; }
+.rel-an-seg button:hover { border-color: var(--border3); color: var(--text); }
+.rel-an-seg button.on, .rel-an-hub.on { color: var(--text); border-color: var(--amber); background: var(--amber-bg); }
+.rel-an-thr { display: flex; align-items: center; gap: 10px; height: 27px; }
+.rel-an-thr input { width: 150px; }
+.rel-an-thr span { font-family: 'DM Mono', monospace; font-size: 12px; min-width: 38px; }
+.rel-an-status { font-size: 12px; color: var(--text2); margin: 12px 0; }
+.rel-an-status b { font-weight: 500; color: var(--text); font-family: 'DM Mono', monospace; }
+.rel-an-row { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 20px; align-items: start; margin-bottom: 20px; }
+.rel-an-sub { font-size: 11px; color: var(--text3); letter-spacing: .04em; margin-bottom: 4px; }
+.rel-an-hint { font-size: 11px; color: var(--text3); margin-bottom: 10px; }
+.rel-an-scroll { overflow-x: auto; }
+.rel-an-mx { display: grid; gap: 2px; width: max-content; font-family: 'DM Mono', monospace; font-size: 10px; }
+.rel-an-ch { height: 92px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px; color: var(--text3); }
+.rel-an-ch span { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; font-family: 'DM Sans', sans-serif; font-size: 11px; }
+.rel-an-rh { display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; color: var(--text2); font-family: 'DM Sans', sans-serif; font-size: 11px; white-space: nowrap; }
+.rel-an-ch.on, .rel-an-rh.on { color: var(--text); }
+.rel-an-cell { width: 30px; height: 26px; border: 0; border-radius: 3px; padding: 0; font: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.rel-an-cell.diag { background: transparent; cursor: default; color: var(--border3); }
+.rel-an-cell.zero { background: var(--bg3); cursor: default; }
+.rel-an-cell.sel { outline: 2px solid var(--text); }
+.rel-an-cell:not(.diag):not(.zero):hover { outline: 1.5px solid var(--text2); }
+.rel-an-scale { display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; margin-top: 10px; }
+.rel-an-scale i { display: block; width: 160px; height: 8px; border-radius: 2px; background: linear-gradient(90deg, rgb(28,38,54), rgb(112,182,250)); }
+.rel-an-pair-title { font-size: 15px; line-height: 1.3; margin-bottom: 8px; }
+.rel-an-pair-title em { font-style: normal; color: var(--text3); padding: 0 4px; }
+.rel-an-big { font-size: 26px; font-weight: 300; letter-spacing: -.02em; font-family: 'DM Mono', monospace; }
+.rel-an-kv { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 12px; color: var(--text2); margin: 8px 0 10px; }
+.rel-an-films { max-height: 330px; overflow-y: auto; display: grid; grid-template-columns: auto minmax(0,1fr) auto auto; gap: 3px 10px; align-items: center; font-size: 12px; }
+.rel-an-films .hd { font-size: 10px; letter-spacing: .06em; color: var(--text3); position: sticky; top: 0; background: var(--bg2); padding-bottom: 4px; text-transform: uppercase; }
+.rel-an-films .yr { color: var(--text3); font-family: 'DM Mono', monospace; font-size: 11px; }
+.rel-an-chip { font-family: 'DM Mono', monospace; font-size: 11px; min-width: 30px; text-align: center; padding: 1px 5px; border-radius: 3px; color: var(--text); }
+#rel-an-g { display: block; width: 100%; height: auto; max-width: 760px; margin: 0 auto; }
+#rel-an-g text { font-family: 'DM Sans', sans-serif; font-size: 11px; fill: var(--text2); }
+.rel-an-edge { stroke: rgb(184,179,173); fill: none; stroke-linecap: round; }
+.rel-an-hit { stroke: transparent; fill: none; cursor: pointer; }
+.rel-an-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 11px; color: var(--text3); align-items: center; }
+.rel-an-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.rel-an-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.rel-an-split { display: grid; grid-template-columns: 18px minmax(0,1fr) 22px minmax(80px,150px) 22px minmax(0,1fr); gap: 5px 8px; align-items: center; font-size: 12px; }
+.rel-an-split .hd { font-size: 10px; letter-spacing: .06em; color: var(--text3); text-transform: uppercase; }
+.rel-an-split .l { text-align: right; color: var(--text2); overflow-wrap: anywhere; cursor: pointer; }
+.rel-an-split .r { color: var(--text2); overflow-wrap: anywhere; }
+.rel-an-split .c { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); text-align: center; }
+.rel-an-split .off { opacity: .35; }
+.rel-an-split input { accent-color: var(--amber); }
+.rel-an-bar { position: relative; height: 12px; background: var(--bg3); border-radius: 3px; }
+.rel-an-bar::after { content: ''; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--border3); }
+.rel-an-bar b { position: absolute; top: 0; bottom: 0; }
+.rel-an-bar .n { right: 50%; background: var(--red); border-radius: 3px 0 0 3px; margin-right: 1px; }
+.rel-an-bar .p { left: 50%; background: var(--green); border-radius: 0 3px 3px 0; margin-left: 1px; }
+#rel-an-tt { position: fixed; display: none; z-index: 700; pointer-events: none; background: var(--bg); border: 0.5px solid var(--border2); border-radius: 8px; padding: 8px 10px; font-size: 12px; max-width: 280px; box-shadow: 0 4px 24px rgba(0,0,0,.6); }
+#rel-an-tt-m { color: var(--text2); font-family: 'DM Mono', monospace; font-size: 11px; margin-top: 3px; }
 
 /* ── EMPTY STATE ── */
 .empty-state { padding: 40px 20px; text-align: center; color: var(--text3); font-size: 13px; line-height: 1.8; }
@@ -681,6 +739,7 @@ input[type=number] {
 /* ── MOBILE ── */
 .mobile-only { display: none !important; }
 @media (max-width: 768px) {
+  .rel-an-row { grid-template-columns: minmax(0, 1fr); }
   .mobile-only { display: block !important; }
   .desktop-only { display: none !important; }
   .help-link { display: none !important; }
@@ -853,7 +912,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.43</span>
+    <span class="footer-txt">Genealogía del Cine v6.44</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1016,7 +1075,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.43</span>
+    <span class="footer-txt">Genealogía del Cine v6.44</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1161,7 +1220,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.43</span>
+    <span class="footer-txt">Genealogía del Cine v6.44</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1473,6 +1532,57 @@ input[type=number] {
           <div style="position:relative;height:180px;"><canvas id="analysis-radar"></canvas></div>
         </div>
       </div>
+      <div class="analysis-card" style="margin-top:14px;">
+        <div class="analysis-card-title">RELACIONES ENTRE DIFERENCIALES</div>
+        <div id="rel-an-empty" class="rel-an-hint" style="display:none;margin:0;"></div>
+        <div id="rel-an-body">
+          <div class="rel-an-filters">
+            <div class="rel-an-f"><span class="rel-an-lbl">DÉCADA</span><div class="rel-an-seg" id="rel-an-dec"></div></div>
+            <div class="rel-an-f"><span class="rel-an-lbl">ORDEN DE LOS DIFERENCIALES</span>
+              <select class="form-select" id="rel-an-order" style="width:auto;" onchange="relAnSet('order', this.value)">
+                <option value="aff">Por afinidad (los que se relacionan, juntos)</option>
+                <option value="freq">Por cantidad de relaciones</option>
+                <option value="orig">Orden del campo</option>
+              </select>
+            </div>
+            <div class="rel-an-f"><span class="rel-an-lbl">UMBRAL DEL GRAFO: PARES PRESENTES EN AL MENOS</span>
+              <div class="rel-an-thr"><input type="range" id="rel-an-thr" min="0" max="100" step="5" value="50" oninput="relAnSetThr(+this.value)"><span id="rel-an-thr-out">50%</span></div>
+            </div>
+            <div class="rel-an-f"><span class="rel-an-lbl">ATAJO</span><button class="btn rel-an-hub" id="rel-an-hub" onclick="relAnToggleHub()"></button></div>
+          </div>
+          <div class="rel-an-status" id="rel-an-status"></div>
+          <div class="rel-an-row">
+            <div>
+              <div class="rel-an-sub">MATRIZ DE RELACIONES</div>
+              <div class="rel-an-hint">Cada celda: % de películas que vinculan ese par. Clic para ver las películas.</div>
+              <div class="rel-an-scroll"><div class="rel-an-mx" id="rel-an-mx"></div></div>
+              <div class="rel-an-scale"><span>pocas</span><i></i><span>todas las películas</span><span style="margin-left:14px;">celda vacía = ninguna</span></div>
+            </div>
+            <div>
+              <div class="rel-an-sub" style="margin-bottom:10px;">PAR SELECCIONADO</div>
+              <div id="rel-an-pair"></div>
+            </div>
+          </div>
+          <div class="rel-an-row" style="margin-bottom:0;">
+            <div>
+              <div class="rel-an-sub">GRAFO CON UMBRAL</div>
+              <div class="rel-an-hint">Grosor de la línea = cantidad de películas. Anillo del nodo = reparto por signo.</div>
+              <svg id="rel-an-g" viewBox="0 0 760 580" role="img" aria-label="Grafo de relaciones entre diferenciales"></svg>
+              <div class="rel-an-legend">
+                <span><i style="background:var(--green)"></i>películas con valor positivo</span>
+                <span><i style="background:var(--red)"></i>negativo</span>
+                <span><i style="background:#55524E"></i>cero o sin valor</span>
+                <span>tamaño del nodo = total de relaciones</span>
+              </div>
+            </div>
+            <div>
+              <div class="rel-an-sub">REPARTO POR SIGNO</div>
+              <div class="rel-an-hint">Destildá un diferencial para sacarlo de la matriz y del grafo.</div>
+              <div class="rel-an-split" id="rel-an-split"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1492,7 +1602,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.43</span>
+    <span class="footer-txt">Genealogía del Cine v6.44</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1530,6 +1640,7 @@ input[type=number] {
     </div>
   </div>
 </div>
+<div id="rel-an-tt"><div id="rel-an-tt-t"></div><div id="rel-an-tt-m"></div></div>
 <div id="rel-tooltip" style="position:fixed;display:none;background:var(--bg);border:0.5px solid var(--border2);border-radius:8px;padding:10px 12px;font-size:11px;z-index:700;min-width:190px;max-width:240px;box-shadow:0 4px 24px rgba(0,0,0,.6);pointer-events:none;">
   <div id="rel-tt-name" style="font-size:12px;font-weight:500;margin-bottom:3px;line-height:1.4;"></div>
   <div id="rel-tt-meta" style="font-size:10px;color:var(--text3);margin-bottom:7px;font-family:'DM Mono',monospace;"></div>
@@ -1629,6 +1740,7 @@ let appState = {
   descCharts: {},
   distCharts: {},
   analysisCharts: {},
+  relAnalysis: null,
   regenOpts: { manual: true, rated: true },
   selectedFilmToAdd: null,
   currentCalFilm: null,
@@ -5561,6 +5673,8 @@ function renderAnalysis(f) {
     <div class="stat-card"><div class="stat-label">TRANSFORMADORAS</div><div class="stat-value" style="color:var(--green);">${transf}</div><div class="stat-sub">met. > 1.8</div></div>
     <div class="stat-card"><div class="stat-label">DIFERENCIALES</div><div class="stat-value">${diffs.length}</div></div>`;
 
+  renderRelAnalysis(f);
+
   if (!rated.length) return;
 
   const ranked = [...rated].map(m => ({ title: m.title, met: calcMet(m,diffs)||0 }))
@@ -5620,6 +5734,245 @@ function renderAnalysis(f) {
   updateRadar();
 
   renderHeatmap(f, diffs, decades, rated);
+}
+
+// ── ANÁLISIS: RELACIONES ENTRE DIFERENCIALES DEL CAMPO ───────────────────────
+function _relAnEsc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function _relAnSeq(p) { const lo = [28,38,54], hi = [112,182,250]; return `rgb(${lo.map((x, i) => Math.round(x + (hi[i] - x) * p)).join(',')})`; }
+function _relAnPct(n, N) { return N ? Math.round(n / N * 100) : 0; }
+function _relAnShort(d) { return (d.name || '').split('/')[0].trim(); }
+function _relAnPoles(d) { return d.negPole && d.posPole ? `${d.negPole}/${d.posPole}` : (d.name || ''); }
+function _relAnVal(film, d) {
+  const raw = (film.ratings || {})[d.id];
+  if (raw === undefined || raw === null || (film.activeRatings && film.activeRatings[d.id] !== true)) return null;
+  return +raw;
+}
+function _relAnState(f) {
+  if (!appState.relAnalysis || appState.relAnalysis.fieldId !== f.id) {
+    appState.relAnalysis = { fieldId: f.id, dec: 'all', thr: 50, order: 'aff', hidden: [], sel: null, hoverNode: null };
+  }
+  return appState.relAnalysis;
+}
+function _relAnCompute(f) {
+  const st = _relAnState(f), diffs = f.differentials || [];
+  const films = (f.sample || []).filter(m => st.dec === 'all' || Math.floor(m.year / 10) * 10 === st.dec);
+  const r = calcRelationStats(films, diffs, st.hidden);
+  r.order = r.visible.slice();
+  if (st.order === 'freq') r.order.sort((a, b) => r.strength[b] - r.strength[a]);
+  if (st.order === 'aff') r.order = affinityOrder(r.visible, r.counts);
+  r.diffs = diffs; r.st = st;
+  return r;
+}
+
+function renderRelAnalysis(f) {
+  const diffs = f.differentials || [];
+  const all = calcRelationStats(f.sample || [], diffs);
+  const emptyEl = document.getElementById('rel-an-empty'), bodyEl = document.getElementById('rel-an-body');
+  if (diffs.length < 2 || !all.n) {
+    emptyEl.textContent = 'Todavía no hay relaciones entre diferenciales cargadas en este campo. Se definen en Calificación, desde cada diferencial de una película.';
+    emptyEl.style.display = 'block'; bodyEl.style.display = 'none';
+    return;
+  }
+  emptyEl.style.display = 'none'; bodyEl.style.display = 'block';
+  _relAnBind();
+  const m = _relAnCompute(f), st = m.st;
+  if (st.sel && (st.hidden.includes(diffs[st.sel[0]]?.id) || st.hidden.includes(diffs[st.sel[1]]?.id) || !m.counts[st.sel[0]]?.[st.sel[1]])) st.sel = null;
+  if (!st.sel && m.pairs.length) st.sel = [m.pairs[0].a, m.pairs[0].b];
+  _relAnFilters(f, m, all); _relAnMatrix(m); _relAnPair(m); _relAnGraph(m); _relAnSplit(m);
+}
+
+function _relAnFilters(f, m, all) {
+  const st = m.st, counts = {};
+  all.base.forEach(({ film }) => { const d = Math.floor(film.year / 10) * 10; counts[d] = (counts[d] || 0) + 1; });
+  const opts = [['all', 'Todas', all.n]].concat(Object.keys(counts).sort().map(d => [+d, d + 's', counts[d]]));
+  document.getElementById('rel-an-dec').innerHTML = opts.map(([v, l, n]) =>
+    `<button class="${st.dec === v ? 'on' : ''}" onclick="relAnSet('dec', ${v === 'all' ? "'all'" : v})">${l}<span>${n}</span></button>`).join('');
+  document.getElementById('rel-an-order').value = st.order;
+  document.getElementById('rel-an-thr').value = st.thr;
+  document.getElementById('rel-an-thr-out').textContent = st.thr + '%';
+  const hub = all.strength.indexOf(Math.max(...all.strength)), hubEl = document.getElementById('rel-an-hub');
+  hubEl.textContent = (st.hidden.includes(m.diffs[hub].id) ? 'Mostrar ' : 'Ocultar ') + m.diffs[hub].name;
+  hubEl.classList.toggle('on', st.hidden.includes(m.diffs[hub].id));
+  hubEl.dataset.diff = m.diffs[hub].id;
+  const over = m.pairs.filter(p => p.pct * 100 >= st.thr).length;
+  const possible = m.visible.length * (m.visible.length - 1) / 2;
+  document.getElementById('rel-an-status').innerHTML =
+    `Base: <b>${m.n}</b> películas con relaciones · <b>${m.pairs.length}</b> de ${possible} pares posibles aparecen en al menos una · <b>${over}</b> superan el umbral de ${st.thr}%`
+    + (m.n < 8 ? ` · <span style="color:var(--amber);">Con ${m.n} película${m.n === 1 ? '' : 's'} los porcentajes dicen poco.</span>` : '');
+}
+
+function _relAnMatrix(m) {
+  const o = m.order, el = document.getElementById('rel-an-mx'), sel = m.st.sel || [-1, -1];
+  el.style.gridTemplateColumns = `auto repeat(${o.length}, 30px)`;
+  let h = '<div></div>' + o.map(j => `<div class="rel-an-ch${sel.includes(j) ? ' on' : ''}"><span>${_relAnEsc(_relAnShort(m.diffs[j]))}</span></div>`).join('');
+  o.forEach(i => {
+    h += `<div class="rel-an-rh${sel.includes(i) ? ' on' : ''}">${_relAnEsc(m.diffs[i].name)}</div>`;
+    o.forEach(j => {
+      if (i === j) { h += '<div class="rel-an-cell diag">·</div>'; return; }
+      const n = m.counts[i][j], p = m.n ? n / m.n : 0;
+      if (!n) { h += `<div class="rel-an-cell zero" data-a="${i}" data-b="${j}"></div>`; return; }
+      const isSel = (sel[0] === i && sel[1] === j) || (sel[0] === j && sel[1] === i);
+      h += `<button class="rel-an-cell${isSel ? ' sel' : ''}" data-a="${i}" data-b="${j}" style="background:${_relAnSeq(p)};color:${p > 0.55 ? '#0B0B0C' : 'var(--text)'};">${_relAnPct(n, m.n)}</button>`;
+    });
+  });
+  el.innerHTML = h;
+}
+
+function _relAnPair(m) {
+  const el = document.getElementById('rel-an-pair');
+  if (!m.st.sel) { el.innerHTML = '<div class="rel-an-hint">No hay relaciones con estos filtros.</div>'; return; }
+  const [a, b] = m.st.sel, da = m.diffs[a], db = m.diffs[b], n = m.counts[a][b];
+  const fs = m.base.filter(x => x.pairs.some(([i, j]) => (i === a && j === b) || (i === b && j === a))).map(x => x.film).sort((x, y) => x.year - y.year);
+  let same = 0, opp = 0;
+  fs.forEach(film => { const va = _relAnVal(film, da), vb = _relAnVal(film, db); if (va && vb) { if ((va > 0) === (vb > 0)) same++; else opp++; } });
+  const chip = v => `<div class="rel-an-chip" style="background:${v === null ? 'var(--bg4)' : signCell(v)};">${v === null ? '—' : (v > 0 ? '+' : '') + v}</div>`;
+  el.innerHTML = `
+    <div class="rel-an-pair-title">${_relAnEsc(da.name)}<em>—</em>${_relAnEsc(db.name)}</div>
+    <div><span class="rel-an-big">${_relAnPct(n, m.n)}%</span> <span class="rel-an-hint" style="font-family:'DM Mono',monospace;">${n} de ${m.n} películas</span></div>
+    <div class="rel-an-kv"><span>Mismo signo: ${same}</span><span>Signo opuesto: ${opp}</span></div>
+    <div class="rel-an-films">
+      <div class="hd">Año</div><div class="hd">Película</div><div class="hd">${_relAnEsc(_relAnShort(da))}</div><div class="hd">${_relAnEsc(_relAnShort(db))}</div>
+      ${fs.map(film => `<div class="yr">${film.year}</div><div>${_relAnEsc(film.title)}</div>${chip(_relAnVal(film, da))}${chip(_relAnVal(film, db))}`).join('')}
+    </div>`;
+}
+
+function _relAnGraph(m) {
+  const svg = document.getElementById('rel-an-g'), W = 760, H = 580, cx = W / 2, cy = H / 2, R = 190;
+  const o = m.order, st = m.st, pos = {};
+  const maxS = Math.max(1, ...o.map(i => m.strength[i]));
+  o.forEach((i, k) => { const ang = -Math.PI / 2 + k / o.length * Math.PI * 2; pos[i] = { x: cx + R * Math.cos(ang), y: cy + R * Math.sin(ang), ang, r: 9 + 11 * (m.strength[i] / maxS) }; });
+  const edges = m.pairs.filter(p => p.pct * 100 >= st.thr);
+  const hn = st.hoverNode, sel = st.sel || [-1, -1];
+  const linked = {};
+  edges.forEach(e => { if (e.a === hn) linked[e.b] = true; if (e.b === hn) linked[e.a] = true; });
+  let s = '';
+  edges.slice().reverse().forEach(e => {
+    const A = pos[e.a], B = pos[e.b], mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2;
+    const k = 1 - 0.5 * Math.hypot(A.x - B.x, A.y - B.y) / (2 * R); // vecinos casi rectos, lejanos más curvos
+    const d = `M${A.x.toFixed(1)},${A.y.toFixed(1)}Q${(cx + (mx - cx) * k).toFixed(1)},${(cy + (my - cy) * k).toFixed(1)} ${B.x.toFixed(1)},${B.y.toFixed(1)}`;
+    const isSel = (sel[0] === e.a && sel[1] === e.b) || (sel[0] === e.b && sel[1] === e.a);
+    const op = hn !== null ? (e.a === hn || e.b === hn ? 0.9 : 0.06) : isSel ? 0.95 : 0.3;
+    s += `<path class="rel-an-edge" d="${d}" stroke-width="${(1 + e.pct * 6).toFixed(1)}" stroke-opacity="${op}"${isSel ? ' style="stroke:var(--text)"' : ''}/>`;
+    s += `<path class="rel-an-hit" d="${d}" stroke-width="12" data-a="${e.a}" data-b="${e.b}"/>`;
+  });
+  o.forEach(i => {
+    const P = pos[i], sg = m.sign[i], tot = m.n || 1;
+    const segs = [[sg.pos, 'var(--green)'], [sg.neg, 'var(--red)'], [sg.zero + sg.na, '#55524E']].filter(x => x[0] > 0);
+    const dim = hn !== null && hn !== i && !linked[i];
+    const x = P.x.toFixed(1), y = P.y.toFixed(1), r = P.r.toFixed(1);
+    s += `<g data-node="${i}" opacity="${dim ? 0.3 : 1}" style="cursor:pointer"><circle cx="${x}" cy="${y}" r="${(P.r + 3).toFixed(1)}" fill="var(--bg2)"/>`;
+    let a0 = -Math.PI / 2; const gap = segs.length > 1 ? 0.14 : 0;
+    segs.forEach(([n, col]) => {
+      const span = n / tot * Math.PI * 2;
+      if (segs.length === 1) s += `<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${col}" stroke-width="5"/>`;
+      else if (span > gap) {
+        const s0 = a0 + gap / 2, s1 = a0 + span - gap / 2;
+        s += `<path d="M${(P.x + P.r * Math.cos(s0)).toFixed(1)},${(P.y + P.r * Math.sin(s0)).toFixed(1)}A${r},${r} 0 ${s1 - s0 > Math.PI ? 1 : 0} 1 ${(P.x + P.r * Math.cos(s1)).toFixed(1)},${(P.y + P.r * Math.sin(s1)).toFixed(1)}" fill="none" stroke="${col}" stroke-width="5"/>`;
+      }
+      a0 += span;
+    });
+    s += `<circle cx="${x}" cy="${y}" r="${Math.max(2, P.r - 4).toFixed(1)}" fill="var(--bg3)"/>`;
+    const lr = R + P.r + 12, c = Math.cos(P.ang);
+    const anchor = Math.abs(c) < 0.2 ? 'middle' : c > 0 ? 'start' : 'end';
+    s += `<text x="${(cx + lr * c).toFixed(1)}" y="${(cy + lr * Math.sin(P.ang)).toFixed(1)}" text-anchor="${anchor}" dominant-baseline="middle"${sel.includes(i) || hn === i ? ' style="fill:var(--text)"' : ''}>${_relAnEsc(_relAnPoles(m.diffs[i]))}</text></g>`;
+  });
+  if (!edges.length) s += `<text x="${cx}" y="${cy}" text-anchor="middle" style="fill:var(--text3)">Ningún par llega al umbral. Bajalo para ver relaciones.</text>`;
+  svg.innerHTML = s;
+}
+
+function _relAnSplit(m) {
+  let h = `<div></div><div class="hd l">Polo negativo</div><div></div><div class="hd" style="text-align:center;">películas</div><div></div><div class="hd">Polo positivo</div>`;
+  m.diffs.forEach((d, i) => {
+    const sg = m.sign[i], off = m.st.hidden.includes(d.id) ? ' off' : '', t = m.n || 1;
+    h += `<input type="checkbox" id="rel-an-vis-${i}" ${off ? '' : 'checked'} onchange="relAnToggleDiff('${d.id}', this.checked)">
+      <label for="rel-an-vis-${i}" class="l${off}">${_relAnEsc(d.negPole || d.name)}</label><div class="c${off}">${sg.neg}</div>
+      <div class="rel-an-bar${off}" data-split="${i}"><b class="n" style="width:${(sg.neg / t * 50).toFixed(1)}%"></b><b class="p" style="width:${(sg.pos / t * 50).toFixed(1)}%"></b></div>
+      <div class="c${off}">${sg.pos}</div><div class="r${off}">${_relAnEsc(d.posPole || '')}</div>`;
+  });
+  document.getElementById('rel-an-split').innerHTML = h;
+}
+
+function relAnSet(key, val) { const f = currentField(); if (!f) return; _relAnState(f)[key] = val; renderRelAnalysis(f); }
+function relAnSetThr(val) {
+  const f = currentField(); if (!f) return;
+  _relAnState(f).thr = val;
+  const m = _relAnCompute(f);
+  _relAnFilters(f, m, calcRelationStats(f.sample || [], f.differentials || [])); _relAnGraph(m);
+}
+function relAnToggleDiff(diffId, show) {
+  const f = currentField(); if (!f) return;
+  const st = _relAnState(f);
+  st.hidden = st.hidden.filter(id => id !== diffId);
+  if (!show) st.hidden.push(diffId);
+  renderRelAnalysis(f);
+}
+function relAnToggleHub() {
+  const f = currentField(); if (!f) return;
+  const id = document.getElementById('rel-an-hub').dataset.diff;
+  relAnToggleDiff(id, _relAnState(f).hidden.includes(id));
+}
+
+function _relAnShowTT(e, title, meta) {
+  const tt = document.getElementById('rel-an-tt');
+  document.getElementById('rel-an-tt-t').textContent = title;
+  document.getElementById('rel-an-tt-m').textContent = meta;
+  tt.style.display = 'block';
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + 290 > window.innerWidth) x = Math.max(8, e.clientX - 290);
+  if (y + 90 > window.innerHeight) y = e.clientY - 80;
+  tt.style.left = x + 'px'; tt.style.top = y + 'px';
+}
+function _relAnHideTT() { document.getElementById('rel-an-tt').style.display = 'none'; }
+function _relAnPairTT(e, m, a, b) {
+  const n = m.counts[a][b];
+  _relAnShowTT(e, `${m.diffs[a].name} — ${m.diffs[b].name}`, n ? `${n} de ${m.n} películas · ${_relAnPct(n, m.n)}%` : `ninguna de las ${m.n} películas`);
+}
+let _relAnBound = false;
+function _relAnBind() {
+  if (_relAnBound) return;
+  _relAnBound = true;
+  const mxEl = document.getElementById('rel-an-mx'), gEl = document.getElementById('rel-an-g'), spEl = document.getElementById('rel-an-split');
+  mxEl.addEventListener('click', e => {
+    const c = e.target.closest('button.rel-an-cell'), f = currentField();
+    if (!c || !f) return;
+    _relAnState(f).sel = [+c.dataset.a, +c.dataset.b]; renderRelAnalysis(f);
+  });
+  mxEl.addEventListener('mousemove', e => {
+    const c = e.target.closest('[data-a]'), f = currentField();
+    if (!c || !f) return _relAnHideTT();
+    _relAnPairTT(e, _relAnCompute(f), +c.dataset.a, +c.dataset.b);
+  });
+  mxEl.addEventListener('mouseleave', _relAnHideTT);
+  gEl.addEventListener('click', e => {
+    const h = e.target.closest('.rel-an-hit'), f = currentField();
+    if (!h || !f) return;
+    _relAnState(f).sel = [+h.dataset.a, +h.dataset.b]; _relAnHideTT(); renderRelAnalysis(f);
+  });
+  gEl.addEventListener('mousemove', e => {
+    const f = currentField(); if (!f) return;
+    const st = _relAnState(f), h = e.target.closest('.rel-an-hit'), n = e.target.closest('[data-node]');
+    const want = n ? +n.dataset.node : null;
+    const m = _relAnCompute(f);
+    if (want !== st.hoverNode) { st.hoverNode = want; _relAnGraph(m); }
+    if (n) {
+      const sg = m.sign[want], k = m.pairs.filter(p => (p.a === want || p.b === want) && p.pct * 100 >= st.thr).length;
+      _relAnShowTT(e, m.diffs[want].name, `${sg.pos} positivas · ${sg.neg} negativas · ${sg.zero + sg.na} cero o sin valor — ${k} relaciones sobre el umbral`);
+    } else if (h) _relAnPairTT(e, m, +h.dataset.a, +h.dataset.b);
+    else _relAnHideTT();
+  });
+  gEl.addEventListener('mouseleave', () => {
+    _relAnHideTT();
+    const f = currentField(); if (!f) return;
+    const st = _relAnState(f);
+    if (st.hoverNode !== null) { st.hoverNode = null; _relAnGraph(_relAnCompute(f)); }
+  });
+  spEl.addEventListener('mousemove', e => {
+    const b = e.target.closest('[data-split]'), f = currentField();
+    if (!b || !f) return _relAnHideTT();
+    const m = _relAnCompute(f), i = +b.dataset.split, sg = m.sign[i];
+    _relAnShowTT(e, m.diffs[i].name, `${sg.neg} negativas · ${sg.pos} positivas · ${sg.zero} en cero · ${sg.na} sin valor`);
+  });
+  spEl.addEventListener('mouseleave', _relAnHideTT);
 }
 
 function updateRadar() {

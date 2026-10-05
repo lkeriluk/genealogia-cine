@@ -10,7 +10,7 @@ Contexto completo del proyecto para Claude Code. Leé este archivo antes de hace
 
 El método: el investigador selecciona una muestra representativa de películas de un género, define **diferenciales** (tensiones narrativas binarias, ej: Cuerpo/Máquina), asigna a cada película un valor dentro del rango ±max del campo en cada diferencial, y calcula la **metaestabilidad** (`promedio(|valores|)` de los diferenciales activos — escala 0 a `field.max`). Las películas con metaestabilidad alta son "transformadoras" del género; las de baja son "estables".
 
-La versión actual es **v6.43**.
+La versión actual es **v6.44**.
 
 ---
 
@@ -24,7 +24,7 @@ La versión actual es **v6.43**.
 - **Chart.js 4.4.1** — todos los gráficos
 - **TMDB API** — datos de películas (géneros, discover, detalles)
 - **lib/logic.js** — módulo CommonJS con funciones puras de cálculo; cargado como `<script>` en el browser (globals) y `require()`d en tests Jest
-- **Jest** — suite de tests unitarios en `tests/logic.test.js` (43 tests), ejecutar con `npm test`
+- **Jest** — suite de tests unitarios en `tests/logic.test.js` (55 tests), ejecutar con `npm test`
 - **Google Fonts** — DM Sans + DM Mono
 
 **TMDB API Key (Bearer token):**
@@ -47,7 +47,7 @@ Siempre se usa como `Authorization: Bearer <token>` en los headers. Base URL: `h
 ├── lib/
 │   └── logic.js       — Funciones puras exportadas (CommonJS + globals)
 ├── tests/
-│   └── logic.test.js  — Jest: 43 tests unitarios
+│   └── logic.test.js  — Jest: 55 tests unitarios
 ├── help-img/          — Imágenes para help.html
 ├── package.json       — Dependencias + script "test": "jest"
 └── CLAUDE.md          — Este archivo
@@ -98,6 +98,9 @@ Tablas:
 | `calcMet(film, diffs)` | Metaestabilidad: `promedio(|valor|)` de los diferenciales activos con rating — escala 0 a `field.max` |
 | `calClassify(film, totalDiffs)` | Estado de calificación: `'pending'` / `'inProgress'` / `'done'` |
 | `fmtRevenue(r)` | Formatea ingresos: `'$150M'`, `'$2.5B'`, `'—'` |
+| `relationPairs(film, diffs, relKey)` | Pares de diferenciales relacionados en una película, como índices `[i, j]` sin duplicados (`relKey` default `'calRelations'`) |
+| `affinityOrder(indices, counts)` | Orden de diferenciales por agrupamiento jerárquico: deja contiguos los que más se relacionan |
+| `calcRelationStats(films, diffs, hiddenIds, relKey)` | Agregado de relaciones del campo: base (películas con ≥1 relación), matriz de conteos, reparto por signo, `strength` por diferencial y pares ordenados por frecuencia |
 
 ---
 
@@ -179,6 +182,13 @@ La app tiene **3 pantallas** (`screen-home`, `screen-new-field`, `screen-field`)
 - Evolución por década (líneas)
 - Mapa de calor diferenciales × décadas (HTML, no canvas)
 - Radar comparativo 2 películas (selectores dinámicos)
+- Sección "Relaciones entre diferenciales" (`renderRelAnalysis`, funciones `_relAn*` / `relAn*`): agrega `calRelations` de todas las películas del campo. La base son las películas con al menos una relación; se renderiza aunque no haya películas calificadas completas
+  - Filtros: década, orden de diferenciales (afinidad / cantidad de relaciones / orden del campo), umbral del grafo (% mínimo de películas), atajo para ocultar el diferencial con más relaciones
+  - Matriz diferenciales × diferenciales (HTML): % de películas que vinculan cada par, escala azul de un solo tono; clic selecciona el par
+  - Par seleccionado: lista de películas con el valor de cada diferencial
+  - Grafo circular con umbral (SVG): grosor de línea = cantidad de películas; anillo del nodo = películas positivas / negativas / sin valor; tamaño del nodo = suma de relaciones
+  - Reparto por signo: barra divergente por diferencial; el checkbox oculta el diferencial de matriz y grafo
+  - No usa metaestabilidad ni `detailRelations`
 
 ---
 
@@ -198,6 +208,7 @@ appState = {
   descCharts: {},
   distCharts: {},
   analysisCharts: {},
+  relAnalysis: null,          // { fieldId, dec, thr, order, hidden: [diffId], sel: [i, j], hoverNode } — estado de la sección Relaciones del tab Análisis; se reinicia al cambiar de campo
   regenOpts: { manual: true, rated: true },
   selectedFilmToAdd: null,
   currentCalFilm: null,
