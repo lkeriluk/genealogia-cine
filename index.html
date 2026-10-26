@@ -912,7 +912,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.44</span>
+    <span class="footer-txt">Genealogía del Cine v6.45</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1075,7 +1075,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.44</span>
+    <span class="footer-txt">Genealogía del Cine v6.45</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1220,7 +1220,7 @@ input[type=number] {
     </div>
   </div>
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.44</span>
+    <span class="footer-txt">Genealogía del Cine v6.45</span>
     <span class="footer-txt">© 2025</span>
   </div>
 </div>
@@ -1602,7 +1602,7 @@ input[type=number] {
   </div>
 
   <div class="app-footer">
-    <span class="footer-txt">Genealogía del Cine v6.44</span>
+    <span class="footer-txt">Genealogía del Cine v6.45</span>
     <span class="footer-txt">© 2025 · This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
   </div>
 </div>
@@ -1721,9 +1721,9 @@ input[type=number] {
 </div>
 
 <script>
-const APIKEY = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3MmRhYWUyNWE0MGIzNzA2NjgyNGFkODVmZmJjNzA5OSIsIm5iZiI6MTc3NjcyMDg5Ny4zNjIsInN1YiI6IjY5ZTY5YzAxOWY5YzU1ZTFjNjY5MzVmOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.GfwS7LwX_ZB4RO1Pln5N1O8KQ2q8fqIz1-hl7xDJ5s0';
-const HEADERS = { Authorization: 'Bearer ' + APIKEY };
-const BASE = 'https://api.themoviedb.org/3';
+// TMDB se consulta a través del servidor (/api/tmdb), que agrega el token; el navegador no lo conoce
+const HEADERS = {};
+const BASE = '/api/tmdb';
 
 const GENRE_MAP = {28:'Acción',12:'Aventura',16:'Animación',35:'Comedia',80:'Crimen',99:'Documental',18:'Drama',10751:'Familia',14:'Fantasía',36:'Historia',27:'Terror',10402:'Música',9648:'Misterio',10749:'Romance',878:'Ciencia ficción',10770:'TV Movie',53:'Thriller',10752:'Guerra',37:'Western'};
 

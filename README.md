@@ -32,7 +32,8 @@ graph TD
     Browser -- "GET / (HTML estático)" --> Express
     Browser -- "GET|PUT /api/state" --> Express
     Browser -- "GET /auth/me" --> Express
-    Browser -- "fetch /discover/movie, /movie/:id" --> TMDB
+    Browser -- "GET /api/tmdb/discover/movie, /api/tmdb/movie/:id" --> Express
+    Express -- "proxy + Authorization: Bearer TMDB_TOKEN" --> TMDB
     Express -- "SELECT/INSERT app_state" --> PG
     Express -- "SELECT/INSERT users, session" --> PG
     Express -- "/auth/google → callback" --> Google
@@ -144,7 +145,8 @@ erDiagram
 | `DATABASE_URL` | Connection string de PostgreSQL (Railway lo inyecta automáticamente) |
 | `GOOGLE_CLIENT_ID` | Client ID de la app en Google Cloud Console |
 | `GOOGLE_CLIENT_SECRET` | Client Secret de la app en Google Cloud Console |
-| `SESSION_SECRET` | String arbitrario para firmar cookies de sesión |
+| `SESSION_SECRET` | String aleatorio para firmar cookies de sesión (obligatoria: sin ella el servidor no arranca) |
+| `TMDB_TOKEN` | Token Bearer de la API de TMDB; lo usa el servidor en el proxy `/api/tmdb/*` |
 
 ---
 
@@ -158,6 +160,7 @@ DATABASE_URL=postgresql://...
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 SESSION_SECRET=cualquier-string
+TMDB_TOKEN=...
 
 node server.js
 ```
@@ -192,6 +195,7 @@ La app queda disponible en `http://localhost:3000`.
 | `GET` | `/auth/me` | ✓ | Devuelve `{ id, name, email, picture }` |
 | `GET` | `/api/state` | ✓ | Devuelve el estado del usuario `{ fields: [] }` |
 | `PUT` | `/api/state` | ✓ | Guarda el estado del usuario |
+| `GET` | `/api/tmdb/*` | ✓ | Proxy a la API de TMDB (agrega el token del servidor) |
 
 ---
 

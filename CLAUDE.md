@@ -10,7 +10,7 @@ Contexto completo del proyecto para Claude Code. Leé este archivo antes de hace
 
 El método: el investigador selecciona una muestra representativa de películas de un género, define **diferenciales** (tensiones narrativas binarias, ej: Cuerpo/Máquina), asigna a cada película un valor dentro del rango ±max del campo en cada diferencial, y calcula la **metaestabilidad** (`promedio(|valores|)` de los diferenciales activos — escala 0 a `field.max`). Las películas con metaestabilidad alta son "transformadoras" del género; las de baja son "estables".
 
-La versión actual es **v6.44**.
+La versión actual es **v6.45**.
 
 ---
 
@@ -27,12 +27,7 @@ La versión actual es **v6.44**.
 - **Jest** — suite de tests unitarios en `tests/logic.test.js` (55 tests), ejecutar con `npm test`
 - **Google Fonts** — DM Sans + DM Mono
 
-**TMDB API Key (Bearer token):**
-```
-eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3MmRhYWUyNWE0MGIzNzA2NjgyNGFkODVmZmJjNzA5OSIsIm5iZiI6MTc3NjcyMDg5Ny4zNjIsInN1YiI6IjY5ZTY5YzAxOWY5YzU1ZTFjNjY5MzVmOSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.GfwS7LwX_ZB4RO1Pln5N1O8KQ2q8fqIz1-hl7xDJ5s0
-```
-
-Siempre se usa como `Authorization: Bearer <token>` en los headers. Base URL: `https://api.themoviedb.org/3`.
+**TMDB:** el token (Bearer) vive solo en la variable de entorno `TMDB_TOKEN` de Railway; nunca se escribe en el código ni en este archivo. El navegador llama a `/api/tmdb/<ruta>` (`BASE = '/api/tmdb'`, `HEADERS = {}` en `index.html`) y `server.js` reenvía a `https://api.themoviedb.org/3/<ruta>` agregando `Authorization: Bearer <TMDB_TOKEN>`.
 
 ---
 
@@ -83,6 +78,7 @@ Tablas:
 | `GET` | `/api/users` | Lista todos los usuarios (requiere auth) |
 | `POST` | `/api/activity` | Registra una acción en `activity_log` (requiere auth) |
 | `GET` | `/api/users/:id/activity` | Historial de acciones del usuario (requiere auth) |
+| `GET` | `/api/tmdb/*` | Proxy a la API de TMDB: reenvía la ruta y el query string agregando el token de `TMDB_TOKEN` (requiere auth; 503 si falta la variable) |
 
 `login.html` y `help.html` son públicos. El resto de archivos estáticos requieren auth.
 
@@ -360,6 +356,8 @@ Los rellenos de los sliders (Cal. general y Cal. detallada) siguen el mismo crit
 
 ## TMDB endpoints usados
 
+Todos se llaman desde el navegador como `/api/tmdb/...` (proxy en `server.js`). Las imágenes (`image.tmdb.org`) no necesitan token y se cargan directo.
+
 - `GET /genre/movie/list?language=es` — lista de géneros
 - `GET /configuration/countries` — lista de países ISO
 - `GET /discover/movie?with_genres=X&vote_count.gte=Y&sort_by=Z&page=N` — universo y muestreo
@@ -466,3 +464,18 @@ Los cambios en autenticación, sesiones o infraestructura de servidor van solo e
 4. Exportar campo a JSON
 5. Perfiles de usuario para segmentar qué ve cada investigador (actualmente todos ven el mismo workspace)
 6. Calificación detallada: adaptación responsive para mobile
+
+---
+
+## Variables de entorno (Railway)
+
+| Variable | Uso | Secreto |
+|---|---|---|
+| `DATABASE_URL` | Conexión a PostgreSQL (referencia al servicio Postgres de Railway) | Sí |
+| `GOOGLE_CLIENT_ID` | OAuth de Google | No |
+| `GOOGLE_CLIENT_SECRET` | OAuth de Google | Sí |
+| `SESSION_SECRET` | Firma de cookies de sesión. **Obligatoria:** sin ella el servidor no arranca | Sí |
+| `TMDB_TOKEN` | Token Bearer de TMDB usado por el proxy `/api/tmdb/*` | Sí |
+| `PORT`, `NODE_ENV` | Los inyecta Railway | No |
+
+Nunca escribir valores de secretos en el código, en este archivo ni en el README. El log de arranque (`ENV CHECK`) muestra solo si cada variable está presente.

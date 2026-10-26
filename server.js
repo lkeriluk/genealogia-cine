@@ -4,12 +4,20 @@ console.log('ENV CHECK:', {
   HAS_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET,
   HAS_SESSION_SECRET: !!process.env.SESSION_SECRET,
   HAS_DATABASE_URL: !!process.env.DATABASE_URL,
+  HAS_TMDB_TOKEN: !!process.env.TMDB_TOKEN,
   NODE_ENV: process.env.NODE_ENV,
 });
+
+// Sin SESSION_SECRET las cookies quedarían firmadas con un valor conocido: no arrancar
+if (!process.env.SESSION_SECRET) {
+  console.error('Falta la variable SESSION_SECRET: el servidor no arranca sin ella.');
+  process.exit(1);
+}
 
 const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
+const https = require('https');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
@@ -78,7 +86,7 @@ initDB().catch(console.error);
 // ── SESIONES ──
 app.use(session({
   store: new PgSession({ pool, tableName: 'session' }),
-  secret: process.env.SESSION_SECRET || 'dev-secret-change-in-prod',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 días
@@ -208,6 +216,26 @@ app.put('/api/state', requireAuth, async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// ── PROXY TMDB ──
+// El token vive en el servidor (TMDB_TOKEN) y nunca llega al navegador:
+// el frontend llama a /api/tmdb/<ruta TMDB> y acá se agrega el header Authorization
+app.get('/api/tmdb/*', requireAuth, (req, res) => {
+  if (!process.env.TMDB_TOKEN) return res.status(503).json({ error: 'TMDB_TOKEN no configurado en el servidor' });
+  const upstream = https.request({
+    hostname: 'api.themoviedb.org',
+    path: '/3/' + req.originalUrl.slice('/api/tmdb/'.length),
+    method: 'GET',
+    headers: { Authorization: 'Bearer ' + process.env.TMDB_TOKEN, Accept: 'application/json' },
+  }, up => {
+    res.status(up.statusCode);
+    if (up.headers['content-type']) res.set('Content-Type', up.headers['content-type']);
+    up.pipe(res);
+  });
+  upstream.setTimeout(15000, () => upstream.destroy(new Error('timeout')));
+  upstream.on('error', () => { if (!res.headersSent) res.status(502).json({ error: 'TMDB no respondió' }); });
+  upstream.end();
 });
 
 // ── ARCHIVOS ESTÁTICOS ──
